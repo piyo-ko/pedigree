@@ -191,6 +191,112 @@ function add_person_choice(select_elt, id, displayed_name) {
 
 
 /*
+「人を追加する」メニュー。
+*/
+function add_person() {
+  const new_personal_id = "p" + P_GRAPH.next_person_id++; // IDを生成
+
+  // 入力内容を読み込む
+  const new_personal_name = document.menu.new_personal_name.value;
+  if (new_personal_name == "") {
+    alert("名前を入力してください");
+    return;
+  }
+  var verticalize = false; // デフォルト値
+  if (document.menu.verticalize.checked) { verticalize = true; }
+  
+  const new_personal_gender = 
+          selected_radio_choice(document.menu.new_personal_gender);
+
+  // svg 要素とその名前空間を求める
+  const svg_elt = document.getElementById('pedigree');
+  const ns = svg_elt.namespaceURI;
+  //console.log("ns=" + ns);
+
+  // グループ化のための g 要素を作る。
+  var g = document.createElementNS(ns, "g");
+  g.setAttribute("id", new_personal_id + "g");
+  // 矩形の幅と高さを計算する。
+  var box_w, box_h;
+  const L = new_personal_name.length;
+  if (verticalize) { // 縦書き
+    box_h = CONFIG.v_text_dy_1st_char + CONFIG.v_text_dy_subseq_char * (L-1) + CONFIG.v_text_y_added;
+    box_w = CONFIG.v_text_width;
+  } else { // 横書き
+    box_h = CONFIG.h_text_height;
+    box_w = CONFIG.font_size * L + CONFIG.h_text_dx * 2;
+  }
+
+  // 面倒なので、とりあえずランダムな場所に配置する。
+  const x = Math.floor( Math.random(Date.now()) * (P_GRAPH.svg_width - box_w + 1) / CONFIG.grid_size ) * CONFIG.grid_size;
+  const y = Math.floor( Math.random(Date.now()) * (P_GRAPH.svg_height - box_h + 1) / CONFIG.grid_size ) * CONFIG.grid_size;
+  //console.log("(x,y)=(" + x + "," + y + ")");
+
+  // 矩形を作る
+  var r = document.createElementNS(ns, "rect");
+  r.setAttribute("id", new_personal_id + "r");
+  r.setAttribute("class", new_personal_gender);
+  r.setAttribute("x", x);
+  r.setAttribute("y", y);
+  r.setAttribute("width", box_w);
+  r.setAttribute("height", box_h);
+  // グループに矩形要素を追加。
+  g.appendChild(document.createTextNode("\n  "));
+  g.appendChild(r);
+  g.appendChild(document.createTextNode("\n  "));
+
+  // 文字を設定する
+  var t = document.createElementNS(ns, "text");
+  t.setAttribute("id", new_personal_id + "t");
+  t.setAttribute("x", x);
+  t.setAttribute("y", y);
+  if (verticalize) { // 縦書き
+    var j, ts, c;
+    for (j=0; j<L; j++) {
+      /* TO DO 
+      writing-mode 指定をすれば、このように1文字ずつ処理する必要はなさそう。
+      */
+    }
+    t.setAttribute("writing-mode", "tb");
+    t.appendChild(document.createTextNode(new_personal_name));
+    t.setAttribute("dx", 16);
+    t.setAttribute("dy", 4);
+  } else { // 横書き
+    t.appendChild(document.createTextNode(new_personal_name));
+    t.setAttribute("dx", CONFIG.h_text_dx);
+    t.setAttribute("dy", CONFIG.h_text_dy);
+  }
+  g.appendChild(t);
+  g.appendChild(document.createTextNode("\n"));
+
+  // data-* 属性の設定。左右上下にくっついているリンクについての情報である。
+  g.dataset.right_links = "";
+  g.dataset.left_links = "";
+  g.dataset.upper_links = "";
+  g.dataset.lower_links = "";
+  // このグループを追加
+  svg_elt.appendChild(g);
+  svg_elt.appendChild(document.createTextNode("\n"));
+
+  // P_GRAPHへの反映
+  P_GRAPH.persons.push(new_personal_id);
+  const mng = new RectMngr(new_personal_id, box_h, box_w);
+  P_GRAPH.p_free_pos_mngrs.push(mng);
+  //console.log("pushed to P_GRAPH.p_free_pos_mngrs:  \n" + JSON.stringify(mng));
+  //他の項目も作るとしたら、それの登録も必要かも。
+
+
+  // プルダウンリストへの反映
+  add_person_choice(document.menu.partner_1, new_personal_id, new_personal_name);
+  add_person_choice(document.menu.partner_2, new_personal_id, new_personal_name);
+  add_person_choice(document.menu.parent_1, new_personal_id, new_personal_name);
+  add_person_choice(document.menu.child_1, new_personal_id, new_personal_name);
+  add_person_choice(document.menu.child_2, new_personal_id, new_personal_name);
+  add_person_choice(document.menu.target_person, new_personal_id, new_personal_name);
+}
+
+
+/*
 「人の位置を動かす」メニュー。
 */
 function move_person() {
