@@ -49,6 +49,36 @@ function print_current_svg_size() {
 }
 
 
+/* [汎用モジュール]
+プルダウンリストで選択されている項目の value を返す。
+*/
+function selected_choice(select_elt) {
+  return(select_elt.options[select_elt.selectedIndex].value);
+}
+
+
+/* [汎用モジュール]
+ラジオボタンで選択されている項目の value を返す。
+*/
+function selected_radio_choice(radio_elt) {
+  for (var i=0; i<radio_elt.length; i++) {
+    if (radio_elt[i].checked) { return(radio_elt[i].value); }
+  }
+  return("");  // エラー避けに一応、最後につけておく。
+}
+
+
+/* [汎用モジュール]
+プルダウンリストに選択肢を追加して、それを選択済み状態にする。
+*/
+function add_person_choice(select_elt, id, displayed_name) {
+  var opt = document.createElement("option");
+  opt.appendChild(document.createTextNode(displayed_name));
+  opt.value = id;
+  select_elt.appendChild(opt);
+  select_elt.selectedIndex = select_elt.options.length - 1;
+}
+
 
 /*
 「全体の高さを変える」メニュー。
