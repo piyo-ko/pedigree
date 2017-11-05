@@ -81,6 +81,35 @@ function add_person_choice(select_elt, id, displayed_name) {
 
 
 /*
+「人の位置を動かす」メニュー。
+*/
+function move_person() {
+  // 入力内容を読み込む
+  const target_person = selected_choice(document.menu.target_person);
+  const moving_direction = 
+    selected_radio_choice(document.menu.moving_direction);
+  const how_much_moved = parseInt(document.menu.how_much_moved.value);
+  if (how_much_moved < 0) {
+    alert("移動量は正の数を指定して下さい");
+    return;
+  }
+  // dx, dy (x 方向、y 方向それぞれの実際の移動量) を設定する
+  var dx, dy;
+  switch (moving_direction) {
+    case 'up'   : dx = 0; dy = -how_much_moved; break;
+    case 'down' : dx = 0; dy = how_much_moved; break;
+    case 'left' : dx = -how_much_moved; dy = 0; break;
+    case 'right': dx = how_much_moved; dy = 0; break;
+    default     : dx = 0; dy = 0; break;
+  }
+  // 動かす (とりあえず本人の矩形のみ)
+  move_rect_and_txt(target_person, dx, dy);
+  // TO DO: 縦または横に繋がっている人物を連動させる
+  // (移動方向・移動量に応じて、連動させる人物の範囲を決める必要があるかも)
+}
+
+
+/*
 「全体をずらす」メニュー。
 */
 function shift_all() {
