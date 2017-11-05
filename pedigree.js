@@ -49,6 +49,33 @@ function print_current_svg_size() {
 }
 
 
+
+/*
+「全体の高さを変える」メニュー。
+*/
+function modify_height() {
+  const h_diff = parseInt(document.menu.height_diff.value);
+  P_GRAPH.svg_height += h_diff;
+  const s = document.getElementById('pedigree');
+  s.setAttribute("height", P_GRAPH.svg_height);
+  s.setAttribute("viewBox", "0 0 " + P_GRAPH.svg_width + " " + P_GRAPH.svg_height);
+  document.getElementById('current_height').textContent = P_GRAPH.svg_height;
+}
+
+
+/*
+「全体の幅を変える」メニュー。
+*/
+function modify_width() {
+  const w_diff = parseInt(document.menu.width_diff.value);
+  P_GRAPH.svg_width += w_diff;
+  const s = document.getElementById('pedigree');
+  s.setAttribute("width", P_GRAPH.svg_width);
+  s.setAttribute("viewBox", "0 0 " + P_GRAPH.svg_width + " " + P_GRAPH.svg_height);
+  document.getElementById('current_width').textContent = P_GRAPH.svg_width;
+}
+
+
 /*
 「SVG コードを出力する」メニューの上半分。
 <div id="tree_canvas_div"> ... </div> の中身 (sgv 要素) を書き出すだけ。
