@@ -75,3 +75,26 @@ function download_svg() {
   const b = new Blob([s], {type :'image/svg+xml'});
   document.getElementById('download_link').href = URL.createObjectURL(b);
 }
+
+
+/*
+「作成済みのデータを読み込む」メニュー。
+今は、読み取ったものをただ上の枠内に表示しているだけ。
+本来は、SVGの各要素を読み取って、変数の設定を行ったりする予定。
+また、読み取った内容が所望の形式かどうかを検査した方が良いが、そうした
+エラーチェックは省略したままにするかもしれない。
+*/
+function read_in() {
+  var reader = new FileReader();
+  reader.onload = function (e) {
+    // 読み込んだテキストの内容を、divタグ (IDは 'display_test') の中身
+    // として書き出す。
+    document.getElementById('tree_canvas_div').innerHTML = e.target.result;
+    // svg 要素の大きさ (幅と高さ) を表示し直す。
+    print_current_svg_size();
+    // TO DO: SVGの各要素を読み取って、変数の設定を行う。
+    //
+  }
+  // テキストファイルとして読み込む。
+  reader.readAsText(document.getElementById('input_svg_file').files[0]);
+}
