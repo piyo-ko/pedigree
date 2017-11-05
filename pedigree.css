@@ -1,0 +1,59 @@
+body {
+  background: silver;
+  color: navy;
+  font-family: serif;
+  padding: 0;
+}
+h1 {
+  font-size: large;
+  font-family: "筑紫B丸ゴシック", sans-serif;
+  text-align: center;
+  color: white;
+  background: teal;
+}
+code {
+  background: lightcyan;
+  color: darkslategray;
+  border: 1px solid royalblue;
+  font-family: "Ricty Discord", "Courier New", monospace;
+  white-space: pre;
+  margin: 4pt;
+}
+#svg_code {
+  height: 5em;
+  display: block;
+  overflow: auto;
+  padding: 2pt;
+}
+a {
+  color: royalblue;
+}
+a:hover {
+  background: royalblue;
+  color: white;
+  font-weight: bold;
+}
+
+#tree_canvas_div, #display_test {
+  display: block;
+  text-align: center;
+  margin: 1em;
+}
+svg {
+  border: solid 1px royalblue;
+  background: white;
+}
+
+table {
+  border-collapse: collapse;
+  margin: 1em;
+}
+td, th {
+  border: solid 1px navy;
+}
+th {
+  color: teal;
+  background: powderblue;
+  word-break: keep-all;
+}
+
