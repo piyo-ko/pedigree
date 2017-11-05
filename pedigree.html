@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="pedigree.css" type="text/css">
+<script type="text/javascript" src="pedigree.js"></script>
+<base target="_top">
+<title>系図を描いて SVG データにしてみよう</title>
+</head>
+<body>
+
+<h1>系図を描いて SVG データにしてみよう</h1>
+
+<div id="tree_canvas_div">
+<svg id="pedigree" xmlns="http://www.w3.org/2000/svg" width="600" height="300" viewBox="0 0 600 300">
+<style><![CDATA[ @import url(pedigree_svg.css); ]]></style>
+</svg>
+</div>
+
+<form name="menu">
+<table>
+<tr>
+<th>人を<wbr>追加する</th>
+<td>
+名前 <input type="text" name="new_personal_name" size="10"> を入力。
+
+<input type="checkbox" name="verticalize" id="verticalize"> 
+<label for="verticalize">名前を縦書きにする場合</label>はチェック。
+
+スタイルは
+<input type="radio" name="new_personal_gender" value="neutral" checked id="new_personal_gender_neutral">
+<label for="new_personal_gender_neutral">なし</label>
+
+<input type="radio" name="new_personal_gender" value="feminine" id="new_personal_gender_feminine">
+<label for="new_personal_gender_feminine">女性</label>
+
+<input type="radio" name="new_personal_gender" value="masculine" id="new_personal_gender_masculine">
+<label for="new_personal_gender_masculine">男性</label>。
+
+<input type="button" value="この人を追加する" onclick="add_person()">
+<br>
+(※ 光源氏のような人物の場合には、名前の前後に全角空白をいくつか入れて縦書きを指定することで、十分に縦に長い矩形を作ってください。)
+</td>
+</tr>
+
+<tr>
+<th>横の関係を<wbr>追加する</th>
+<td>
+<select id="partner_1" name="partner_1"></select> と
+<select id="partner_2" name="partner_2"></select> の間を
+
+<input type="radio" name="horizontal_link_type" value="single" id="horizontal_link_type_single">
+<label for="horizontal_link_type_single">一重線</label>
+
+<input type="radio" name="horizontal_link_type" value="double" checked id="horizontal_link_type_double">
+<label for="horizontal_link_type_double">二重線</label>
+
+で <input type="button" value="結ぶ" onclick="add_h_link()">。
+</td>
+</tr>
+
+<tr>
+<th>縦の関係を<wbr>追加する</th>
+<td>
+親 (祖先) <select id="parent_1" name="parent_1"></select> と
+子 (子孫) <select id="child_1" name="child_1"></select> を
+
+<input type="radio" name="vertical_link1_type" value="solid" checked id="vertical_link1_type_solid">
+<label for="vertical_link1_type_solid">実線</label>
+
+<input type="radio" name="vertical_link1_type" value="dashed" id="vertical_link1_type_dashed">
+<label for="vertical_link1_type_dashed">破線</label>
+
+で <input type="button" value="結ぶ" onclick="add_v_link_1()">。
+
+<br>
+あるいは、<!--既に横線で結ばれている二人-->
+<select id="parents_2" name="parents_2"></select> を結ぶ横線と
+<select id="child_2" name="child_2"></select> を
+
+<input type="radio" name="vertical_link2_type" value="solid" checked id="vertical_link2_type_solid">
+<label for="vertical_link2_type_solid">実線</label>
+
+<input type="radio" name="vertical_link2_type" value="dashed" id="vertical_link2_type_dashed">
+<label for="vertical_link2_type_dashed">破線</label>
+
+で <input type="button" value="結ぶ" onclick="add_v_link_2()">。
+</td>
+</tr>
+
+<tr>
+<th>人の位置を<wbr>動かす</th>
+<td>
+<select id="target_person" name="target_person"></select> を
+
+<input type="radio" name="moving_direction" value="up" checked id="moving_direction_up">
+<label for="moving_direction_up">上</label>
+
+<input type="radio" name="moving_direction" value="down" id="moving_direction_down">
+<label for="moving_direction_down">下</label>
+
+<input type="radio" name="moving_direction" value="left" id="moving_direction_left">
+<label for="moving_direction_left">左</label>
+
+<input type="radio" name="moving_direction" value="right" id="moving_direction_right">
+<label for="moving_direction_right">右</label>
+
+に <input type="text" name="how_much_moved" size="3"> px だけ
+<input type="button" value="動かす" onclick="move_person()">
+(縦または横につながっている人物も連動させる予定)。
+</td>
+</tr>
+
+<tr>
+<th>全体を<wbr>ずらす</th>
+<td>
+全体を
+
+<input type="radio" name="shift_direction" value="up" checked id="shift_direction_up">
+<label for="shift_direction_up">上</label>
+
+<input type="radio" name="shift_direction" value="down" id="shift_direction_down">
+<label for="shift_direction_down">下</label>
+
+<input type="radio" name="shift_direction" value="left" id="shift_direction_left">
+<label for="shift_direction_left">左</label>
+
+<input type="radio" name="shift_direction" value="right" id="shift_direction_right">
+<label for="shift_direction_right">右</label>
+
+に <input type="text" name="how_much_shifted" size="3"> px だけ
+<input type="button" value="動かす" onclick="shift_all()">。
+</td>
+</tr>
+
+<tr>
+<th>全体の<wbr>高さを<wbr>変える</th>
+<td>
+現状の高さは <span id="current_height"></span> px。
+これを <input type="text" name="height_diff" size="3"> px 
+<input type="button" value="増やす" onclick="modify_height()">
+(減らす場合は負数を指定)。
+</td>
+</tr>
+
+<tr>
+<th>全体の幅を<wbr>変える</th>
+<td>
+現状の幅は <span id="current_width"></span> px。
+これを <input type="text" name="width_diff" size="3"> px 
+<input type="button" value="増やす" onclick="modify_width()">
+(減らす場合は負数を指定)。
+</td>
+</tr>
+
+<tr>
+<th>SVG コードを<wbr>出力する</th>
+<td>
+<input type="button" value="以下の枠内に出力する" onclick="output_svg_src()"><br>
+<code id="svg_code"></code>
+
+または、ダウンロード用のリンクを<input type="button" value="設定して…" onclick="download_svg()"><a id="download_link" download="pedigree.svg">ダウンロードする</a>
+(「設定して…」ボタンをタップするとダウンロード用のリンクが有効になります)。
+なお、ダウンロードした SVG ファイルと同じフォルダに、<a href="pedigree_svg.css" download="pedigree_svg.css">このスタイルシートファイル</a>を置いてください。
+</td>
+</tr>
+
+<tr>
+<th>作成済みの<wbr>データを<wbr>読み込む</th>
+<td>SVG ファイルを選択して 
+(<input type="file" id="input_svg_file" name="input_svg_file" />)、
+その内容を上の枠内に
+<input type="button" value="表示する" onclick="read_in()">。
+<br>
+(※ 現状はただ表示するだけで、表示した系図の再編集機能はありません。)
+</td>
+</tr>
+
+</table>
+</form>
+
+<nav>[
+<a href="https://piyo-ko.github.io">ホーム</a> |
+<a href="https://twitter.com/share?text=@pi__yo__ko%20">Twitter でバグなどを連絡する</a>
+]</nav>
+</body>
+</html>
