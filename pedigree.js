@@ -1,5 +1,72 @@
 "use strict";
 
+/* [クラス定義]
+人と人の間の縦リンク・横リンクを管理するためのクラスとして、
+EndPointsMngr と RectMngr を定義する。
+*/
+
+
+/* [クラス定義]
+人を表す矩形の各辺ごとに、その辺に接続している (縦または横方向の) リンクを
+管理する。具体的には、
+  - 矩形の縦の辺には、7本までの横リンクを接続可能とする
+  - 矩形の横の辺には、3本までの縦リンクを接続可能とする
+  - それらのリンクの接続位置は、上または左から順に 1, 2, ……という番号で表す
+  - その番号同士の間には優先順位があって、その順に新しいリンクの接続位置
+    として埋まってゆく
+といった想定をしている。
+*/
+var EndPointsMngr = function(for_vertical_edge, len) {
+  if (for_vertical_edge) { // 縦の辺 (矩形の左辺または右辺)
+    this.positions = [4, 2, 6, 1, 7, 3, 5];  // この順に埋めていく
+  } else { // 横の辺 (矩形の上辺または下辺) 
+    this.positions = [2, 3, 1];  // この順に埋めていく
+  }
+  this.next_position_idx = 0;  // positions の添え字 (次に埋めるべき位置に対応)
+  this.edge_length = len;      // 辺の長さ
+};
+/* [クラス定義: メソッド追加]
+この辺においてリンクの接続位置として空いている次の位置を、番号ではなくて
+実際の長さで表して、返す。また、「次の位置」も更新する。
+*/
+EndPointsMngr.prototype.next_position = function() {
+  //console.log("EndPointsMngr.prototype.next_position() is called.");
+  //console.log("this is\n" + JSON.stringify(this));
+  if (this.next_position_idx == this.positions.length) {
+    alert("そんなに多くの関係は設定できません!");
+    return(-1); // すでに全箇所が埋まっているのでエラー
+  } else {
+    const pos = Math.floor( this.edge_length * this.positions[this.next_position_idx] / (this.positions.length + 1) );
+    this.next_position_idx++;
+    return(pos);
+  }
+};
+/* [クラス定義: メソッド追加]
+この辺に、リンクの接続位置として空いている位置が残っているかどうかを
+調べる。残っていれば true。
+*/
+EndPointsMngr.prototype.is_available = function() {
+  if (this.next_position_idx < this.positions.length) {
+    return(true);
+  } else {
+    return(false);
+  }
+};
+
+
+/* [クラス定義]
+pid という ID で表される人物の矩形の、高さ (h) と幅 (w) を引数にとる。
+この矩形につながるリンクを管理するクラス。
+*/
+var RectMngr = function(pid, h, w) {
+  this.pid = pid;
+  this.right_side = new EndPointsMngr(true, h);
+  this.left_side = new EndPointsMngr(true, h);
+  this.upper_side = new EndPointsMngr(false, w);
+  this.lower_side = new EndPointsMngr(false, w);
+};
+
+
 /*
 svg 要素の中身を、大域変数 (たるオブジェクトの属性値) として保持する。
 (擬似的な名前空間を作っている感じ)
