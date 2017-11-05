@@ -81,6 +81,73 @@ function add_person_choice(select_elt, id, displayed_name) {
 
 
 /*
+「全体をずらす」メニュー。
+*/
+function shift_all() {
+  // 入力内容を読み込む
+  const shift_direction = 
+    selected_radio_choice(document.menu.shift_direction);
+  const how_much_shifted = parseInt(document.menu.how_much_shifted.value);
+  if (how_much_shifted < 0) {
+    alert("移動量は正の数を指定して下さい");
+    return;
+  }
+  // dx, dy (x 方向、y 方向の実際の移動量) を設定する
+  var dx, dy;
+  switch (shift_direction) {
+    case 'up'   : dx = 0; dy = -how_much_shifted; break;
+    case 'down' : dx = 0; dy = how_much_shifted; break;
+    case 'left' : dx = -how_much_shifted; dy = 0; break;
+    case 'right': dx = how_much_shifted; dy = 0; break;
+    default     : dx = 0; dy = 0; break;
+  }
+  // 移動させる
+  P_GRAPH.persons.map(function(pid) { move_rect_and_txt(pid, dx, dy); });
+  P_GRAPH.h_links.map(function(hid) { move_link(hid, dx, dy); });
+  P_GRAPH.v_links.map(function(vid) { move_link(vid, dx, dy); });
+}
+
+
+/* [汎用モジュール]
+pid という ID の人物を表す矩形とテキストを、x 方向に dx 動かし、y 方向に 
+dy 動かす。連動なしの単純な操作。他の関数から呼び出すためのもの。
+*/
+function move_rect_and_txt(pid, dx, dy) {
+  const rect = document.getElementById(pid + "r");
+  rect.setAttribute("x", parseInt(rect.getAttribute("x")) + dx);
+  rect.setAttribute("y", parseInt(rect.getAttribute("y")) + dy);
+
+  const txt = document.getElementById(pid + "t");
+  txt.setAttribute("x", parseInt(txt.getAttribute("x")) + dx);
+  txt.setAttribute("y", parseInt(txt.getAttribute("y")) + dy);
+}
+
+
+/* [汎用モジュール]
+線 (縦のリンクまたは横のリンク) を移動させる。
+連動なしの単純な操作。他の関数から呼び出すためのもの。
+*/
+function move_link(id, dx, dy) {
+  const path_elt = document.getElementById(id);
+  // 縦リンクか横リンクか、線の種類は何か、ということによらず、d 属性は、
+  // 最初の MoveTo だけ絶対座標指定にしてあるので、そこの座標だけ
+  // 書き換えればよい。
+  const matches = path_elt.getAttribute("d").match(/^M (\d+),(\d+)(.+)$/);
+  if (matches === undefined || matches === null || matches.length != 4) {
+    alert("error in move_link()");
+    console.log("d=" + path_elt.getAttribute("d"));
+    console.log("matches=" + matches);
+    return;
+  }
+  //matches[0] は d 属性の値全体 (マッチの対象文字列全体)
+  const new_x = parseInt(matches[1]) + dx;
+  const new_y = parseInt(matches[2]) + dy;
+  const new_d_str = "M " + new_x + "," + new_y + matches[3];
+  path_elt.setAttribute("d", new_d_str);
+}
+
+
+/*
 「全体の高さを変える」メニュー。
 */
 function modify_height() {
