@@ -1,0 +1,26 @@
+rect {
+  stroke-width: 2;
+}
+rect.neutral {
+  stroke: hsl(0, 0%, 50%);
+  fill: hsla(0, 0%, 100%, 0.5);
+}
+rect.feminine {
+  stroke: hsl(20, 100%, 50%);
+  fill: hsla(20, 100%, 90%, 0.5);
+}
+rect.masculine {
+  stroke: hsl(150, 100%, 50%);
+  fill: hsla(150, 100%, 90%, 0.5);
+}
+text {
+  font-size: 24px;
+}
+path {
+  stroke-width: 2;
+  stroke: hsl(0, 0%, 50%);
+}
+path.dashed {
+  stroke-dasharray: "4,4";
+}
+
