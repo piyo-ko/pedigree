@@ -30,8 +30,6 @@ var EndPointsMngr = function(for_vertical_edge, len) {
 実際の長さで表して、返す。また、「次の位置」も更新する。
 */
 EndPointsMngr.prototype.next_position = function() {
-  //console.log("EndPointsMngr.prototype.next_position() is called.");
-  //console.log("this is\n" + JSON.stringify(this));
   if (this.next_position_idx == this.positions.length) {
     alert("そんなに多くの関係は設定できません!");
     return(-1); // すでに全箇所が埋まっているのでエラー
@@ -211,7 +209,6 @@ function add_person() {
   // svg 要素とその名前空間を求める
   const svg_elt = document.getElementById('pedigree');
   const ns = svg_elt.namespaceURI;
-  //console.log("ns=" + ns);
 
   // グループ化のための g 要素を作る。
   var g = document.createElementNS(ns, "g");
@@ -230,7 +227,6 @@ function add_person() {
   // 面倒なので、とりあえずランダムな場所に配置する。
   const x = Math.floor( Math.random(Date.now()) * (P_GRAPH.svg_width - box_w + 1) / CONFIG.grid_size ) * CONFIG.grid_size;
   const y = Math.floor( Math.random(Date.now()) * (P_GRAPH.svg_height - box_h + 1) / CONFIG.grid_size ) * CONFIG.grid_size;
-  //console.log("(x,y)=(" + x + "," + y + ")");
 
   // 矩形を作る
   var r = document.createElementNS(ns, "rect");
@@ -251,12 +247,6 @@ function add_person() {
   t.setAttribute("x", x);
   t.setAttribute("y", y);
   if (verticalize) { // 縦書き
-    var j, ts, c;
-    for (j=0; j<L; j++) {
-      /* TO DO 
-      writing-mode 指定をすれば、このように1文字ずつ処理する必要はなさそう。
-      */
-    }
     t.setAttribute("writing-mode", "tb");
     t.appendChild(document.createTextNode(new_personal_name));
     t.setAttribute("dx", 16);
@@ -282,7 +272,6 @@ function add_person() {
   P_GRAPH.persons.push(new_personal_id);
   const mng = new RectMngr(new_personal_id, box_h, box_w);
   P_GRAPH.p_free_pos_mngrs.push(mng);
-  //console.log("pushed to P_GRAPH.p_free_pos_mngrs:  \n" + JSON.stringify(mng));
   //他の項目も作るとしたら、それの登録も必要かも。
 
 
@@ -299,8 +288,6 @@ function add_person() {
 「横の関係を追加する」メニュー。
 */
 function add_h_link() {
-  //console.log("add_h_link():");
-
   // 入力内容を読み込む
   const p1_id = selected_choice(document.menu.partner_1);
   const p2_id = selected_choice(document.menu.partner_2);
@@ -317,22 +304,12 @@ function add_h_link() {
   const x_end1 = x_start1 + parseInt(r1.getAttribute("width"));
   const y_start1 = parseInt(r1.getAttribute("y"));
   const y_end1 = y_start1 + parseInt(r1.getAttribute("height"));
-  //console.log("rect r1: (" + x_start1 + "," + y_start1 + ") to (" + x_end1 + "," + y_end1 +")");
 
   const r2 = document.getElementById(p2_id + "r");
   const x_start2 = parseInt(r2.getAttribute("x"));
   const x_end2 = x_start2 + parseInt(r2.getAttribute("width"));
   const y_start2 = parseInt(r2.getAttribute("y"));
   const y_end2 = y_start2 + parseInt(r2.getAttribute("height"));
-  //console.log("rect r2: (" + x_start2 + "," + y_start2 + ") to (" + x_end2 + "," + y_end2 +")");
-
-  //console.log(JSON.stringify(P_GRAPH.p_free_pos_mngrs));
-
-  /*console.log(x_end1 + CONFIG.min_h_link_len);
-  console.log(x_start2);
-  console.log(x_end2 + CONFIG.min_h_link_len);
-  console.log(x_start1);*/
-
 
   // 横方向に最小限の隙間があるかどうかをチェックする
   var r1_is_left;
@@ -376,7 +353,7 @@ function add_h_link() {
     link_start_x = x_end2 + 1;
     link_end_x = x_start1 - 1;
   }
-  //console.log("r1_dy=" + r1_dy + ", r2_dy=" + r2_dy);
+
   // 矩形位置が現状のままだと仮定して、リンクをつなぐ y 位置を求める
   var r1_pos_tmp, r2_pos_tmp, diff;
   r1_pos_tmp = y_start1 + r1_dy;
@@ -405,7 +382,6 @@ function add_h_link() {
     // たまたま diff == 0 のときは何も移動する必要がないが、変数の設定は必要。
     link_y = r1_pos_tmp;
   }
-  //console.log("link_y=" + link_y);
 
   // 移動
   // TO DO (連動)
@@ -422,13 +398,9 @@ function add_h_link() {
     const upper_line_y = link_y - 2;
     const lower_line_y = link_y + 2;
     d_str = "M " + link_start_x + "," + upper_line_y;
-    /*d_str += " L " + link_end_x + "," + upper_line_y;
-    d_str += " M " + link_start_x + "," + lower_line_y;
-    d_str += " L " + link_end_x + "," + lower_line_y;*/
     d_str += " l " + link_len + ",0 m 0,4 l -" + link_len + ",0";
   } else { // link_type == "single" の場合 (と見なす)
     d_str = "M " + link_start_x + "," + link_y;
-    //d_str += " L " + link_end_x + "," + link_y;
     d_str += " l " + link_len + ",0";
   }
 
@@ -494,27 +466,14 @@ function free_pos_found(pid, edge) {
 
   for (i=0; i<L; i++) {
     if (P_GRAPH.p_free_pos_mngrs[i].pid == pid) {
-      //var mng = new EndPointsMngr();
       switch (edge) {
         case 'right': 
-          /*mng = P_GRAPH.p_free_pos_mngrs[i].right_side;
-          console.log("mng is\n" + JSON.stringify(mng));
-          return(mng.is_available());*/
           return(P_GRAPH.p_free_pos_mngrs[i].right_side.is_available());
         case 'left': 
-          /*mng = P_GRAPH.p_free_pos_mngrs[i].left_side;
-          console.log("mng is\n" + JSON.stringify(mng));
-          return(mng.is_available());*/
           return(P_GRAPH.p_free_pos_mngrs[i].left_side.is_available());
         case 'upper': 
-          /*mng = P_GRAPH.p_free_pos_mngrs[i].upper_side;
-          console.log("mng is\n" + JSON.stringify(mng));
-          return(mng.is_available());*/
           return(P_GRAPH.p_free_pos_mngrs[i].upper_side.is_available());
         case 'lower': 
-          /*mng = P_GRAPH.p_free_pos_mngrs[i].lower_side;
-          console.log("mng is\n" + JSON.stringify(mng));
-          return(mng.is_availablel());*/
           return(P_GRAPH.p_free_pos_mngrs[i].lower_side.is_available());
         default: 
           console.log("error @ free_pos_found()");
@@ -530,17 +489,12 @@ function free_pos_found(pid, edge) {
 「横の関係を追加する」「縦の関係を追加する」メニューのための部品。
 */
 function occupy_next_pos(pid, edge) {
-  //console.log("occupy_next_pos(" + pid + ", " + edge + ")");
-
   var i;
   const L = P_GRAPH.p_free_pos_mngrs.length;
 
   for (i=0; i<L; i++) {
-    //console.log("i=" + i + " (L=" + L + ")");
+
     if (P_GRAPH.p_free_pos_mngrs[i].pid == pid) {
-      //console.log("The 'if condition' holds.");
-      //console.log("P_GRAPH.p_free_pos_mngrs[i] is\n" + JSON.stringify(P_GRAPH.p_free_pos_mngrs[i]));
-      //var mng = new EndPointsMngr();
       switch (edge) {
         case 'right': 
           return(P_GRAPH.p_free_pos_mngrs[i].right_side.next_position());
