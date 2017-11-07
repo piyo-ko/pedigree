@@ -295,6 +295,269 @@ function add_person() {
   add_person_choice(document.menu.target_person, new_personal_id, new_personal_name);
 }
 
+/*
+「横の関係を追加する」メニュー。
+*/
+function add_h_link() {
+  //console.log("add_h_link():");
+
+  // 入力内容を読み込む
+  const p1_id = selected_choice(document.menu.partner_1);
+  const p2_id = selected_choice(document.menu.partner_2);
+  const link_type = selected_radio_choice(document.menu.horizontal_link_type);
+
+  if (already_h_linked(p1_id, p2_id)) {
+    alert("もう横線でつないである組み合わせです。");
+    return;
+  }
+
+  // 対応する二つの矩形の範囲を求める
+  const r1 = document.getElementById(p1_id + "r");
+  const x_start1 = parseInt(r1.getAttribute("x"));
+  const x_end1 = x_start1 + parseInt(r1.getAttribute("width"));
+  const y_start1 = parseInt(r1.getAttribute("y"));
+  const y_end1 = y_start1 + parseInt(r1.getAttribute("height"));
+  //console.log("rect r1: (" + x_start1 + "," + y_start1 + ") to (" + x_end1 + "," + y_end1 +")");
+
+  const r2 = document.getElementById(p2_id + "r");
+  const x_start2 = parseInt(r2.getAttribute("x"));
+  const x_end2 = x_start2 + parseInt(r2.getAttribute("width"));
+  const y_start2 = parseInt(r2.getAttribute("y"));
+  const y_end2 = y_start2 + parseInt(r2.getAttribute("height"));
+  //console.log("rect r2: (" + x_start2 + "," + y_start2 + ") to (" + x_end2 + "," + y_end2 +")");
+
+  //console.log(JSON.stringify(P_GRAPH.p_free_pos_mngrs));
+
+  /*console.log(x_end1 + CONFIG.min_h_link_len);
+  console.log(x_start2);
+  console.log(x_end2 + CONFIG.min_h_link_len);
+  console.log(x_start1);*/
+
+
+  // 横方向に最小限の隙間があるかどうかをチェックする
+  var r1_is_left;
+  if (x_end1 + CONFIG.min_h_link_len <= x_start2) {
+    // 矩形 r1 が左にあり、矩形 r2 が右にある。
+    r1_is_left = true;
+  } else if (x_end2 + CONFIG.min_h_link_len <= x_start1) {
+    // 矩形 r1 が右にあり、矩形 r2 が左にある。
+    r1_is_left = false;
+  } else {
+    alert("二人の矩形が重なっているか、矩形の間がくっつきすぎです。");
+    return;
+  }
+
+  // 横方向のリンクを追加する余地があるかどうかをチェックする
+  var can_add_link; // 初期値
+  if (r1_is_left) {
+    // r1 が左にあるときは、r1 の右辺と r2 の左辺に空きが必要
+    can_add_link = 
+      free_pos_found(p1_id, 'right') && free_pos_found(p2_id, 'left');
+  } else {
+    can_add_link = 
+      free_pos_found(p1_id, 'left') && free_pos_found(p2_id, 'right');
+  }
+  if (! can_add_link) {
+    alert("横方向のリンクが多すぎる人を指定したのでエラーです。");
+    return;
+  }
+
+  // ここにくるのは、リンクを追加して良い場合。
+  var r1_dy, r2_dy;
+  var link_start_x, link_end_x, link_y;
+  if (r1_is_left) { // r1 が左にある
+    r1_dy = occupy_next_pos(p1_id, 'right');
+    r2_dy = occupy_next_pos(p2_id, 'left');
+    link_start_x = x_end1 + 1;  // 線の幅の半分だけ調整する
+    link_end_x = x_start2 - 1;  // 線の幅の半分だけ調整する
+  } else { // r1 が右にある
+    r1_dy = occupy_next_pos(p1_id, 'left');
+    r2_dy = occupy_next_pos(p2_id, 'right');
+    link_start_x = x_end2 + 1;
+    link_end_x = x_start1 - 1;
+  }
+  //console.log("r1_dy=" + r1_dy + ", r2_dy=" + r2_dy);
+  // 矩形位置が現状のままだと仮定して、リンクをつなぐ y 位置を求める
+  var r1_pos_tmp, r2_pos_tmp, diff;
+  r1_pos_tmp = y_start1 + r1_dy;
+  r2_pos_tmp = y_start2 + r2_dy;
+  // その差分を求める。
+  diff = r1_pos_tmp - r2_pos_tmp;
+
+  // 差分を埋めるように、諸要素を移動させることにより、横リンクを水平に保つ。
+  // まず、矩形 r1, r2 のどちらを移動させるかを決める。
+  var target_ids = [];
+  if (diff > 0) {
+    // 矩形 r1 側の端点の方が下にあるので、矩形 r2 を diff 下げる
+    // とともに、r2 に連動させるべき諸要素も、diff 下げる必要がある。
+    target_ids.push(p2_id);
+    // TO DO (連動)
+    // リンクの y 位置は、固定される矩形 r1 の側で求めた r1_pos_tmp となる。
+    link_y = r1_pos_tmp;
+  } else if (diff < 0) {
+    // 矩形 r2 の端点の方が下にあるので、矩形 r1 を -diff 下げる
+    // とともに、r1 に連動させるべき諸要素も、diff 下げる必要がある。
+    target_ids.push(p1_id);
+    // TO DO (連動)
+    // リンクの y 位置は、固定される矩形 r2 の側で求めた r2_pos_tmp となる。
+    link_y = r2_pos_tmp;
+  } else {
+    // たまたま diff == 0 のときは何も移動する必要がないが、変数の設定は必要。
+    link_y = r1_pos_tmp;
+  }
+  //console.log("link_y=" + link_y);
+
+  // 移動
+  // TO DO (連動)
+  target_ids.map(function(pid) { move_rect_and_txt(pid, 0, Math.abs(diff)); });
+
+  // svg 要素とその名前空間を求め、path 要素を作成する
+  const svg_elt = document.getElementById('pedigree');
+  const ns = svg_elt.namespaceURI;
+  var h_link = document.createElementNS(ns, "path");
+  // d 属性の値 (文字列) を生成する
+  var d_str;
+  const link_len = link_end_x - link_start_x;
+  if (link_type == "double") {
+    const upper_line_y = link_y - 2;
+    const lower_line_y = link_y + 2;
+    d_str = "M " + link_start_x + "," + upper_line_y;
+    /*d_str += " L " + link_end_x + "," + upper_line_y;
+    d_str += " M " + link_start_x + "," + lower_line_y;
+    d_str += " L " + link_end_x + "," + lower_line_y;*/
+    d_str += " l " + link_len + ",0 m 0,4 l -" + link_len + ",0";
+  } else { // link_type == "single" の場合 (と見なす)
+    d_str = "M " + link_start_x + "," + link_y;
+    //d_str += " L " + link_end_x + "," + link_y;
+    d_str += " l " + link_len + ",0";
+  }
+
+  const hid = "h" + P_GRAPH.next_hlink_id++;  // IDを生成
+
+  h_link.setAttribute("d", d_str);
+  h_link.setAttribute("id", hid);
+  // data-* 属性の設定も行う
+  const g1 = document.getElementById(p1_id + "g");
+  const g2 = document.getElementById(p2_id + "g");
+  if (r1_is_left) { // r1、このリンク、r2、の順に配置されている
+    g1.dataset.right_links += hid + "," + p2_id + ",";
+    h_link.dataset.lhs_person = p1_id;
+    h_link.dataset.rhs_person = p2_id;
+    g2.dataset.left_links += hid + "," + p1_id + ",";
+  } else { // r2、このリンク、r1、の順に配置されている
+    g2.dataset.right_links += hid + "," + p1_id + ",";
+    h_link.dataset.lhs_person = p2_id;
+    h_link.dataset.rhs_person = p1_id;
+    g1.dataset.left_links += hid + "," + p2_id + ",";
+  }
+  // この横リンクを追加
+  svg_elt.appendChild(h_link);
+  svg_elt.appendChild(document.createTextNode("\n"));
+  // 大域変数の更新
+  P_GRAPH.h_links.push(hid);
+  // 縦リンクの追加メニューのプルダウンリストに選択肢を追加する
+  const t1 = document.getElementById(p1_id + "t").textContent;
+  const t2 = document.getElementById(p2_id + "t").textContent;
+  var displayed_str;
+  if (r1_is_left) {
+    displayed_str = t1 + "と" + t2;
+  } else {
+    displayed_str = t2 + "と" + t1;
+  }
+  add_person_choice(document.getElementById("parents_2"), hid, displayed_str);
+
+}
+
+/*
+「横の関係を追加する」メニューのための部品。
+もう横線でつないである組み合わせかどうかを確認する。
+*/
+function already_h_linked(pid1, pid2) {
+  const L = P_GRAPH.h_links.length;
+  for (var i = 0; i < L; i++) {
+    var h_link = document.getElementById(P_GRAPH.h_links[i]);
+    var lhs = h_link.dataset.lhs_person;
+    var rhs = h_link.dataset.rhs_person;
+    if ( (lhs == pid1 && rhs == pid2) || (lhs == pid2 && rhs == pid1) ) {
+      return(true);
+    }
+  }
+  return(false);
+}
+
+/*
+「横の関係を追加する」「縦の関係を追加する」メニューのための部品。
+*/
+function free_pos_found(pid, edge) {
+  var i;
+  const L = P_GRAPH.p_free_pos_mngrs.length;
+
+  for (i=0; i<L; i++) {
+    if (P_GRAPH.p_free_pos_mngrs[i].pid == pid) {
+      //var mng = new EndPointsMngr();
+      switch (edge) {
+        case 'right': 
+          /*mng = P_GRAPH.p_free_pos_mngrs[i].right_side;
+          console.log("mng is\n" + JSON.stringify(mng));
+          return(mng.is_available());*/
+          return(P_GRAPH.p_free_pos_mngrs[i].right_side.is_available());
+        case 'left': 
+          /*mng = P_GRAPH.p_free_pos_mngrs[i].left_side;
+          console.log("mng is\n" + JSON.stringify(mng));
+          return(mng.is_available());*/
+          return(P_GRAPH.p_free_pos_mngrs[i].left_side.is_available());
+        case 'upper': 
+          /*mng = P_GRAPH.p_free_pos_mngrs[i].upper_side;
+          console.log("mng is\n" + JSON.stringify(mng));
+          return(mng.is_available());*/
+          return(P_GRAPH.p_free_pos_mngrs[i].upper_side.is_available());
+        case 'lower': 
+          /*mng = P_GRAPH.p_free_pos_mngrs[i].lower_side;
+          console.log("mng is\n" + JSON.stringify(mng));
+          return(mng.is_availablel());*/
+          return(P_GRAPH.p_free_pos_mngrs[i].lower_side.is_available());
+        default: 
+          console.log("error @ free_pos_found()");
+          return(false);
+      }
+    }
+  }
+  return(false);
+}
+
+
+/*
+「横の関係を追加する」「縦の関係を追加する」メニューのための部品。
+*/
+function occupy_next_pos(pid, edge) {
+  //console.log("occupy_next_pos(" + pid + ", " + edge + ")");
+
+  var i;
+  const L = P_GRAPH.p_free_pos_mngrs.length;
+
+  for (i=0; i<L; i++) {
+    //console.log("i=" + i + " (L=" + L + ")");
+    if (P_GRAPH.p_free_pos_mngrs[i].pid == pid) {
+      //console.log("The 'if condition' holds.");
+      //console.log("P_GRAPH.p_free_pos_mngrs[i] is\n" + JSON.stringify(P_GRAPH.p_free_pos_mngrs[i]));
+      //var mng = new EndPointsMngr();
+      switch (edge) {
+        case 'right': 
+          return(P_GRAPH.p_free_pos_mngrs[i].right_side.next_position());
+        case 'left': 
+          return(P_GRAPH.p_free_pos_mngrs[i].left_side.next_position());
+        case 'upper': 
+          return(P_GRAPH.p_free_pos_mngrs[i].upper_side.next_position());
+        case 'lower': 
+          return(P_GRAPH.p_free_pos_mngrs[i].lower_side.next_position());
+        default: 
+          console.log("error @ occupy_next_pos()"); return(-1);
+      }
+    }
+  }
+  return(-2);
+}
+
 
 /*
 「人の位置を動かす」メニュー。
