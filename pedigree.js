@@ -819,32 +819,8 @@ function shift_all() {
   }
   // 移動させる
   P_GRAPH.persons.map(function(pid) { move_rect_and_txt(pid, dx, dy); });
-  // TO DO: 連動機能の実装のことを考えたら、以下の内容は、 move_link の呼び出しだけで済ませられるように、move_link の中に押し込めた方が良さそう。
-  P_GRAPH.h_links.map(function(hid) {
-    move_link(hid, dx, dy);
-    const h_link = document.getElementById(hid);
-    const old_x = parseInt(h_link.dataset.connect_pos_x);
-    const old_y = parseInt(h_link.dataset.connect_pos_y);
-    h_link.dataset.connect_pos_x = old_x + dx;
-    h_link.dataset.connect_pos_y = old_y + dy;
-  });
-  P_GRAPH.v_links.map(function(vid) {
-    move_link(vid, dx, dy);
-    const v_link = document.getElementById(vid);
-    const matches = v_link.dataset.from_to.match(/^([-]?\d+),([-]?\d+),([-]?\d+),([-]?\d+)$/);
-    if (matches === undefined || matches === null || matches.length != 5) {
-      alert("error in shift_all()");
-      console.log(v_link.dataset.from_to);
-      console.log("matches=" + matches);
-      return;
-    }
-    //matches[0] は d 属性の値全体 (マッチの対象文字列全体)
-    const new_from_x = parseInt(matches[1]) + dx;
-    const new_from_y = parseInt(matches[2]) + dy;
-    const new_to_x = parseInt(matches[3]) + dx;
-    const new_to_y = parseInt(matches[4]) + dy;
-    v_link.dataset.from_to = new_from_x + "," + new_from_y + "," + new_to_x + "," + new_to_y;
-  });
+  P_GRAPH.h_links.map(function(hid) { move_link(hid, dx, dy, true); });
+  P_GRAPH.v_links.map(function(vid) { move_link(vid, dx, dy, false); });
 }
 
 
@@ -867,13 +843,13 @@ function move_rect_and_txt(pid, dx, dy) {
 線 (縦のリンクまたは横のリンク) を移動させる。
 連動なしの単純な操作。他の関数から呼び出すためのもの。
 */
-function move_link(id, dx, dy) {
+function move_link(id, dx, dy, is_h_link) {
   const path_elt = document.getElementById(id);
   // 縦リンクか横リンクか、線の種類は何か、ということによらず、d 属性は、
   // 最初の MoveTo だけ絶対座標指定にしてあるので、そこの座標だけ
   // 書き換えればよい。
   const matches = path_elt.getAttribute("d").match(/^M ([-]?\d+),([-]?\d+)(.+)$/);
-  if (matches === undefined || matches === null || matches.length != 4) {
+  if (matches === null || matches.length != 4) {
     alert("error in move_link()");
     console.log("d=" + path_elt.getAttribute("d"));
     console.log("matches=" + matches);
@@ -884,6 +860,28 @@ function move_link(id, dx, dy) {
   const new_y = parseInt(matches[2]) + dy;
   const new_d_str = "M " + new_x + "," + new_y + matches[3];
   path_elt.setAttribute("d", new_d_str);
+
+  // ここからは、横リンクか縦リンクかによって異なる処理を行う
+  if (is_h_link) { // 横リンクの移動に特有の処理を行う
+    const old_x = parseInt(path_elt.dataset.connect_pos_x);
+    const old_y = parseInt(path_elt.dataset.connect_pos_y);
+    path_elt.dataset.connect_pos_x = old_x + dx;
+    path_elt.dataset.connect_pos_y = old_y + dy;
+  } else { // 縦リンクの移動に特有の処理を行う
+    const from_to_matches = path_elt.dataset.from_to.match(/^([-]?\d+),([-]?\d+),([-]?\d+),([-]?\d+)$/);
+    if (from_to_matches === null || from_to_matches.length != 5) {
+      alert("error in shift_all()");
+      console.log(path_elt.dataset.from_to);
+      console.log("from_to_matches=" + from_to_matches);
+      return;
+    }
+    // from_to_matches[0] はマッチの対象文字列全体
+    const new_from_x = parseInt(from_to_matches[1]) + dx;
+    const new_from_y = parseInt(from_to_matches[2]) + dy;
+    const new_to_x = parseInt(from_to_matches[3]) + dx;
+    const new_to_y = parseInt(from_to_matches[4]) + dy;
+    path_elt.dataset.from_to = new_from_x + "," + new_from_y + "," + new_to_x + "," + new_to_y;
+  }
 }
 
 
