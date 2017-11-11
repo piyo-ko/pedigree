@@ -891,7 +891,9 @@ function move_link(id, dx, dy) {
 「全体の高さを変える」メニュー。
 */
 function modify_height() {
-  const h_diff = parseInt(document.menu.height_diff.value);
+  modify_height_0(parseInt(document.menu.height_diff.value));
+}
+function modify_height_0(h_diff) {
   P_GRAPH.svg_height += h_diff;
   const s = document.getElementById('pedigree');
   s.setAttribute("height", P_GRAPH.svg_height);
@@ -904,7 +906,9 @@ function modify_height() {
 「全体の幅を変える」メニュー。
 */
 function modify_width() {
-  const w_diff = parseInt(document.menu.width_diff.value);
+  modify_width_0(parseInt(document.menu.width_diff.value));
+}
+function modify_width_0(w_diff) {
   P_GRAPH.svg_width += w_diff;
   const s = document.getElementById('pedigree');
   s.setAttribute("width", P_GRAPH.svg_width);
