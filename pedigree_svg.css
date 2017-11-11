@@ -17,10 +17,12 @@ text {
   font-size: 24px;
 }
 path {
+  fill: none;
   stroke-width: 2;
   stroke: hsl(0, 0%, 50%);
 }
+
 path.dashed {
-  stroke-dasharray: "4,4";
+  stroke-dasharray: 4,4;  /* "4,4" と指定すると駄目 */
 }
 
