@@ -2,27 +2,22 @@
 
 /* [クラス定義]
 人と人の間の縦リンク・横リンクを管理するためのクラスとして、
-EndPointsMngr と RectMngr を定義する。
+EndPointsMngr_RL と EndPointsMngr_UL と RectMngr を定義する。
 */
 
 
 /* [クラス定義]
-人を表す矩形の各辺ごとに、その辺に接続している (縦または横方向の) リンクを
-管理する。具体的には、
+人を表す矩形の各辺ごとに、その辺に接続しているリンクを管理する。
+このクラスは右辺・左辺 (縦の辺) 用。
+具体的には、
   - 矩形の縦の辺には、7本までの横リンクを接続可能とする
-  - 矩形の横の辺には、3本までの縦リンクを接続可能とする
   - それらのリンクの接続位置は、上または左から順に 1, 2, ……という番号で表す
   - その番号同士の間には優先順位があって、その順に新しいリンクの接続位置
     として埋まってゆく
 といった想定をしている。
 */
-var EndPointsMngr = function(for_vertical_edge, len) {
-  //this.for_vertical_edge = for_vertical_edge;
-  if (for_vertical_edge) { // 縦の辺 (矩形の左辺または右辺)
-    this.positions = [4, 2, 6, 1, 7, 3, 5];  // この順に埋めていく
-  } else { // 横の辺 (矩形の上辺または下辺) 
-    this.positions = [2, 3, 1];  // この順に埋めていく
-  }
+var EndPointsMngr_RL = function(len) {
+  this.positions = [4, 2, 6, 1, 7, 3, 5];  // この順に埋めていく
   this.next_position_idx = 0;  // positions の添え字 (次に埋めるべき位置に対応)
   this.edge_length = len;      // 辺の長さ
 };
@@ -30,7 +25,7 @@ var EndPointsMngr = function(for_vertical_edge, len) {
 この辺においてリンクの接続位置として空いている次の位置を、番号ではなくて
 実際の長さで表して、返す。また、「次の位置」も更新する。
 */
-EndPointsMngr.prototype.next_position = function() {
+EndPointsMngr_RL.prototype.next_position = function() {
   if (this.next_position_idx == this.positions.length) {
     alert("そんなに多くの関係は設定できません!");
     return(-1); // すでに全箇所が埋まっているのでエラー
@@ -44,21 +39,66 @@ EndPointsMngr.prototype.next_position = function() {
 この辺に、リンクの接続位置として利用可能な位置が残っているかどうかを
 調べる。残っていれば true。
 */
-EndPointsMngr.prototype.is_available = function() {
+EndPointsMngr_RL.prototype.is_available = function() {
   if (this.next_position_idx < this.positions.length) {
     return(true);
   } else {
-/*
-    if (for_vertical_edge) { // 縦の辺
-      return(false);
-    } else { // 横の辺
-      return(true);
-    }
-*/
-    return(true);
+    return(false);
   }
 };
 
+/* [クラス定義]
+人を表す矩形の上辺・下辺 (横の辺) に接続するリンクを管理する。
+辺上の、左・真ん中・右の3箇所が接続先の候補である。
+*/
+var EndPointsMngr_UL = function(len) {
+  console.log("EndPointsMngr_UL: len=" + len);
+  this.points = new Array(3);
+  for (var i=0; i<3; i++) {
+    this.points[i] = {
+      status: 'unused',  // 'unused', 'solid', 'dashed' のどれか
+      dx: Math.floor( len * (i+1)/4 )
+    };
+    console.log("points[" + i + "].dx=" + this.points[i].dx);
+  }
+};
+/* [クラス定義: メソッド追加]
+上辺・下辺につながるリンク (縦リンク) の種類は、実線と破線のみ。
+この人物の矩形に最初に接続するリンクは、真ん中へつなぐことにする。
+また、その最初のリンクとは逆の種類の線の接続先として、左右の位置を 
+(暗黙的に) 予約する。
+違う種類の線は同じ位置につながないが、同じ種類の線は同じ位置につないでよい
+ものとする。
+すると、あり得るパターンは以下のa〜iのみ。
+
+a  なし-なし-なし
+b  なし-実線-なし
+c  破線-実線-なし
+d  なし-実線-破線
+e  破線-実線-破線
+f  なし-破線-なし
+g  実線-破線-なし
+h  なし-破線-実線
+i  実線-破線-実線
+*/
+EndPointsMngr_UL.prototype.next_position = function(link_type, right_side_preferred) {
+  // 真ん中が空いているか、これから追加したいリンクと同種のリンクの接続先に
+  // なっている場合、真ん中につなぐ
+  if (this.points[1].status == 'unused' || 
+      this.points[1].status == link_type) {
+    this.points[1].status = link_type;
+    return(this.points[1].dx);
+  }
+  // 真ん中は既に、これから追加したいリンクとは別の種類のリンクの接続先に
+  // なっていて、塞がっている。よって、左右どちらかに接続する。
+  if (right_side_preferred) {
+    this.points[2].status = link_type;
+    return(this.points[2].dx);
+  } else {
+    this.points[0].status = link_type;
+    return(this.points[0].dx);
+  }
+};
 
 /* [クラス定義]
 pid という ID で表される人物の矩形の、高さ (h) と幅 (w) を引数にとる。
@@ -66,10 +106,10 @@ pid という ID で表される人物の矩形の、高さ (h) と幅 (w) を�
 */
 var RectMngr = function(pid, h, w) {
   this.pid = pid;
-  this.right_side = new EndPointsMngr(true, h);
-  this.left_side = new EndPointsMngr(true, h);
-  this.upper_side = new EndPointsMngr(false, w);
-  this.lower_side = new EndPointsMngr(false, w);
+  this.right_side = new EndPointsMngr_RL(h);
+  this.left_side = new EndPointsMngr_RL(h);
+  this.upper_side = new EndPointsMngr_UL(w);
+  this.lower_side = new EndPointsMngr_UL(w);
 };
 
 
@@ -454,7 +494,6 @@ function add_h_link() {
     displayed_str = t2 + "と" + t1;
   }
   add_person_choice(document.getElementById("parents_2"), hid, displayed_str);
-
 }
 
 /*
@@ -476,26 +515,21 @@ function already_h_linked(pid1, pid2) {
 
 
 /*
-「横の関係を追加する」「縦の関係を追加する」メニューのための部品。
+「横の関係を追加する」メニューのための部品。
+pid という ID を持つ人物を表す矩形の縦の辺 (右辺か左辺) に、
+横リンクを追加できる空きがあるかどうかを調べる。
 */
 function free_pos_found(pid, edge) {
-  var i;
   const L = P_GRAPH.p_free_pos_mngrs.length;
-
-  for (i=0; i<L; i++) {
+  for (var i=0; i<L; i++) {
     if (P_GRAPH.p_free_pos_mngrs[i].pid == pid) {
-      switch (edge) {
-        case 'right': 
-          return(P_GRAPH.p_free_pos_mngrs[i].right_side.is_available());
-        case 'left': 
-          return(P_GRAPH.p_free_pos_mngrs[i].left_side.is_available());
-        case 'upper': 
-          return(P_GRAPH.p_free_pos_mngrs[i].upper_side.is_available());
-        case 'lower': 
-          return(P_GRAPH.p_free_pos_mngrs[i].lower_side.is_available());
-        default: 
-          console.log("error @ free_pos_found()");
-          return(false);
+      if (edge == 'right') {
+        return(P_GRAPH.p_free_pos_mngrs[i].right_side.is_available());
+      } else if (edge == 'left') {
+        return(P_GRAPH.p_free_pos_mngrs[i].left_side.is_available());
+      } else {
+        console.log("error @ free_pos_found()");
+        return(false);
       }
     }
   }
@@ -504,29 +538,169 @@ function free_pos_found(pid, edge) {
 
 
 /*
-「横の関係を追加する」「縦の関係を追加する」メニューのための部品。
+「横の関係を追加する」メニューのための部品。
+free_pos_found() で空きを確認した後に使うこと。
+pid という ID を持つ人物を表す矩形の縦の辺 (右辺か左辺) における、
+次の接続先の点の位置 (矩形の最上部からの差分で表したもの) を求める。
 */
 function occupy_next_pos(pid, edge) {
-  var i;
   const L = P_GRAPH.p_free_pos_mngrs.length;
-
-  for (i=0; i<L; i++) {
+  for (var i=0; i<L; i++) {
     if (P_GRAPH.p_free_pos_mngrs[i].pid == pid) {
-      switch (edge) {
-        case 'right': 
-          return(P_GRAPH.p_free_pos_mngrs[i].right_side.next_position());
-        case 'left': 
-          return(P_GRAPH.p_free_pos_mngrs[i].left_side.next_position());
-        case 'upper': 
-          return(P_GRAPH.p_free_pos_mngrs[i].upper_side.next_position());
-        case 'lower': 
-          return(P_GRAPH.p_free_pos_mngrs[i].lower_side.next_position());
-        default: 
-          console.log("error @ occupy_next_pos()"); return(-1);
+      if (edge == 'right') {
+        return(P_GRAPH.p_free_pos_mngrs[i].right_side.next_position());
+      } else if  (edge == 'left') {
+        return(P_GRAPH.p_free_pos_mngrs[i].left_side.next_position());
+      } else {
+        console.log("error @ occupy_next_pos()");
+        return(-1);
       }
     }
   }
   return(-2);
+}
+
+
+/*
+
+(A) 横リンクの追加の際、一方の人物を下へ移動させる。
+このとき、その人物と横方向に推移閉包的につながっている人物すべてと、
+その推移閉包に含まれる人物の子孫にあたる人物すべてと、
+それらをつなぐ横リンクと縦リンクを、まとめて下へ移動させるべきである。
+その際、下にはみ出るようなら、枠を拡大する。
+また、このようにして下に移動させた人物のうち、この移動対象内に親を持たない
+人物については、その親への縦リンクがもし存在するなら (つまり移動対象外の
+人物が親として指定されているなら)、その縦リンクの再描画が必要になる 
+(上の点は変わらず、下の点のみが下へ移動し、リンクが下へ伸びることになる)。
+
+(B) 縦リンクの追加の際は、折れ線を利用するので、移動は不要である。
+
+(C) 指定した人物の移動は、やや複雑である。
+(C-1) 上への移動の場合。
+  その人物と横方向に推移閉包的につながっている人物すべてと、
+それらをつなぐ横リンクを、まとめて上へ移動させるべきである。
+その際、移動対象人物のうち、親との間隔が最小の人物が、親との間隔を必要最低限
+以上に保てるように、必要に応じて移動量を少なくする。
+また、このようにして上へ移動させた人物のうち、子を持つ人物については、
+その子がもし移動対象外であれば、その子への縦リンクの再描画が必要になる 
+(上の点のみが上へ移動し、下の点は変わらず、リンクが上へ伸びることになる)。
+
+(C-2) 下への移動の場合。
+  その人物と横方向に推移閉包的につながっている人物すべてと、
+それらをつなぐ横リンクを、まとめて下へ移動させるべきである。
+その際、移動対象人物のうち、子との間隔が最小の人物が、子との間隔を必要最低限
+以上に保てるように、必要に応じて移動量を少なくする。
+また、(A) と同様の縦リンクの再描画も必要。
+
+(C-3) 右への移動の場合。
+  単にその人物のみを右に移動させるのだが、もしこの人物の右辺・左辺に
+リンクがあれば、それらのリンクの再描画が必要 (右辺のリンクは縮み、左辺の
+リンクは伸びる)。また、この人物につながる縦リンクも、再描画が必要。
+なお、右枠にぶつかる場合は右枠を拡大する。また、右辺でリンクしている別の
+人物との間隔を必要最低限以上に保てるように、必要に応じて移動量を少なくする。
+
+(C-4) 左への移動の場合。
+  単にその人物のみを左に移動させるのだが、もしこの人物の右辺・左辺に
+リンクがあれば、それらのリンクの再描画が必要 (右辺のリンクは伸び、左辺の
+リンクは縮む)。また、この人物につながる縦リンクも、再描画が必要。
+なお、左枠にぶつかる場合は、左枠ぎりぎりまでの移動でやめておく。
+また、左辺でリンクしている別の人物との間隔を必要最低限以上に保てるように、
+必要に応じて移動量を少なくする。
+
+*/
+
+/*
+左右への移動で、連動させるためのモジュール。
+書いてみたが、いらないかもしれない。
+(1) pid という ID の人物からはじめて、横リンクによる接続の推移閉包を取る
+ことで、連動対象者の集合・横リンクの集合を求める。
+(2) 指定された量だけ、それらの人たちを左または右に移動させる (dx が正なら
+右、負なら左)。
+ただし、その指定量動かすと枠をはみ出してしまう場合は、右移動なら枠の拡大で
+対処し、左移動ならはみ出さない範囲で最大のところまで移動する。警告も表示する。
+*/
+function collective_horizontal_move(pid, dx) {
+  // (1) の処理をしつつ、(2) の処理の準備として、連動対象者のうちで
+  // 一番端っこ (右移動なら右端、左移動なら左端) の人物の、端っこ側の
+  // x 座標も求める。
+
+  // 初期化
+  var target_person_ids = [pid];
+  var target_link_ids = [];
+  var farthest_x, rect, rect_x, rect_width;
+  rect = document.getElementById(pid + "r");
+  rect_x = parseInt(rect.getAttribute("x"));
+  if (0 < dx) { // 右移動なので右端をチェックする
+    rect_width = parseInt(rect.getAttribute("width"));
+    farthest_x = rect_x + rect_width;
+  } else { // 左移動なので左端をチェックする
+    farthest_x = rect_x;
+  }
+  var gr, rhs, lhs, ids, i, j;
+  
+  // target_person_ids.length は for 文の中で変化することに注意。
+  // target_person_ids[i] という ID の人物に、順に着目してゆく。
+  for (i = 0; i < target_person_ids.length; i++) {
+    // この人物を表す矩形が今までで一番端っこなら、farthest_x を更新する
+    rect = document.getElementById(target_person_ids[i] + "r");
+    rect_x = parseInt(rect.getAttribute("x"));
+    if (0 < dx) { // 右移動なので右端をチェックする
+      rect_width = parseInt(rect.getAttribute("width"));
+      if (farthest_x < rect_x + rect_width) {
+        farthest_x = rect_x + rect_width;
+      }
+    } else { // 左移動なので左端をチェックする
+      if (rect_x < farthest_x) {
+        farthest_x = rect_x;
+      }
+    }
+    // この人物を表す矩形を含む g 要素の属性として、横リンクのつながりが
+    // 記録されている。
+    gr = document.getElementById(target_person_ids[i] + "g");
+    rhs = gr.dataset.right_links; // 右辺側でのつながり
+    if (rhs !== "") {
+      // rhs は、たとえば、"h0,p1,h3,p5," のような文字列なので、
+      // ids[2*j] がリンクの ID で、ids[2*j+1] が人物の ID である。
+      ids = rhs.split(",");
+      for (j = 0; j < ids.length/2; j++) {
+        if (target_link_ids.indexOf(ids[2*j]) !== -1) {
+          target_link_ids.push(ids[2*j]);
+        }
+        if (target_person_ids.indexOf(ids[2*j+1]) !== -1) {
+          target_person_ids.push(ids[2*j+1]);
+        }
+      }
+    }
+    // 左辺側についても同様
+    lhs = gr.dataset.left_links;
+    if (lhs !== "") {
+      ids = lhs.split(",");
+      for (j = 0; j < ids.length/2; j++) {
+        if (target_link_ids.indexOf(ids[2*j]) !== -1) {
+          target_link_ids.push(ids[2*j]);
+        }
+        if (target_person_ids.indexOf(ids[2*j+1]) !== -1) {
+          target_person_ids.push(ids[2*j+1]);
+        }
+      }
+    }
+  }
+  // (2) の処理。
+  // まず移動量をチェックする。
+  if (0 < dx) { // 右移動
+    if (P_GRAPH.svg_width < farthest_x + dx) { // はみ出る
+      // 枠を拡大する (ちょっと余白も設ける)
+      modify_width_0(farthest_x + dx - P_GRAPH.svg_width + CONFIG.grid_size);
+      alert("指定された量だけ右移動するとはみ出るので、枠を拡大しました。");
+    }
+  } else { // 左移動
+    if (farthest_x + dx < 0) {
+      alert("指定された量だけ左移動するとはみ出るので、はみ出ない範囲で移動します。");
+      dx = -farthest_x;
+    }
+  }
+  target_person_ids.map(function(pid) { move_rect_and_txt(pid, dx, 0); });
+  target_link_ids.map(function(hid) { move_link(hid, dx, 0, true); });
 }
 
 
@@ -600,12 +774,11 @@ function add_v_link_1() {
   const p_x_end = p_x_start + parseInt(p.getAttribute("width"));
   const p_y_start = parseInt(p.getAttribute("y"));
   const p_y_end = p_y_start + parseInt(p.getAttribute("height"));
-  
+
   const c = document.getElementById(c_id + "r");
   const c_x_start = parseInt(c.getAttribute("x"));
   const c_x_end = c_x_start + parseInt(c.getAttribute("width"));
   const c_y_start = parseInt(c.getAttribute("y"));
-  //const c_y_end = c_y_start + parseInt(c.getAttribute("height"));
 
   // 最小の隙間以上の隙間をあけて親の方が子よりも上にあるのかどうかを
   // チェックする
@@ -618,14 +791,24 @@ function add_v_link_1() {
   const vid = "v" + P_GRAPH.next_vlink_id++;  // IDを生成
   // 親の矩形の下辺におけるリンクの接続位置と、子の矩形の上辺における
   // リンクの接続位置を求める
-  var p_x_pos, c_x_pos;
-  // テスト用。仮。
-  p_x_pos = Math.floor( (p_x_start + p_x_end) / 2 );
-  c_x_pos = Math.floor( (c_x_start + c_x_end) / 2 );
-  ///// TO DO
+  var p_x_mid, c_x_mid, p_x_pos, c_x_pos;
+  p_x_mid = (p_x_start + p_x_end) / 2;
+  c_x_mid = (c_x_start + c_x_end) / 2;
+  if (c_x_mid <= p_x_mid) {
+    // 子供の方が親より左寄り気味なので、
+    // 子供の上辺では右側を優先、親の下辺では左側を優先する
+    p_x_pos = p_x_start + 
+              decide_where_to_connect(p_id, 'lower', link_type, false);
+    c_x_pos = c_x_start + 
+              decide_where_to_connect(c_id, 'upper', link_type, true);
+  } else { // 左右逆
+    p_x_pos = p_x_start + 
+              decide_where_to_connect(p_id, 'lower', link_type, true);
+    c_x_pos = c_x_start + 
+              decide_where_to_connect(c_id, 'upper', link_type, false);
+  }
 
-  
-  const v_link = draw_v_link(p_x_pos, p_y_end, c_x_pos, c_y_start, vid, link_type);
+  const v_link = draw_new_v_link(p_x_pos, p_y_end, c_x_pos, c_y_start, vid, link_type);
   // data-* 属性の設定も行う
   const p_g = document.getElementById(p_id + "g");
   const c_g = document.getElementById(c_id + "g");
@@ -633,10 +816,8 @@ function add_v_link_1() {
   v_link.dataset.parent1 = p_id;
   v_link.dataset.child = c_id;
   c_g.dataset.upper_links += vid + ",";
-
   // 大域変数の更新
   P_GRAPH.v_links.push(vid);
-
 }
 
 
@@ -662,19 +843,6 @@ function add_v_link_2() {
   // 子よりも上にあるのかどうかをチェックする。
   const start_pos_x = parseInt(h_link.dataset.connect_pos_x);
   const start_pos_y = parseInt(h_link.dataset.connect_pos_y);
-/*
-  const matches = h_link.getAttribute("d").match(/^M ([-]?\d+),([-]?\d+) l (\d+),0/);
-  if (matches === undefined || matches === null || matches.length != 4) {
-    alert("error in add_v_link_2()");
-    console.log("d=" + path_elt.getAttribute("d"));
-    console.log("matches=" + matches);
-    return;
-  }
-  //matches[0] は d 属性の値全体 (マッチの対象文字列全体)
-  const h_link_start_x = parseInt(matches[1]);
-  const h_link_start_y = parseInt(matches[2]);
-  const h_link_len = parseInt(matches[3]);
-*/
   const c = document.getElementById(c_id + "r");
   const c_x_start = parseInt(c.getAttribute("x"));
   const c_x_end = c_x_start + parseInt(c.getAttribute("width"));
@@ -689,11 +857,17 @@ function add_v_link_2() {
   const vid = "v" + P_GRAPH.next_vlink_id++;  // IDを生成
   //子の矩形の上辺におけるリンクの接続位置を求める
   var end_pos_x;
-  // テスト用。仮。
-  end_pos_x = Math.floor( (c_x_start + c_x_end) / 2 );
-  ///// TO DO
-  
-  const v_link = draw_v_link(start_pos_x, start_pos_y, end_pos_x, c_y_start, vid, link_type);
+  if ((c_x_start + c_x_end) / 2 <= start_pos_x) {
+    // 子供の方が、親同士をつなぐ横リンクの中点より左寄り気味なので、
+    // 子供の上辺では右側を優先する
+    end_pos_x = c_x_start + 
+                decide_where_to_connect(c_id, 'upper', link_type, true);
+  } else {
+    end_pos_x = c_x_start + 
+                decide_where_to_connect(c_id, 'upper', link_type, false);
+  }
+
+  const v_link = draw_new_v_link(start_pos_x, start_pos_y, end_pos_x, c_y_start, vid, link_type);
   // data-* 属性の設定も行う
   v_link.dataset.parent1 = p1_id;
   v_link.dataset.parent2 = p2_id;
@@ -701,7 +875,6 @@ function add_v_link_2() {
   document.getElementById(c_id + "g").dataset.upper_links += vid + ",";
   // 大域変数の更新
   P_GRAPH.v_links.push(vid);
-
 }
 
 
@@ -727,14 +900,50 @@ function already_v_linked(pid1, pid2) {
 
 /*
 「縦の関係を追加する」メニューのための部品。
+*/
+function decide_where_to_connect(pid, edge, link_type, right_side_preferred) {
+  var i;
+  const L = P_GRAPH.p_free_pos_mngrs.length;
+  for (i=0; i<L; i++) {
+    if (P_GRAPH.p_free_pos_mngrs[i].pid == pid) {
+      if (edge == 'upper') {
+        return(P_GRAPH.p_free_pos_mngrs[i].upper_side.next_position(
+                 link_type, right_side_preferred));
+      } else if (edge == 'lower') {
+        return(P_GRAPH.p_free_pos_mngrs[i].lower_side.next_position(
+                 link_type, right_side_preferred));
+      } else {
+        console.log("error @ decide_where_to_connect()");
+        return(-1);
+      }
+    }
+  }
+  return(-2);
+}
+
+
+/*
+「縦の関係を追加する」メニューのための部品。
 指定された点と点の間の縦リンクを描く (他の関数から呼ぶためのもの)
 始点・終点の位置以外の data-* 属性の設定は、呼び出し側で行うこと。
 */
-function draw_v_link(upper_pt_x, upper_pt_y, lower_pt_x, lower_pt_y, vid, link_type) {
+function draw_new_v_link(upper_pt_x, upper_pt_y, lower_pt_x, lower_pt_y, vid, link_type) {
   // svg 要素とその名前空間を求め、path 要素を作成する
   const svg_elt = document.getElementById('pedigree');
   const ns = svg_elt.namespaceURI;
   var v_link = document.createElementNS(ns, "path");
+  draw_v_link(v_link, upper_pt_x, upper_pt_y, lower_pt_x, lower_pt_y, vid, link_type);
+  // この縦リンクを追加
+  svg_elt.appendChild(v_link);
+  svg_elt.appendChild(document.createTextNode("\n"));
+  // 大域変数の更新
+  P_GRAPH.v_links.push(vid);
+  return(v_link);
+}
+/*
+縦リンクの新規作成と再描画での共通部分
+*/
+function draw_v_link(v_link, upper_pt_x, upper_pt_y, lower_pt_x, lower_pt_y, vid, link_type) {
   // d 属性の値 (文字列) を生成する
   var d_str = "M " + upper_pt_x + "," + (upper_pt_y + 1).toString();
   if (upper_pt_x == lower_pt_x) { // 縦の直線
@@ -753,17 +962,12 @@ function draw_v_link(upper_pt_x, upper_pt_y, lower_pt_x, lower_pt_y, vid, link_t
 
   v_link.setAttribute("d", d_str);
   v_link.setAttribute("id", vid);
-  //v_link.setAttribute("class", link_type);
-  if (link_type == 'dashed') {
+  v_link.setAttribute("class", link_type);
+/*  if (link_type == 'dashed') {
     v_link.setAttribute("stroke-dasharray", '4,4');
   }
+*/
   v_link.dataset.from_to = upper_pt_x + "," + upper_pt_y + "," + lower_pt_x + "," + lower_pt_y;
-  // この縦リンクを追加
-  svg_elt.appendChild(v_link);
-  svg_elt.appendChild(document.createTextNode("\n"));
-  // 大域変数の更新
-  P_GRAPH.v_links.push(vid);
-  return(v_link);
 }
 
 
@@ -832,7 +1036,6 @@ function move_rect_and_txt(pid, dx, dy) {
   const rect = document.getElementById(pid + "r");
   rect.setAttribute("x", parseInt(rect.getAttribute("x")) + dx);
   rect.setAttribute("y", parseInt(rect.getAttribute("y")) + dy);
-
   const txt = document.getElementById(pid + "t");
   txt.setAttribute("x", parseInt(txt.getAttribute("x")) + dx);
   txt.setAttribute("y", parseInt(txt.getAttribute("y")) + dy);
