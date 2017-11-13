@@ -243,13 +243,16 @@ function add_person() {
   const new_personal_id = "p" + P_GRAPH.next_person_id++; // IDを生成
 
   // 入力内容を読み込む
-  const new_personal_name = document.menu.new_personal_name.value;
+  var new_personal_name = document.menu.new_personal_name.value;
   if (new_personal_name == "") {
     alert("名前を入力してください");
     return;
   }
   var verticalize = false; // デフォルト値
-  if (document.menu.verticalize.checked) { verticalize = true; }
+  if (document.menu.verticalize.checked) {
+    verticalize = true;
+    new_personal_name = new_personal_name.replace(/[(（]/g, '︵').replace(/[)）]/g, '︶');
+  }
   
   const new_personal_gender = 
           selected_radio_choice(document.menu.new_personal_gender);
