@@ -362,6 +362,9 @@ function add_h_link() {
     r1_is_left = false;
   } else {
     alert("二人の矩形が重なっているか、矩形の間がくっつきすぎです。");
+    console.log("error in add_h_link():");
+    console.log("1人目: (" + x_start1 + "," + y_start1 + ") - (" + x_end1 + "," + y_end1 + ")");
+    console.log("2人目: (" + x_start2 + "," + y_start2 + ") - (" + x_end2 + "," + y_end2 + ")");
     return;
   }
 
@@ -428,55 +431,15 @@ function add_h_link() {
   // TO DO (連動)
   target_ids.map(function(pid) { move_rect_and_txt(pid, 0, Math.abs(diff)); });
 
-  // svg 要素とその名前空間を求め、path 要素を作成する
-  const svg_elt = document.getElementById('pedigree');
-  const ns = svg_elt.namespaceURI;
-  var h_link = document.createElementNS(ns, "path");
-  // d 属性の値 (文字列) を生成する
-  var d_str;
-  const link_len = link_end_x - link_start_x;
-  // この横リンクを起点にして将来的に縦リンクを作成する場合に備え、
-  // 縦リンクの起点の座標も計算しておく (後で data-* 属性として設定する)
-  const connect_pos_x = link_start_x + Math.floor(link_len / 2);
-  var connect_pos_y;
-  if (link_type == "double") {
-    const upper_line_y = link_y - 2;
-    const lower_line_y = link_y + 2;
-    connect_pos_y = lower_line_y;
-    d_str = "M " + link_start_x + "," + upper_line_y;
-    d_str += " l " + link_len + ",0 m 0,4 l -" + link_len + ",0";
-  } else { // link_type == "single" の場合 (と見なす)
-    connect_pos_y = link_y;
-    d_str = "M " + link_start_x + "," + link_y;
-    d_str += " l " + link_len + ",0";
-  }
-
-  const hid = "h" + P_GRAPH.next_hlink_id++;  // IDを生成
-
-  h_link.setAttribute("d", d_str);
-  h_link.setAttribute("id", hid);
-  h_link.setAttribute("class", link_type);
-  // data-* 属性の設定も行う
-  h_link.dataset.connect_pos_x = connect_pos_x;
-  h_link.dataset.connect_pos_y = connect_pos_y;
-  const g1 = document.getElementById(p1_id + "g");
-  const g2 = document.getElementById(p2_id + "g");
+  // IDを生成
+  const hid = "h" + P_GRAPH.next_hlink_id++;
+  // 横リンクを描画する
   if (r1_is_left) { // r1、このリンク、r2、の順に配置されている
-    g1.dataset.right_links += hid + "," + p2_id + ",";
-    h_link.dataset.lhs_person = p1_id;
-    h_link.dataset.rhs_person = p2_id;
-    g2.dataset.left_links += hid + "," + p1_id + ",";
+    draw_new_h_link(hid, link_start_x, link_end_x, link_y, link_type, p1_id, p2_id);
   } else { // r2、このリンク、r1、の順に配置されている
-    g2.dataset.right_links += hid + "," + p1_id + ",";
-    h_link.dataset.lhs_person = p2_id;
-    h_link.dataset.rhs_person = p1_id;
-    g1.dataset.left_links += hid + "," + p2_id + ",";
+    draw_new_h_link(hid, link_start_x, link_end_x, link_y, link_type, p2_id, p1_id);
   }
-  // この横リンクを追加
-  svg_elt.appendChild(h_link);
-  svg_elt.appendChild(document.createTextNode("\n"));
-  // 大域変数の更新
-  P_GRAPH.h_links.push(hid);
+
   // 縦リンクの追加メニューのプルダウンリストに選択肢を追加する
   const t1 = document.getElementById(p1_id + "t").textContent;
   const t2 = document.getElementById(p2_id + "t").textContent;
@@ -488,6 +451,7 @@ function add_h_link() {
   }
   add_person_choice(document.getElementById("parents_2"), hid, displayed_str);
 }
+
 
 /*
 「横の関係を追加する」メニューのための部品。
@@ -553,6 +517,66 @@ function occupy_next_pos(pid, edge) {
   return(-2);
 }
 
+/*
+「横の関係を追加する」メニューのための部品。
+新規の横リンクを描画する。
+*/
+function draw_new_h_link(hid, link_start_x, link_end_x, link_y, link_type, pid_left, pid_right) {
+  // svg 要素とその名前空間を求め、path 要素を作成する
+  const svg_elt = document.getElementById('pedigree');
+  const ns = svg_elt.namespaceURI;
+  var h_link = document.createElementNS(ns, "path");
+  // IDを記録
+  h_link.setAttribute("id", hid);
+  // 線種も記録
+  h_link.setAttribute("class", link_type);
+  // その path 要素に対して属性を設定することで横リンクを描画する
+  draw_h_link(h_link, link_start_x, link_end_x, link_y);
+
+  // 左右の人物を表す g 要素の data-* 属性と、このリンクの data-* 属性を設定
+  const g_left = document.getElementById(pid_left + "g");
+  const g_right = document.getElementById(pid_right + "g");
+  g_left.dataset.right_links += hid + "," + pid_right + ",";
+  h_link.dataset.lhs_person = pid_left;
+  h_link.dataset.rhs_person = pid_right;
+  g_right.dataset.left_links += hid + "," + pid_left + ",";
+
+  // この横リンクを追加
+  svg_elt.appendChild(h_link);
+  svg_elt.appendChild(document.createTextNode("\n"));
+  // 大域変数の更新
+  P_GRAPH.h_links.push(hid);
+}
+
+
+/*
+横リンクの新規描画・再描画の共通部分
+*/
+function draw_h_link(h_link, link_start_x, link_end_x, link_y) {
+  // d 属性の値 (文字列) を生成する
+  var d_str;
+  const link_len = link_end_x - link_start_x;
+  // この横リンクを起点にして将来的に縦リンクを作成する場合に備え、
+  // 縦リンクの起点の座標も計算しておく (後で data-* 属性として設定する)
+  const connect_pos_x = link_start_x + Math.floor(link_len / 2);
+  var connect_pos_y;
+  if (h_link.getAttribute("class") == "double") { // 二重線
+    const upper_line_y = link_y - 2;
+    const lower_line_y = link_y + 2;
+    connect_pos_y = lower_line_y;
+    d_str = "M " + link_start_x + "," + upper_line_y;
+    d_str += " l " + link_len + ",0 m 0,4 l -" + link_len + ",0";
+  } else { // class="single" の場合 (と見なす)
+    connect_pos_y = link_y;
+    d_str = "M " + link_start_x + "," + link_y;
+    d_str += " l " + link_len + ",0";
+  }
+  h_link.setAttribute("d", d_str);
+
+  // data-* 属性の設定も行う
+  h_link.dataset.connect_pos_x = connect_pos_x;
+  h_link.dataset.connect_pos_y = connect_pos_y;
+}
 
 /*
 
@@ -956,10 +980,6 @@ function draw_v_link(v_link, upper_pt_x, upper_pt_y, lower_pt_x, lower_pt_y, vid
   v_link.setAttribute("d", d_str);
   v_link.setAttribute("id", vid);
   v_link.setAttribute("class", link_type);
-/*  if (link_type == 'dashed') {
-    v_link.setAttribute("stroke-dasharray", '4,4');
-  }
-*/
   v_link.dataset.from_to = upper_pt_x + "," + upper_pt_y + "," + lower_pt_x + "," + lower_pt_y;
 }
 
