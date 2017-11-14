@@ -52,14 +52,12 @@ EndPointsMngr_RL.prototype.is_available = function() {
 辺上の、左・真ん中・右の3箇所が接続先の候補である。
 */
 var EndPointsMngr_UL = function(len) {
-  console.log("EndPointsMngr_UL: len=" + len);
   this.points = new Array(3);
   for (var i=0; i<3; i++) {
     this.points[i] = {
       status: 'unused',  // 'unused', 'solid', 'dashed' のどれか
       dx: Math.floor( len * (i+1)/4 )
     };
-    console.log("points[" + i + "].dx=" + this.points[i].dx);
   }
 };
 /* [クラス定義: メソッド追加]
@@ -150,20 +148,12 @@ const CONFIG = {
   // 横書きの名前の矩形の高さ (上の余白が4、文字が24、下の余白が8)
   h_text_height: 36,
 
-  // 縦書きの名前の左の余白 (1文字めのdx属性)
-  v_text_dx_1st_char: 4,
-  // 縦書きの名前の1文字めのdy属性 (上の余白が4、文字が24)
-  v_text_dy_1st_char: 28,
-  // 縦書きの名前の2文字め以降に適用される、前の文字に対するx方向のオフセット
-  // (文字の大きさを正負反転させたもの)
-  v_text_dx_subseq_char: -24,
-  // 縦書きの名前の2文字め以降に適用される、前の文字に対するy方向のオフセット
-  // (文字の大きさと同じ)
-  v_text_dy_subseq_char: 24,
-  // 縦書きの名前の下の余白
-  v_text_y_added: 8,
-  // 縦書きの名前の矩形の幅 (左の余白が4、文字が24、右の余白が4)
-  v_text_width: 32,
+  // 縦書きの名前のtext要素の上の余白 (dy属性)。下の余白もこれと等しい。
+  v_text_dy: 4,
+  // 縦書きの名前のtext要素のdx属性 (左の余白が6、文字の半幅が12)
+  v_text_dx: 18,
+  // 縦書きの名前の矩形の幅 (左の余白が6、文字が24、右の余白が6)
+  v_text_width: 36,
 
   // 人物を表す矩形を格子沿いに配置することにする。その格子の大きさ。
   grid_size: 16,
@@ -268,7 +258,7 @@ function add_person() {
   var box_w, box_h;
   const L = new_personal_name.length;
   if (verticalize) { // 縦書き
-    box_h = CONFIG.v_text_dy_1st_char + CONFIG.v_text_dy_subseq_char * (L-1) + CONFIG.v_text_y_added;
+    box_h = CONFIG.font_size * L + CONFIG.v_text_dy * 2;
     box_w = CONFIG.v_text_width;
   } else { // 横書き
     box_h = CONFIG.h_text_height;
@@ -300,8 +290,8 @@ function add_person() {
   if (verticalize) { // 縦書き
     t.setAttribute("writing-mode", "tb");
     t.appendChild(document.createTextNode(new_personal_name));
-    t.setAttribute("dx", 16);
-    t.setAttribute("dy", 4);
+    t.setAttribute("dx", CONFIG.v_text_dx);
+    t.setAttribute("dy", CONFIG.v_text_dy);
   } else { // 横書き
     t.appendChild(document.createTextNode(new_personal_name));
     t.setAttribute("dx", CONFIG.h_text_dx);
