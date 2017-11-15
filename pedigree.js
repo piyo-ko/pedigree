@@ -21,6 +21,12 @@ var EndPointsMngr_RL = function(len) {
   this.next_position_idx = 0;  // positions の添え字 (次に埋めるべき位置に対応)
   this.edge_length = len;      // 辺の長さ
 };
+/*
+デバッグ用の印字関数
+*/
+EndPointsMngr_RL.prototype.print = function() {
+  console.log("   next position is positions[" + this.next_position_idx + "] (== " + this.positions[this.next_position_idx] + "), and edge_length is " + this.edge_length);
+};
 /* [クラス定義: メソッド追加]
 この辺においてリンクの接続位置として空いている次の位置を、番号ではなくて
 実際の長さで表して、返す。また、「次の位置」も更新する。
@@ -55,9 +61,18 @@ var EndPointsMngr_UL = function(len) {
   this.points = new Array(3);
   for (var i=0; i<3; i++) {
     this.points[i] = {
+      idx: i,
       status: 'unused',  // 'unused', 'solid', 'dashed' のどれか
       dx: Math.floor( len * (i+1)/4 )
     };
+  }
+};
+/*
+デバッグ用の印字関数
+*/
+EndPointsMngr_UL.prototype.print = function() {
+  for (var i=0; i<3; i++) {
+    console.log("   points[" + i + "] is { idx: " + this.points[i].idx + ", status: " + this.points[i].status + ", dx: " + this.points[i].dx + "}\n");
   }
 };
 /* [クラス定義: メソッド追加]
@@ -85,16 +100,16 @@ EndPointsMngr_UL.prototype.next_position = function(link_type, right_side_prefer
   if (this.points[1].status == 'unused' || 
       this.points[1].status == link_type) {
     this.points[1].status = link_type;
-    return(this.points[1].dx);
+    return(this.points[1]);
   }
   // 真ん中は既に、これから追加したいリンクとは別の種類のリンクの接続先に
   // なっていて、塞がっている。よって、左右どちらかに接続する。
   if (right_side_preferred) {
     this.points[2].status = link_type;
-    return(this.points[2].dx);
+    return(this.points[2]);
   } else {
     this.points[0].status = link_type;
-    return(this.points[0].dx);
+    return(this.points[0]);
   }
 };
 
@@ -109,7 +124,21 @@ var RectMngr = function(pid, h, w) {
   this.upper_side = new EndPointsMngr_UL(w);
   this.lower_side = new EndPointsMngr_UL(w);
 };
-
+/*
+デバッグ用の印字関数
+*/
+RectMngr.prototype.print = function() {
+  console.log("* RectMngr (pid: " + this.pid + "):");
+  console.log(" - right side:");
+  this.right_side.print();
+  console.log(" - left side:");
+  this.left_side.print();
+  console.log(" - upper_side:");
+  this.upper_side.print();
+  console.log(" - lower_side:");
+  this.lower_side.print();
+  console.log("\n");
+};
 
 /*
 svg 要素の中身を、大域変数 (たるオブジェクトの属性値) として保持する。
@@ -130,6 +159,21 @@ var P_GRAPH = P_GRAPH || {
     this.v_links = [];
     this.svg_height = 0;
     this.svg_width = 0;
+  },
+  // 印字
+  print: function () {
+    console.log("** P_GRAPH **");
+    console.log("  next_person_id: " + this.next_person_id);
+    console.log("  next_hlink_id : " + this.next_hlink_id);
+    console.log("  next_vlink_id : " + this.next_vlink_id);
+    console.log("  svg_height: " + this.svg_height);
+    console.log("  svg_width : " + this.svg_width);
+    console.log("  persons: " + this.persons);
+    console.log("  h_links: " + this.h_links);
+    console.log("  v_links: " + this.v_links);
+    console.log("  p_free_pos_mngrs: [");
+    this.p_free_pos_mngrs.map(function(mng) { mng.print(); });
+    console.log("]\n");
   }
 };
 
@@ -323,6 +367,9 @@ function add_person() {
   add_person_choice(document.menu.child_1, new_personal_id, new_personal_name);
   add_person_choice(document.menu.child_2, new_personal_id, new_personal_name);
   add_person_choice(document.menu.target_person, new_personal_id, new_personal_name);
+  
+  console.log("add_person() ends.");
+  P_GRAPH.print();
 }
 
 /*
@@ -450,6 +497,9 @@ function add_h_link() {
     displayed_str = t2 + "と" + t1;
   }
   add_person_choice(document.getElementById("parents_2"), hid, displayed_str);
+
+  console.log("add_h_link() ends.");
+  P_GRAPH.print();
 }
 
 
@@ -811,18 +861,19 @@ function add_v_link_1() {
   var p_x_mid, c_x_mid, p_x_pos, c_x_pos;
   p_x_mid = (p_x_start + p_x_end) / 2;
   c_x_mid = (c_x_start + c_x_end) / 2;
+  var p_offset_info, c_offset_info;
   if (c_x_mid <= p_x_mid) {
     // 子供の方が親より左寄り気味なので、
     // 子供の上辺では右側を優先、親の下辺では左側を優先する
-    p_x_pos = p_x_start + 
-              decide_where_to_connect(p_id, 'lower', link_type, false);
-    c_x_pos = c_x_start + 
-              decide_where_to_connect(c_id, 'upper', link_type, true);
+    p_offset_info = decide_where_to_connect(p_id, 'lower', link_type, false);
+    p_x_pos = p_x_start + p_offset_info.dx;
+    c_offset_info = decide_where_to_connect(c_id, 'upper', link_type, true);
+    c_x_pos = c_x_start + c_offset_info.dx;
   } else { // 左右逆
-    p_x_pos = p_x_start + 
-              decide_where_to_connect(p_id, 'lower', link_type, true);
-    c_x_pos = c_x_start + 
-              decide_where_to_connect(c_id, 'upper', link_type, false);
+    p_offset_info = decide_where_to_connect(p_id, 'lower', link_type, true);
+    p_x_pos = p_x_start + p_offset_info.dx;
+    c_offset_info = decide_where_to_connect(c_id, 'upper', link_type, false);
+    c_x_pos = c_x_start + c_offset_info.dx;
   }
 
   const v_link = draw_new_v_link(p_x_pos, p_y_end, c_x_pos, c_y_start, vid, link_type);
@@ -831,10 +882,14 @@ function add_v_link_1() {
   const c_g = document.getElementById(c_id + "g");
   p_g.dataset.lower_links += vid + ",";
   v_link.dataset.parent1 = p_id;
+  v_link.dataset.parent1_pos_idx = p_offset_info.idx;
   v_link.dataset.child = c_id;
+  v_link.dataset.child_pos_idx = c_offset_info.idx;
   c_g.dataset.upper_links += vid + ",";
-  // 大域変数の更新
-  P_GRAPH.v_links.push(vid);
+
+  console.log("add_v_link_1() ends.");
+  P_GRAPH.print();
+
 }
 
 
@@ -873,15 +928,15 @@ function add_v_link_2() {
   // ここにくるのは、リンクを追加して良い場合。
   const vid = "v" + P_GRAPH.next_vlink_id++;  // IDを生成
   //子の矩形の上辺におけるリンクの接続位置を求める
-  var end_pos_x;
+  var end_pos_x, offset_info;
   if ((c_x_start + c_x_end) / 2 <= start_pos_x) {
     // 子供の方が、親同士をつなぐ横リンクの中点より左寄り気味なので、
     // 子供の上辺では右側を優先する
-    end_pos_x = c_x_start + 
-                decide_where_to_connect(c_id, 'upper', link_type, true);
+    offset_info = decide_where_to_connect(c_id, 'upper', link_type, true);
+    end_pos_x = c_x_start + offset_info.dx;
   } else {
-    end_pos_x = c_x_start + 
-                decide_where_to_connect(c_id, 'upper', link_type, false);
+    offset_info = decide_where_to_connect(c_id, 'upper', link_type, false);
+    end_pos_x = c_x_start + offset_info.dx;
   }
 
   const v_link = draw_new_v_link(start_pos_x, start_pos_y, end_pos_x, c_y_start, vid, link_type);
@@ -889,9 +944,12 @@ function add_v_link_2() {
   v_link.dataset.parent1 = p1_id;
   v_link.dataset.parent2 = p2_id;
   v_link.dataset.child = c_id;
+  v_link.dataset.child_pos_idx = offset_info.idx;
   document.getElementById(c_id + "g").dataset.upper_links += vid + ",";
-  // 大域変数の更新
-  P_GRAPH.v_links.push(vid);
+
+  console.log("add_v_link_2() ends.");
+  P_GRAPH.print();
+
 }
 
 
@@ -1172,11 +1230,149 @@ function read_in() {
     // 読み込んだテキストの内容を、divタグ (IDは 'display_test') の中身
     // として書き出す。
     document.getElementById('tree_canvas_div').innerHTML = e.target.result;
-    // svg 要素の大きさ (幅と高さ) を表示し直す。
-    print_current_svg_size();
     // TO DO: SVGの各要素を読み取って、変数の設定を行う。
-    //
+    set_p_graph_values();
   }
   // テキストファイルとして読み込む。
   reader.readAsText(document.getElementById('input_svg_file').files[0]);
+}
+
+/*
+read_in() の中から呼び出すためのもの。
+とりあえず、読み込んだ SVG ファイルの形式は正しいものと仮定して (チェックは
+省略して) 変数を設定する。
+TO DO: 余裕があれば、後でチェック機能を追加する。
+*/
+function set_p_graph_values() {
+  P_GRAPH.reset_all();
+  document.menu.reset();
+  // svg 要素の大きさ (幅と高さ) を表示し直す。
+  print_current_svg_size();
+
+
+  const svg_elt = document.getElementById('pedigree');
+  var i, g_id, path_id, id_No, pid, m, rect, w, h, mng, txt;
+
+  // 人物を一人ずつ見てゆく (g 要素でループを回す)
+  const g_elts = svg_elt.getElementsByTagName('g');
+  const gN = g_elts.length;
+  for (i=0; i<gN; i++) {
+    g_id = g_elts[i].getAttribute("id"); // "p0g" などの文字列
+    console.log("g_elts[" + i + "].id is " + g_id);
+    m = g_id.match(/^p(\d+)g$/);
+    if (m === null || m.length != 2) {
+      alert("error in set_p_graph_values(): " + g_id);
+      return;
+    }
+    // ID の数字部分を取り出して、「次の番号」用の変数を更新
+    id_No = parseInt(m[1]);
+    if (P_GRAPH.next_person_id <= id_No) {
+      P_GRAPH.next_person_id = id_No + 1;
+    }
+    // "p0" のような、人物を表すための ID を求め、それを登録
+    pid = 'p' + id_No;
+    P_GRAPH.persons.push(pid);
+
+    // 今見ている g 要素の子要素には rect と text があるはず。
+    // まず rect から幅と高さを読み取り、リンク管理用の RectMngr オブジェクトを
+    // 初期化し、それを登録する。
+    //rect = g_elts[i].getElementById(pid + 'r'); // これはエラー
+    rect = document.getElementById(pid + 'r');
+    w = parseInt(rect.getAttribute("width"));
+    h = parseInt(rect.getAttribute("height"));
+    mng = new RectMngr(pid, h, w);
+    P_GRAPH.p_free_pos_mngrs.push(mng);
+    // この初期化した mng に適切な値を設定しなくてはならないが、それは
+    // 後でリンクを見たときに行う。
+
+    // プルダウンリストへの反映
+    //txt = g_elts[i].getElementById(pid + 't').textContent; // これはエラー
+    txt = document.getElementById(pid + 't').textContent;
+    add_person_choice(document.menu.partner_1, pid, txt);
+    add_person_choice(document.menu.partner_2, pid, txt);
+    add_person_choice(document.menu.parent_1, pid, txt);
+    add_person_choice(document.menu.child_1, pid, txt);
+    add_person_choice(document.menu.child_2, pid, txt);
+    add_person_choice(document.menu.target_person, pid, txt);
+  }
+
+  // リンクを一つずつ見てゆく
+  const path_elts = svg_elt.getElementsByTagName('path');
+  const pN = path_elts.length;
+  var lhs_person_id, rhs_person_id, link_type, parent1_id, parent2_id, child_id, parent1_pos_idx, child_pos_idx;
+  for (i=0; i<pN; i++) {
+    path_id = path_elts[i].getAttribute("id"); // "h0" または "v0" などの文字列
+    m = path_id.match(/^([hv])(\d+)$/);
+    if (m === null || m.length != 3) {
+      alert("error in set_p_graph_values(): " + path_id);
+      return;
+    }
+    // ID の数字部分を取り出す。
+    id_No = parseInt(m[2]);
+    if (m[1] == 'h') { // 横リンクを見ている
+      //「次の番号」用の変数を更新
+      if (P_GRAPH.next_hlink_id <= id_No) {
+        P_GRAPH.next_hlink_id = id_No + 1;
+      }
+      P_GRAPH.h_links.push(path_id);
+      lhs_person_id = path_elts[i].dataset.lhs_person;
+      occupy_next_pos(lhs_person_id, 'right');
+      rhs_person_id = path_elts[i].dataset.rhs_person;
+      occupy_next_pos(rhs_person_id, 'left');
+      // 縦リンクの追加メニューのプルダウンリストに選択肢を追加する
+      add_person_choice( document.getElementById("parents_2"), path_id,
+        svg_elt.getElementById(lhs_person_id + 't').textContent + 'と' +
+        svg_elt.getElementById(rhs_person_id + 't').textContent );
+    } else { // m[1] == 'v' つまり縦リンクを見ている
+      //「次の番号」用の変数を更新
+      if (P_GRAPH.next_vlink_id <= id_No) {
+        P_GRAPH.next_vlink_id = id_No + 1;
+      }
+      P_GRAPH.v_links.push(path_id);
+
+      link_type = path_elts[i].getAttribute("class");
+      parent1_id = path_elts[i].dataset.parent1;
+      parent2_id = path_elts[i].dataset.parent2;
+      child_id = path_elts[i].dataset.child;
+      child_pos_idx = parseInt(path_elts[i].dataset.child_pos_idx);
+
+      if (parent2_id === undefined || parent2_id === null ||
+          parent2_id == '') {
+        // 一人の親から子へと縦リンクでつないでいる場合には、
+        // 親の下辺の使用状況を設定する。
+        parent1_pos_idx = parseInt(path_elts[i].dataset.parent1_pos_idx);
+        set_EndPointsMngr_UL(parent1_id, 'lower', link_type, parent1_pos_idx);
+      }
+      // 子の上辺については、リンクのつなぎ方によらず、その使用状況を設定する。
+      set_EndPointsMngr_UL(child_id, 'upper', link_type, child_pos_idx);
+      // なお、二人の親を結ぶ横リンクから、子へと縦リンクでつないでいるときは、
+      // 親の下辺の使用状況の設定は不要 (この縦リンクによって状況が
+      // 変化する訳ではないため)。
+    }
+  }
+  // 最後に印字して確認
+  P_GRAPH.print();
+}
+
+/*
+set_p_graph_values() の中から呼び出すためのもの。
+*/
+function set_EndPointsMngr_UL(pid, edge, link_type, pos_idx) {
+  var i;
+  const L = P_GRAPH.p_free_pos_mngrs.length;
+  for (i=0; i<L; i++) {
+    if (P_GRAPH.p_free_pos_mngrs[i].pid == pid) {
+      if (edge === 'upper') {
+        P_GRAPH.p_free_pos_mngrs[i].upper_side.points[pos_idx].status = 
+          link_type;
+      } else if (edge === 'lower') {
+        P_GRAPH.p_free_pos_mngrs[i].lower_side.points[pos_idx].status = 
+          link_type;
+      } else {
+        console.log("error @ set_ul()");
+        return(-1);
+      }
+    }
+  }
+  return(-2);
 }
