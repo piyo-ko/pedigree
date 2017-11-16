@@ -209,7 +209,10 @@ const CONFIG = {
   // 下へ降りて、左右いずれかへ折れて、また下に降りる形とするが、その際の、
   // 最初に下に降りる線の長さは、一定とする (それにより、兄弟姉妹が綺麗に
   // 整列されるはず)
-  dist_to_turning_pt: 32
+  dist_to_turning_pt: 32,
+
+  // デバッグ中はtrueに書き換えること。
+  now_debugging: true
 };
 
 
@@ -368,8 +371,10 @@ function add_person() {
   add_person_choice(document.menu.child_2, new_personal_id, new_personal_name);
   add_person_choice(document.menu.target_person, new_personal_id, new_personal_name);
   
-  console.log("add_person() ends.");
-  P_GRAPH.print();
+  if (CONFIG.now_debugging) {
+    console.log("add_person() ends.");
+    P_GRAPH.print();
+  }
 }
 
 /*
@@ -498,8 +503,10 @@ function add_h_link() {
   }
   add_person_choice(document.getElementById("parents_2"), hid, displayed_str);
 
-  console.log("add_h_link() ends.");
-  P_GRAPH.print();
+  if (CONFIG.now_debugging) {
+    console.log("add_h_link() ends.");
+    P_GRAPH.print();
+  }
 }
 
 
@@ -887,8 +894,10 @@ function add_v_link_1() {
   v_link.dataset.child_pos_idx = c_offset_info.idx;
   c_g.dataset.upper_links += vid + ",";
 
-  console.log("add_v_link_1() ends.");
-  P_GRAPH.print();
+  if (CONFIG.now_debugging) {
+    console.log("add_v_link_1() ends.");
+    P_GRAPH.print();
+  }
 
 }
 
@@ -947,8 +956,10 @@ function add_v_link_2() {
   v_link.dataset.child_pos_idx = offset_info.idx;
   document.getElementById(c_id + "g").dataset.upper_links += vid + ",";
 
-  console.log("add_v_link_2() ends.");
-  P_GRAPH.print();
+  if (CONFIG.now_debugging) {
+    console.log("add_v_link_2() ends.");
+    P_GRAPH.print();
+  }
 
 }
 
@@ -1258,7 +1269,7 @@ function set_p_graph_values() {
   const gN = g_elts.length;
   for (i=0; i<gN; i++) {
     g_id = g_elts[i].getAttribute("id"); // "p0g" などの文字列
-    console.log("g_elts[" + i + "].id is " + g_id);
+    //console.log("g_elts[" + i + "].id is " + g_id);
     m = g_id.match(/^p(\d+)g$/);
     if (m === null || m.length != 2) {
       alert("error in set_p_graph_values(): " + g_id);
@@ -1351,7 +1362,10 @@ function set_p_graph_values() {
     }
   }
   // 最後に印字して確認
-  P_GRAPH.print();
+  if (CONFIG.now_debugging) {
+    console.log("set_p_graph_values():");
+    P_GRAPH.print();
+  }
 }
 
 /*
