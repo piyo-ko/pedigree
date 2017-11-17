@@ -212,7 +212,7 @@ const CONFIG = {
   dist_to_turning_pt: 32,
 
   // デバッグ中はtrueに書き換えること。
-  now_debugging: true
+  now_debugging: false
 };
 
 
@@ -633,6 +633,9 @@ function draw_h_link(h_link, link_start_x, link_end_x, link_y) {
   // data-* 属性の設定も行う
   h_link.dataset.connect_pos_x = connect_pos_x;
   h_link.dataset.connect_pos_y = connect_pos_y;
+  h_link.dataset.start_x = link_start_x;
+  h_link.dataset.end_x = link_end_x;
+  h_link.dataset.y = link_y;
 }
 
 /*
@@ -647,14 +650,12 @@ function draw_h_link(h_link, link_start_x, link_end_x, link_y) {
 人物が親として指定されているなら)、その縦リンクの再描画が必要になる 
 (上の点は変わらず、下の点のみが下へ移動し、リンクが下へ伸びることになる)。
 
-(B) 縦リンクの追加の際は、折れ線を利用するので、移動は不要である。
-
 (C) 指定した人物の移動は、やや複雑である。
 (C-1) 上への移動の場合。
   その人物と横方向に推移閉包的につながっている人物すべてと、
 それらをつなぐ横リンクを、まとめて上へ移動させるべきである。
 その際、移動対象人物のうち、親との間隔が最小の人物が、親との間隔を必要最低限
-以上に保てるように、必要に応じて移動量を少なくする。
+以上に保てるように、かつ、誰も上にはみ出さないように、必要に応じて移動量を少なくする。
 また、このようにして上へ移動させた人物のうち、子を持つ人物については、
 その子がもし移動対象外であれば、その子への縦リンクの再描画が必要になる 
 (上の点のみが上へ移動し、下の点は変わらず、リンクが上へ伸びることになる)。
@@ -664,23 +665,8 @@ function draw_h_link(h_link, link_start_x, link_end_x, link_y) {
 それらをつなぐ横リンクを、まとめて下へ移動させるべきである。
 その際、移動対象人物のうち、子との間隔が最小の人物が、子との間隔を必要最低限
 以上に保てるように、必要に応じて移動量を少なくする。
+かつ、誰も下にはみ出さないように、必要に応じて下の枠を広げる。
 また、(A) と同様の縦リンクの再描画も必要。
-
-(C-3) 右への移動の場合。
-  単にその人物のみを右に移動させるのだが、もしこの人物の右辺・左辺に
-リンクがあれば、それらのリンクの再描画が必要 (右辺のリンクは縮み、左辺の
-リンクは伸びる)。また、この人物につながる縦リンクも、再描画が必要。
-なお、右枠にぶつかる場合は右枠を拡大する。また、右辺でリンクしている別の
-人物との間隔を必要最低限以上に保てるように、必要に応じて移動量を少なくする。
-
-(C-4) 左への移動の場合。
-  単にその人物のみを左に移動させるのだが、もしこの人物の右辺・左辺に
-リンクがあれば、それらのリンクの再描画が必要 (右辺のリンクは伸び、左辺の
-リンクは縮む)。また、この人物につながる縦リンクも、再描画が必要。
-なお、左枠にぶつかる場合は、左枠ぎりぎりまでの移動でやめておく。
-また、左辺でリンクしている別の人物との間隔を必要最低限以上に保てるように、
-必要に応じて移動量を少なくする。
-
 */
 
 /*
@@ -831,6 +817,7 @@ function linked_items(pid, chk_right, chk_left, chk_upper, chk_lower) {
 
 /*
 「縦の関係を追加する」メニューの前半。
+なお、縦リンクの追加の際は、折れ線を利用するので、人物の移動は不要である。
 */
 function add_v_link_1() {
   // 入力内容を読み込む
@@ -904,6 +891,7 @@ function add_v_link_1() {
 
 /*
 「縦の関係を追加する」メニューの後半。
+なお、縦リンクの追加の際は、折れ線を利用するので、人物の移動は不要である。
 */
 function add_v_link_2() {
   // 入力内容を読み込む
@@ -986,6 +974,8 @@ function already_v_linked(pid1, pid2) {
 
 /*
 「縦の関係を追加する」メニューのための部品。
+上辺または下辺の、真ん中・右寄り・左寄りのうち、どの場所にリンクをつなぐかを
+決める。
 */
 function decide_where_to_connect(pid, edge, link_type, right_side_preferred) {
   var i;
@@ -1049,7 +1039,11 @@ function draw_v_link(v_link, upper_pt_x, upper_pt_y, lower_pt_x, lower_pt_y, vid
   v_link.setAttribute("d", d_str);
   v_link.setAttribute("id", vid);
   v_link.setAttribute("class", link_type);
-  v_link.dataset.from_to = upper_pt_x + "," + upper_pt_y + "," + lower_pt_x + "," + lower_pt_y;
+  v_link.dataset.from_x = upper_pt_x;
+  v_link.dataset.from_y = upper_pt_y;
+  v_link.dataset.to_x = lower_pt_x;
+  v_link.dataset.to_y = lower_pt_y;
+  //v_link.dataset.from_to = upper_pt_x + "," + upper_pt_y + "," + lower_pt_x + "," + lower_pt_y;
 }
 
 
@@ -1062,18 +1056,22 @@ function move_person() {
   const moving_direction = 
     selected_radio_choice(document.menu.moving_direction);
   const how_much_moved = parseInt(document.menu.how_much_moved.value);
-  if (how_much_moved < 0) {
+  if (how_much_moved <= 0) {
     alert("移動量は正の数を指定して下さい");
     return;
   }
   // dx, dy (x 方向、y 方向それぞれの実際の移動量) を設定する
   var dx, dy;
   switch (moving_direction) {
-    case 'up'   : dx = 0; dy = -how_much_moved; break;
-    case 'down' : dx = 0; dy = how_much_moved; break;
-    case 'left' : dx = -how_much_moved; dy = 0; break;
-    case 'right': dx = how_much_moved; dy = 0; break;
-    default     : dx = 0; dy = 0; break;
+    case 'up':
+      dx = 0; dy = -how_much_moved; break;
+    case 'down':
+      dx = 0; dy = how_much_moved; break;
+    case 'left': 
+      move_person_horizontally(target_person, -how_much_moved); return;
+    case 'right':
+      move_person_horizontally(target_person, how_much_moved); return;
+    default: dx = 0; dy = 0; return;
   }
   // 動かす (とりあえず本人の矩形のみ)
   move_rect_and_txt(target_person, dx, dy);
@@ -1081,6 +1079,174 @@ function move_person() {
   // (移動方向・移動量に応じて、連動させる人物の範囲を決める必要があるかも)
 }
 
+/*
+右または左への移動。
+単にその人物のみを右 (または左) に移動させるのだが、もしこの人物の右辺・左辺に
+リンクがあれば、それらのリンクの再描画が必要 (移動する側にあるリンクは縮み、
+逆側のリンクは伸びる)。また、この人物につながる縦リンクも、再描画が必要。
+なお、移動する側にあるリンクでつながっている人物 (たち) がもしいれば、
+その人物 (たち) との間隔を必要最低限以上に保てるように、必要に応じて移動量を
+少なくする。
+また、右移動 (dx が正) の場合、移動対象の本人が移動によって右枠にぶつかるなら、
+右枠を拡大する。逆に、左移動の場合で、左枠にぶつかるなら、左枠ぎりぎりまでの
+移動でやめておく。
+*/
+function move_person_horizontally(pid, dx) {
+  if (CONFIG.now_debugging) { console.log('move_person_horizontally(' +  pid + ', ' + dx + ')'); }
+  // 初期化
+  var actual_dx = dx;
+  const dataset = document.getElementById(pid + 'g').dataset;
+  const rhs = dataset.right_links;
+  const lhs = dataset.left_links;
+  const r = document.getElementById(pid + 'r');
+  var x_min = parseInt(r.getAttribute('x'));
+  var x_max = x_min + parseInt(r.getAttribute('width'));
+  var ids, j, gap, linked_person_elt;
+  var r_links = [];
+  var l_links = [];
+  var r_linked_persons = [];
+  var l_linked_persons = [];
+
+  // 右側でつながっている相手を求める
+  if (rhs != '') { // rhs は、たとえば、"h0,p1,h3,p5," のような文字列。
+    ids = rhs.slice(0, -1).split(',');  // 最後のカンマを除いてから、カンマで分割
+    // ids[2*j] がリンクの ID で、ids[2*j+1] が人物の ID である。
+    for (j = 0; j < ids.length/2; j++) {
+      r_links.push(ids[2*j]);
+      r_linked_persons.push(ids[2*j+1]);
+    }
+  }
+  if (CONFIG.now_debugging) {
+    console.log('rhs=[' + rhs + ']');
+    console.log('r_links=[' + r_links + ']');
+    console.log('r_linked_persons=[' + r_linked_persons + ']');
+  }
+  // 左側でつながっている相手を求める
+  if (lhs != '') {
+    ids = lhs.slice(0, -1).split(',');
+    for (j = 0; j < ids.length/2; j++) {
+      l_links.push(ids[2*j]);
+      l_linked_persons.push(ids[2*j+1]);
+    }
+  }
+  if (CONFIG.now_debugging) {
+    console.log('lhs=[' + lhs + ']');
+    console.log('l_links=[' + l_links + ']');
+    console.log('l_linked_persons=[' + l_linked_persons + ']');
+  }
+  if (0 < actual_dx) { // 右への移動
+    if (r_linked_persons.length == 0) { // 右側でつながっている相手はいない
+      if (P_GRAPH.svg_width < x_max + actual_dx) {
+        alert("右枠からはみ出るので、枠を拡大します。");
+        // 移動によって本人が右枠にぶつかるので、右枠を拡大する
+        modify_width_0(x_max + actual_dx - P_GRAPH.svg_width);
+      }
+    } else { // 右側でつながっている相手がいる
+      for (j = 0; j < r_linked_persons.length; j++) {
+        // 右側でつながっている相手との間の間隔を求める
+        gap = parseInt(document.getElementById(r_linked_persons[j] + 'r').getAttribute('x')) - x_max;
+        // 必要最低限以上に間隔を保てるように、必要に応じて移動量を少なくする。
+        if (gap - actual_dx < CONFIG.min_h_link_len) {
+          actual_dx = gap - CONFIG.min_h_link_len;
+          if (actual_dx < 0) {  // エラー避け (不要な筈だが)
+            actual_dx = 0;
+          }
+          alert("右側でつながっている相手に近くなりすぎるので、移動量を" + actual_dx + "pxに減らします。");
+        }
+      }
+    }
+  } else { // 左への移動
+    if (l_linked_persons.length == 0) { // 左側でつながっている相手はいない
+      if (x_min + actual_dx < 0) {
+        // 移動によって左枠からはみ出るので、はみ出ない範囲の移動にとどめる
+        actual_dx = -x_min;
+        alert("左枠からはみ出さないように、移動量を" + actual_dx 
+              + "pxに減らします。");
+      }
+    } else { // 左側でつながっている相手がいる
+      for (j = 0; j < l_linked_persons.length; j++) {
+        // 左側でつながっている相手との間の間隔を求める
+        linked_person_elt = document.getElementById(l_linked_persons[j] + 'r');
+        gap = x_min - 
+             ( parseInt(linked_person_elt.getAttribute('x')) + 
+               parseInt(linked_person_elt.getAttribute('width')) );
+        if (gap + actual_dx < CONFIG.min_h_link_len) {
+          actual_dx = CONFIG.min_h_link_len - gap;
+          if (actual_dx > 0) {  // エラー避け (不要な筈だが)
+            actual_dx = 0;
+          }
+          alert("左側でつながっている相手に近くなりすぎるので、移動量を" 
+                + (-actual_dx).toString() + "pxに減らします。");
+        }
+      }
+    }
+  }
+  // これで実際の移動量が決まった。
+  if (actual_dx == 0) { return; } // 一応、エラー避け。
+  if (CONFIG.now_debugging) { console.log('actual_dx=' + actual_dx); }
+
+  move_rect_and_txt(pid, actual_dx, 0);  // まず本人を動かす。
+  x_min += actual_dx;
+  x_max += actual_dx;
+
+  if (0 < r_links.length) {
+    r_links.map(function (hid) {
+      //if (hid === null || hid == '') return;
+      const h_link = document.getElementById(hid);
+      // このリンクの元々の右端 (これは変更なし)
+      const end_x = parseInt(h_link.dataset.end_x);
+      draw_h_link(h_link, x_max, end_x, parseInt(h_link.dataset.y));
+    });
+  }
+
+  if (0 < l_links.length) {
+    l_links.map(function (hid) {
+      //if (hid === null || hid == '') return;
+      const h_link = document.getElementById(hid);
+      // このリンクの元々の左端 (これは変更なし)
+      const start_x = parseInt(h_link.dataset.start_x);
+      draw_h_link(h_link, start_x, x_min, parseInt(h_link.dataset.y));
+    });
+  }
+
+  // 左右の移動方向によらず、上下のリンク相手を調べる
+  if (dataset.upper_links != '') { // 上へのリンクがある
+    if (CONFIG.now_debugging) { 
+      console.log('dataset.upper_links=[' + dataset.upper_links + ']');
+    }
+    // 最後のカンマを除いてから、カンマで分割する
+    var upper_links = dataset.upper_links.slice(0, -1).split(',');
+    if (CONFIG.now_debugging) { 
+      console.log('upper_links=[' + upper_links + ']');
+    }
+    upper_links.map(function (vid) {
+      //if (vid === null || vid == '') return;
+      const v_link = document.getElementById(vid);
+      draw_v_link(v_link, 
+                  parseInt(v_link.dataset.from_x), parseInt(v_link.dataset.from_y), 
+                  parseInt(v_link.dataset.to_x) + actual_dx, parseInt(v_link.dataset.to_y), 
+                  vid, v_link.getAttribute('class'));
+    });
+  }
+
+  if (dataset.lower_links != '') { // 下へのリンクがある
+    if (CONFIG.now_debugging) { 
+      console.log('dataset.lower_links=[' + dataset.lower_links + ']');
+    }
+    var lower_links = dataset.lower_links.slice(0, -1).split(',');
+    if (CONFIG.now_debugging) { 
+      console.log('lower_links=[' + lower_links + ']');
+    }
+    lower_links.map(function (vid) {
+      //if (vid === null || vid == '') return;
+      const v_link = document.getElementById(vid);
+      draw_v_link(v_link, 
+                  parseInt(v_link.dataset.from_x) + actual_dx, parseInt(v_link.dataset.from_y), 
+                  parseInt(v_link.dataset.to_x), parseInt(v_link.dataset.to_y), 
+                  vid, v_link.getAttribute('class'));
+    });
+  }
+}
 
 /*
 「全体をずらす」メニュー。
@@ -1153,6 +1319,7 @@ function move_link(id, dx, dy, is_h_link) {
     path_elt.dataset.connect_pos_x = old_x + dx;
     path_elt.dataset.connect_pos_y = old_y + dy;
   } else { // 縦リンクの移動に特有の処理を行う
+/*
     const from_to_matches = path_elt.dataset.from_to.match(/^([-]?\d+),([-]?\d+),([-]?\d+),([-]?\d+)$/);
     if (from_to_matches === null || from_to_matches.length != 5) {
       alert("error in shift_all()");
@@ -1166,6 +1333,11 @@ function move_link(id, dx, dy, is_h_link) {
     const new_to_x = parseInt(from_to_matches[3]) + dx;
     const new_to_y = parseInt(from_to_matches[4]) + dy;
     path_elt.dataset.from_to = new_from_x + "," + new_from_y + "," + new_to_x + "," + new_to_y;
+*/
+    path_elt.dataset.from_x = parseInt(path_elt.dataset.from_x) + dx;
+    path_elt.dataset.from_y = parseInt(path_elt.dataset.from_y) + dy;
+    path_elt.dataset.to_x = parseInt(path_elt.dataset.to_x) + dx;
+    path_elt.dataset.to_y = parseInt(path_elt.dataset.to_y) + dy;
   }
 }
 
