@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /* [クラス定義]
 人と人の間の縦リンク・横リンクを管理するためのクラスとして、
@@ -25,7 +25,7 @@ var EndPointsMngr_RL = function(len) {
 デバッグ用の印字関数
 */
 EndPointsMngr_RL.prototype.print = function() {
-  console.log("   next position is positions[" + this.next_position_idx + "] (== " + this.positions[this.next_position_idx] + "), and edge_length is " + this.edge_length);
+  console.log('   next position is positions[' + this.next_position_idx + '] (== ' + this.positions[this.next_position_idx] + '), and edge_length is ' + this.edge_length);
 };
 /* [クラス定義: メソッド追加]
 この辺においてリンクの接続位置として空いている次の位置を、番号ではなくて
@@ -33,7 +33,7 @@ EndPointsMngr_RL.prototype.print = function() {
 */
 EndPointsMngr_RL.prototype.next_position = function() {
   if (this.next_position_idx == this.positions.length) {
-    alert("そんなに多くの関係は設定できません!");
+    alert('そんなに多くの関係は設定できません!');
     return(-1); // すでに全箇所が埋まっているのでエラー
   } else {
     const pos = Math.floor( this.edge_length * this.positions[this.next_position_idx] / (this.positions.length + 1) );
@@ -72,7 +72,7 @@ var EndPointsMngr_UL = function(len) {
 */
 EndPointsMngr_UL.prototype.print = function() {
   for (var i=0; i<3; i++) {
-    console.log("   points[" + i + "] is { idx: " + this.points[i].idx + ", status: " + this.points[i].status + ", dx: " + this.points[i].dx + "}\n");
+    console.log('   points[' + i + '] is { idx: ' + this.points[i].idx + ', status: ' + this.points[i].status + ', dx: ' + this.points[i].dx + '}\n');
   }
 };
 /* [クラス定義: メソッド追加]
@@ -128,16 +128,16 @@ var RectMngr = function(pid, h, w) {
 デバッグ用の印字関数
 */
 RectMngr.prototype.print = function() {
-  console.log("* RectMngr (pid: " + this.pid + "):");
-  console.log(" - right side:");
+  console.log('* RectMngr (pid: ' + this.pid + '):');
+  console.log(' - right side:');
   this.right_side.print();
-  console.log(" - left side:");
+  console.log(' - left side:');
   this.left_side.print();
-  console.log(" - upper_side:");
+  console.log(' - upper_side:');
   this.upper_side.print();
-  console.log(" - lower_side:");
+  console.log(' - lower_side:');
   this.lower_side.print();
-  console.log("\n");
+  console.log('\n');
 };
 
 /*
@@ -162,18 +162,18 @@ var P_GRAPH = P_GRAPH || {
   },
   // 印字
   print: function () {
-    console.log("** P_GRAPH **");
-    console.log("  next_person_id: " + this.next_person_id);
-    console.log("  next_hlink_id : " + this.next_hlink_id);
-    console.log("  next_vlink_id : " + this.next_vlink_id);
-    console.log("  svg_height: " + this.svg_height);
-    console.log("  svg_width : " + this.svg_width);
-    console.log("  persons: " + this.persons);
-    console.log("  h_links: " + this.h_links);
-    console.log("  v_links: " + this.v_links);
-    console.log("  p_free_pos_mngrs: [");
+    console.log('** P_GRAPH **');
+    console.log('  next_person_id: ' + this.next_person_id);
+    console.log('  next_hlink_id : ' + this.next_hlink_id);
+    console.log('  next_vlink_id : ' + this.next_vlink_id);
+    console.log('  svg_height: ' + this.svg_height);
+    console.log('  svg_width : ' + this.svg_width);
+    console.log('  persons: ' + this.persons);
+    console.log('  h_links: ' + this.h_links);
+    console.log('  v_links: ' + this.v_links);
+    console.log('  p_free_pos_mngrs: [');
     this.p_free_pos_mngrs.map(function(mng) { mng.print(); });
-    console.log("]\n");
+    console.log(']\n');
   }
 };
 
@@ -257,7 +257,7 @@ function selected_radio_choice(radio_elt) {
   for (var i=0; i<radio_elt.length; i++) {
     if (radio_elt[i].checked) { return(radio_elt[i].value); }
   }
-  return("");  // エラー避けに一応、最後につけておく。
+  return('');  // エラー避けに一応、最後につけておく。
 }
 
 
@@ -265,7 +265,7 @@ function selected_radio_choice(radio_elt) {
 プルダウンリストに選択肢を追加して、それを選択済み状態にする。
 */
 function add_person_choice(select_elt, id, displayed_name) {
-  var opt = document.createElement("option");
+  var opt = document.createElement('option');
   opt.appendChild(document.createTextNode(displayed_name));
   opt.value = id;
   select_elt.appendChild(opt);
@@ -277,12 +277,12 @@ function add_person_choice(select_elt, id, displayed_name) {
 「人を追加する」メニュー。
 */
 function add_person() {
-  const new_personal_id = "p" + P_GRAPH.next_person_id++; // IDを生成
+  const new_personal_id = 'p' + P_GRAPH.next_person_id++; // IDを生成
 
   // 入力内容を読み込む
   var new_personal_name = document.menu.new_personal_name.value;
-  if (new_personal_name == "") {
-    alert("名前を入力してください");
+  if (new_personal_name == '') {
+    alert('名前を入力してください');
     return;
   }
   var verticalize = false; // デフォルト値
@@ -299,8 +299,8 @@ function add_person() {
   const ns = svg_elt.namespaceURI;
 
   // グループ化のための g 要素を作る。
-  var g = document.createElementNS(ns, "g");
-  g.setAttribute("id", new_personal_id + "g");
+  var g = document.createElementNS(ns, 'g');
+  g.setAttribute('id', new_personal_id + 'g');
   // 矩形の幅と高さを計算する。
   var box_w, box_h;
   const L = new_personal_name.length;
@@ -313,48 +313,52 @@ function add_person() {
   }
 
   // 面倒なので、とりあえずランダムな場所に配置する。
-  const x = Math.floor( Math.random(Date.now()) * (P_GRAPH.svg_width - box_w + 1) / CONFIG.grid_size ) * CONFIG.grid_size;
-  const y = Math.floor( Math.random(Date.now()) * (P_GRAPH.svg_height - box_h + 1) / CONFIG.grid_size ) * CONFIG.grid_size;
+  const x = Math.floor( Math.random(Date.now()) *
+                        (P_GRAPH.svg_width - box_w + 1) / CONFIG.grid_size )
+            * CONFIG.grid_size;
+  const y = Math.floor( Math.random(Date.now()) * 
+                        (P_GRAPH.svg_height - box_h + 1) / CONFIG.grid_size )
+            * CONFIG.grid_size;
 
   // 矩形を作る
-  var r = document.createElementNS(ns, "rect");
-  r.setAttribute("id", new_personal_id + "r");
-  r.setAttribute("class", new_personal_gender);
-  r.setAttribute("x", x);
-  r.setAttribute("y", y);
-  r.setAttribute("width", box_w);
-  r.setAttribute("height", box_h);
+  var r = document.createElementNS(ns, 'rect');
+  r.setAttribute('id', new_personal_id + 'r');
+  r.setAttribute('class', new_personal_gender);
+  r.setAttribute('x', x);
+  r.setAttribute('y', y);
+  r.setAttribute('width', box_w);
+  r.setAttribute('height', box_h);
   // グループに矩形要素を追加。
-  g.appendChild(document.createTextNode("\n  "));
+  g.appendChild(document.createTextNode('\n  '));
   g.appendChild(r);
-  g.appendChild(document.createTextNode("\n  "));
+  g.appendChild(document.createTextNode('\n  '));
 
   // 文字を設定する
-  var t = document.createElementNS(ns, "text");
-  t.setAttribute("id", new_personal_id + "t");
-  t.setAttribute("x", x);
-  t.setAttribute("y", y);
+  var t = document.createElementNS(ns, 'text');
+  t.setAttribute('id', new_personal_id + 't');
+  t.setAttribute('x', x);
+  t.setAttribute('y', y);
   if (verticalize) { // 縦書き
-    t.setAttribute("writing-mode", "tb");
+    t.setAttribute('writing-mode', 'tb');
     t.appendChild(document.createTextNode(new_personal_name));
-    t.setAttribute("dx", CONFIG.v_text_dx);
-    t.setAttribute("dy", CONFIG.v_text_dy);
+    t.setAttribute('dx', CONFIG.v_text_dx);
+    t.setAttribute('dy', CONFIG.v_text_dy);
   } else { // 横書き
     t.appendChild(document.createTextNode(new_personal_name));
-    t.setAttribute("dx", CONFIG.h_text_dx);
-    t.setAttribute("dy", CONFIG.h_text_dy);
+    t.setAttribute('dx', CONFIG.h_text_dx);
+    t.setAttribute('dy', CONFIG.h_text_dy);
   }
   g.appendChild(t);
-  g.appendChild(document.createTextNode("\n"));
+  g.appendChild(document.createTextNode('\n'));
 
   // data-* 属性の設定。左右上下にくっついているリンクについての情報である。
-  g.dataset.right_links = "";
-  g.dataset.left_links = "";
-  g.dataset.upper_links = "";
-  g.dataset.lower_links = "";
+  g.dataset.right_links = '';
+  g.dataset.left_links = '';
+  g.dataset.upper_links = '';
+  g.dataset.lower_links = '';
   // このグループを追加
   svg_elt.appendChild(g);
-  svg_elt.appendChild(document.createTextNode("\n"));
+  svg_elt.appendChild(document.createTextNode('\n'));
 
   // P_GRAPHへの反映
   P_GRAPH.persons.push(new_personal_id);
@@ -370,9 +374,9 @@ function add_person() {
   add_person_choice(document.menu.child_1, new_personal_id, new_personal_name);
   add_person_choice(document.menu.child_2, new_personal_id, new_personal_name);
   add_person_choice(document.menu.target_person, new_personal_id, new_personal_name);
-  
+
   if (CONFIG.now_debugging) {
-    console.log("add_person() ends.");
+    console.log('add_person() ends.');
     P_GRAPH.print();
   }
 }
@@ -387,22 +391,22 @@ function add_h_link() {
   const link_type = selected_radio_choice(document.menu.horizontal_link_type);
 
   if (already_h_linked(p1_id, p2_id)) {
-    alert("もう横線でつないである組み合わせです。");
+    alert('もう横線でつないである組み合わせです。');
     return;
   }
 
   // 対応する二つの矩形の範囲を求める
-  const r1 = document.getElementById(p1_id + "r");
-  const x_start1 = parseInt(r1.getAttribute("x"));
-  const x_end1 = x_start1 + parseInt(r1.getAttribute("width"));
-  const y_start1 = parseInt(r1.getAttribute("y"));
-  const y_end1 = y_start1 + parseInt(r1.getAttribute("height"));
+  const r1 = document.getElementById(p1_id + 'r');
+  const x_start1 = parseInt(r1.getAttribute('x'));
+  const x_end1 = x_start1 + parseInt(r1.getAttribute('width'));
+  const y_start1 = parseInt(r1.getAttribute('y'));
+  const y_end1 = y_start1 + parseInt(r1.getAttribute('height'));
 
-  const r2 = document.getElementById(p2_id + "r");
-  const x_start2 = parseInt(r2.getAttribute("x"));
-  const x_end2 = x_start2 + parseInt(r2.getAttribute("width"));
-  const y_start2 = parseInt(r2.getAttribute("y"));
-  const y_end2 = y_start2 + parseInt(r2.getAttribute("height"));
+  const r2 = document.getElementById(p2_id + 'r');
+  const x_start2 = parseInt(r2.getAttribute('x'));
+  const x_end2 = x_start2 + parseInt(r2.getAttribute('width'));
+  const y_start2 = parseInt(r2.getAttribute('y'));
+  const y_end2 = y_start2 + parseInt(r2.getAttribute('height'));
 
   // 横方向に最小限の隙間があるかどうかをチェックする
   var r1_is_left;
@@ -413,10 +417,10 @@ function add_h_link() {
     // 矩形 r1 が右にあり、矩形 r2 が左にある。
     r1_is_left = false;
   } else {
-    alert("二人の矩形が重なっているか、矩形の間がくっつきすぎです。");
-    console.log("error in add_h_link():");
-    console.log("1人目: (" + x_start1 + "," + y_start1 + ") - (" + x_end1 + "," + y_end1 + ")");
-    console.log("2人目: (" + x_start2 + "," + y_start2 + ") - (" + x_end2 + "," + y_end2 + ")");
+    alert('二人の矩形が重なっているか、矩形の間がくっつきすぎです。');
+    console.log('error in add_h_link():');
+    console.log('1人目: (' + x_start1 + ',' + y_start1 + ') - (' + x_end1 + ',' + y_end1 + ')');
+    console.log('2人目: (' + x_start2 + ',' + y_start2 + ') - (' + x_end2 + ',' + y_end2 + ')');
     return;
   }
 
@@ -431,7 +435,7 @@ function add_h_link() {
       free_pos_found(p1_id, 'left') && free_pos_found(p2_id, 'right');
   }
   if (! can_add_link) {
-    alert("横方向のリンクが多すぎる人を指定したのでエラーです。");
+    alert('横方向のリンクが多すぎる人を指定したのでエラーです。');
     return;
   }
 
@@ -484,7 +488,7 @@ function add_h_link() {
   target_ids.map(function(pid) { move_rect_and_txt(pid, 0, Math.abs(diff)); });
 
   // IDを生成
-  const hid = "h" + P_GRAPH.next_hlink_id++;
+  const hid = 'h' + P_GRAPH.next_hlink_id++;
   // 横リンクを描画する
   if (r1_is_left) { // r1、このリンク、r2、の順に配置されている
     draw_new_h_link(hid, link_start_x, link_end_x, link_y, link_type, p1_id, p2_id);
@@ -493,18 +497,18 @@ function add_h_link() {
   }
 
   // 縦リンクの追加メニューのプルダウンリストに選択肢を追加する
-  const t1 = document.getElementById(p1_id + "t").textContent;
-  const t2 = document.getElementById(p2_id + "t").textContent;
+  const t1 = document.getElementById(p1_id + 't').textContent;
+  const t2 = document.getElementById(p2_id + 't').textContent;
   var displayed_str;
   if (r1_is_left) {
-    displayed_str = t1 + "と" + t2;
+    displayed_str = t1 + 'と' + t2;
   } else {
-    displayed_str = t2 + "と" + t1;
+    displayed_str = t2 + 'と' + t1;
   }
-  add_person_choice(document.getElementById("parents_2"), hid, displayed_str);
+  add_person_choice(document.getElementById('parents_2'), hid, displayed_str);
 
   if (CONFIG.now_debugging) {
-    console.log("add_h_link() ends.");
+    console.log('add_h_link() ends.');
     P_GRAPH.print();
   }
 }
@@ -542,7 +546,7 @@ function free_pos_found(pid, edge) {
       } else if (edge == 'left') {
         return(P_GRAPH.p_free_pos_mngrs[i].left_side.is_available());
       } else {
-        console.log("error @ free_pos_found()");
+        console.log('error @ free_pos_found()');
         return(false);
       }
     }
@@ -566,7 +570,7 @@ function occupy_next_pos(pid, edge) {
       } else if  (edge == 'left') {
         return(P_GRAPH.p_free_pos_mngrs[i].left_side.next_position());
       } else {
-        console.log("error @ occupy_next_pos()");
+        console.log('error @ occupy_next_pos()');
         return(-1);
       }
     }
@@ -582,25 +586,25 @@ function draw_new_h_link(hid, link_start_x, link_end_x, link_y, link_type, pid_l
   // svg 要素とその名前空間を求め、path 要素を作成する
   const svg_elt = document.getElementById('pedigree');
   const ns = svg_elt.namespaceURI;
-  var h_link = document.createElementNS(ns, "path");
+  var h_link = document.createElementNS(ns, 'path');
   // IDを記録
-  h_link.setAttribute("id", hid);
+  h_link.setAttribute('id', hid);
   // 線種も記録
-  h_link.setAttribute("class", link_type);
+  h_link.setAttribute('class', link_type);
   // その path 要素に対して属性を設定することで横リンクを描画する
   draw_h_link(h_link, link_start_x, link_end_x, link_y);
 
   // 左右の人物を表す g 要素の data-* 属性と、このリンクの data-* 属性を設定
-  const g_left = document.getElementById(pid_left + "g");
-  const g_right = document.getElementById(pid_right + "g");
-  g_left.dataset.right_links += hid + "," + pid_right + ",";
+  const g_left = document.getElementById(pid_left + 'g');
+  const g_right = document.getElementById(pid_right + 'g');
+  g_left.dataset.right_links += hid + ',' + pid_right + ',';
   h_link.dataset.lhs_person = pid_left;
   h_link.dataset.rhs_person = pid_right;
-  g_right.dataset.left_links += hid + "," + pid_left + ",";
+  g_right.dataset.left_links += hid + ',' + pid_left + ',';
 
   // この横リンクを追加
   svg_elt.appendChild(h_link);
-  svg_elt.appendChild(document.createTextNode("\n"));
+  svg_elt.appendChild(document.createTextNode('\n'));
   // 大域変数の更新
   P_GRAPH.h_links.push(hid);
 }
@@ -617,18 +621,18 @@ function draw_h_link(h_link, link_start_x, link_end_x, link_y) {
   // 縦リンクの起点の座標も計算しておく (後で data-* 属性として設定する)
   const connect_pos_x = link_start_x + Math.floor(link_len / 2);
   var connect_pos_y;
-  if (h_link.getAttribute("class") == "double") { // 二重線
+  if (h_link.getAttribute('class') == 'double') { // 二重線
     const upper_line_y = link_y - 2;
     const lower_line_y = link_y + 2;
     connect_pos_y = lower_line_y;
-    d_str = "M " + link_start_x + "," + upper_line_y;
-    d_str += " l " + link_len + ",0 m 0,4 l -" + link_len + ",0";
+    d_str = 'M ' + link_start_x + ',' + upper_line_y;
+    d_str += ' l ' + link_len + ',0 m 0,4 l -' + link_len + ',0';
   } else { // class="single" の場合 (と見なす)
     connect_pos_y = link_y;
-    d_str = "M " + link_start_x + "," + link_y;
-    d_str += " l " + link_len + ",0";
+    d_str = 'M ' + link_start_x + ',' + link_y;
+    d_str += ' l ' + link_len + ',0';
   }
-  h_link.setAttribute("d", d_str);
+  h_link.setAttribute('d', d_str);
 
   // data-* 属性の設定も行う
   h_link.dataset.connect_pos_x = connect_pos_x;
@@ -688,10 +692,10 @@ function collective_horizontal_move(pid, dx) {
   var target_person_ids = [pid];
   var target_link_ids = [];
   var farthest_x, rect, rect_x, rect_width;
-  rect = document.getElementById(pid + "r");
-  rect_x = parseInt(rect.getAttribute("x"));
+  rect = document.getElementById(pid + 'r');
+  rect_x = parseInt(rect.getAttribute('x'));
   if (0 < dx) { // 右移動なので右端をチェックする
-    rect_width = parseInt(rect.getAttribute("width"));
+    rect_width = parseInt(rect.getAttribute('width'));
     farthest_x = rect_x + rect_width;
   } else { // 左移動なので左端をチェックする
     farthest_x = rect_x;
@@ -702,10 +706,10 @@ function collective_horizontal_move(pid, dx) {
   // target_person_ids[i] という ID の人物に、順に着目してゆく。
   for (i = 0; i < target_person_ids.length; i++) {
     // この人物を表す矩形が今までで一番端っこなら、farthest_x を更新する
-    rect = document.getElementById(target_person_ids[i] + "r");
-    rect_x = parseInt(rect.getAttribute("x"));
+    rect = document.getElementById(target_person_ids[i] + 'r');
+    rect_x = parseInt(rect.getAttribute('x'));
     if (0 < dx) { // 右移動なので右端をチェックする
-      rect_width = parseInt(rect.getAttribute("width"));
+      rect_width = parseInt(rect.getAttribute('width'));
       if (farthest_x < rect_x + rect_width) {
         farthest_x = rect_x + rect_width;
       }
@@ -716,12 +720,12 @@ function collective_horizontal_move(pid, dx) {
     }
     // この人物を表す矩形を含む g 要素の属性として、横リンクのつながりが
     // 記録されている。
-    gr = document.getElementById(target_person_ids[i] + "g");
+    gr = document.getElementById(target_person_ids[i] + 'g');
     rhs = gr.dataset.right_links; // 右辺側でのつながり
-    if (rhs !== "") {
-      // rhs は、たとえば、"h0,p1,h3,p5," のような文字列なので、
+    if (rhs !== '') {
+      // rhs は、たとえば、'h0,p1,h3,p5,' のような文字列なので、
       // ids[2*j] がリンクの ID で、ids[2*j+1] が人物の ID である。
-      ids = rhs.split(",");
+      ids = rhs.split(',');
       for (j = 0; j < ids.length/2; j++) {
         if (target_link_ids.indexOf(ids[2*j]) !== -1) {
           target_link_ids.push(ids[2*j]);
@@ -733,8 +737,8 @@ function collective_horizontal_move(pid, dx) {
     }
     // 左辺側についても同様
     lhs = gr.dataset.left_links;
-    if (lhs !== "") {
-      ids = lhs.split(",");
+    if (lhs !== '') {
+      ids = lhs.split(',');
       for (j = 0; j < ids.length/2; j++) {
         if (target_link_ids.indexOf(ids[2*j]) !== -1) {
           target_link_ids.push(ids[2*j]);
@@ -751,11 +755,11 @@ function collective_horizontal_move(pid, dx) {
     if (P_GRAPH.svg_width < farthest_x + dx) { // はみ出る
       // 枠を拡大する (ちょっと余白も設ける)
       modify_width_0(farthest_x + dx - P_GRAPH.svg_width + CONFIG.grid_size);
-      alert("指定された量だけ右移動するとはみ出るので、枠を拡大しました。");
+      alert('指定された量だけ右移動するとはみ出るので、枠を拡大しました。');
     }
   } else { // 左移動
     if (farthest_x + dx < 0) {
-      alert("指定された量だけ左移動するとはみ出るので、はみ出ない範囲で移動します。");
+      alert('指定された量だけ左移動するとはみ出るので、はみ出ない範囲で移動します。');
       dx = -farthest_x;
     }
   }
@@ -826,30 +830,30 @@ function add_v_link_1() {
   const link_type = selected_radio_choice(document.menu.vertical_link1_type);
   
   if (already_v_linked(p_id, c_id)) {
-    alert("すでに親子関係にあります。");
+    alert('すでに親子関係にあります。');
     return;
   }
   // 対応する二つの矩形の範囲を求める
-  const p = document.getElementById(p_id + "r");
-  const p_x_start = parseInt(p.getAttribute("x"));
-  const p_x_end = p_x_start + parseInt(p.getAttribute("width"));
-  const p_y_start = parseInt(p.getAttribute("y"));
-  const p_y_end = p_y_start + parseInt(p.getAttribute("height"));
+  const p = document.getElementById(p_id + 'r');
+  const p_x_start = parseInt(p.getAttribute('x'));
+  const p_x_end = p_x_start + parseInt(p.getAttribute('width'));
+  const p_y_start = parseInt(p.getAttribute('y'));
+  const p_y_end = p_y_start + parseInt(p.getAttribute('height'));
 
-  const c = document.getElementById(c_id + "r");
-  const c_x_start = parseInt(c.getAttribute("x"));
-  const c_x_end = c_x_start + parseInt(c.getAttribute("width"));
-  const c_y_start = parseInt(c.getAttribute("y"));
+  const c = document.getElementById(c_id + 'r');
+  const c_x_start = parseInt(c.getAttribute('x'));
+  const c_x_end = c_x_start + parseInt(c.getAttribute('width'));
+  const c_y_start = parseInt(c.getAttribute('y'));
 
   // 最小の隙間以上の隙間をあけて親の方が子よりも上にあるのかどうかを
   // チェックする
   if (p_y_end + CONFIG.min_v_link_len > c_y_start) {
-    alert("二人の矩形が重なっているか、矩形の間の上下方向の隙間が少なすぎるか、子供の方が上にあるかの、いずれかです。");
+    alert('二人の矩形が重なっているか、矩形の間の上下方向の隙間が少なすぎるか、子供の方が上にあるかの、いずれかです。');
     return;
   }
 
   // ここにくるのは、リンクを追加して良い場合。
-  const vid = "v" + P_GRAPH.next_vlink_id++;  // IDを生成
+  const vid = 'v' + P_GRAPH.next_vlink_id++;  // IDを生成
   // 親の矩形の下辺におけるリンクの接続位置と、子の矩形の上辺における
   // リンクの接続位置を求める
   var p_x_mid, c_x_mid, p_x_pos, c_x_pos;
@@ -872,17 +876,17 @@ function add_v_link_1() {
 
   const v_link = draw_new_v_link(p_x_pos, p_y_end, c_x_pos, c_y_start, vid, link_type);
   // data-* 属性の設定も行う
-  const p_g = document.getElementById(p_id + "g");
-  const c_g = document.getElementById(c_id + "g");
-  p_g.dataset.lower_links += vid + ",";
+  const p_g = document.getElementById(p_id + 'g');
+  const c_g = document.getElementById(c_id + 'g');
+  p_g.dataset.lower_links += vid + ',';
   v_link.dataset.parent1 = p_id;
   v_link.dataset.parent1_pos_idx = p_offset_info.idx;
   v_link.dataset.child = c_id;
   v_link.dataset.child_pos_idx = c_offset_info.idx;
-  c_g.dataset.upper_links += vid + ",";
+  c_g.dataset.upper_links += vid + ',';
 
   if (CONFIG.now_debugging) {
-    console.log("add_v_link_1() ends.");
+    console.log('add_v_link_1() ends.');
     P_GRAPH.print();
   }
 
@@ -904,7 +908,7 @@ function add_v_link_2() {
   const p2_id = h_link.dataset.rhs_person;
   
   if (already_v_linked(p1_id, c_id) || already_v_linked(p2_id, c_id)) {
-    alert("すでに親子関係にあります。");
+    alert('すでに親子関係にあります。');
     return;
   }
   
@@ -912,18 +916,18 @@ function add_v_link_2() {
   // 子よりも上にあるのかどうかをチェックする。
   const start_pos_x = parseInt(h_link.dataset.connect_pos_x);
   const start_pos_y = parseInt(h_link.dataset.connect_pos_y);
-  const c = document.getElementById(c_id + "r");
-  const c_x_start = parseInt(c.getAttribute("x"));
-  const c_x_end = c_x_start + parseInt(c.getAttribute("width"));
-  const c_y_start = parseInt(c.getAttribute("y"));
+  const c = document.getElementById(c_id + 'r');
+  const c_x_start = parseInt(c.getAttribute('x'));
+  const c_x_end = c_x_start + parseInt(c.getAttribute('width'));
+  const c_y_start = parseInt(c.getAttribute('y'));
   if (start_pos_y + CONFIG.min_v_link_len > c_y_start) {
-    alert("親子の上下方向の隙間が少なすぎるか、子供の方が上にあるかの、いずれかです。");
-    console.log("error: " + start_pos_y + " + " + CONFIG.min_v_link_len + " > " + c_y_start);
+    alert('親子の上下方向の隙間が少なすぎるか、子供の方が上にあるかの、いずれかです。');
+    console.log('error: ' + start_pos_y + ' + ' + CONFIG.min_v_link_len + ' > ' + c_y_start);
     return;
   }
 
   // ここにくるのは、リンクを追加して良い場合。
-  const vid = "v" + P_GRAPH.next_vlink_id++;  // IDを生成
+  const vid = 'v' + P_GRAPH.next_vlink_id++;  // IDを生成
   //子の矩形の上辺におけるリンクの接続位置を求める
   var end_pos_x, offset_info;
   if ((c_x_start + c_x_end) / 2 <= start_pos_x) {
@@ -942,10 +946,10 @@ function add_v_link_2() {
   v_link.dataset.parent2 = p2_id;
   v_link.dataset.child = c_id;
   v_link.dataset.child_pos_idx = offset_info.idx;
-  document.getElementById(c_id + "g").dataset.upper_links += vid + ",";
+  document.getElementById(c_id + 'g').dataset.upper_links += vid + ',';
 
   if (CONFIG.now_debugging) {
-    console.log("add_v_link_2() ends.");
+    console.log('add_v_link_2() ends.');
     P_GRAPH.print();
   }
 
@@ -989,7 +993,7 @@ function decide_where_to_connect(pid, edge, link_type, right_side_preferred) {
         return(P_GRAPH.p_free_pos_mngrs[i].lower_side.next_position(
                  link_type, right_side_preferred));
       } else {
-        console.log("error @ decide_where_to_connect()");
+        console.log('error @ decide_where_to_connect()');
         return(-1);
       }
     }
@@ -1007,11 +1011,11 @@ function draw_new_v_link(upper_pt_x, upper_pt_y, lower_pt_x, lower_pt_y, vid, li
   // svg 要素とその名前空間を求め、path 要素を作成する
   const svg_elt = document.getElementById('pedigree');
   const ns = svg_elt.namespaceURI;
-  var v_link = document.createElementNS(ns, "path");
+  var v_link = document.createElementNS(ns, 'path');
   draw_v_link(v_link, upper_pt_x, upper_pt_y, lower_pt_x, lower_pt_y, vid, link_type);
   // この縦リンクを追加
   svg_elt.appendChild(v_link);
-  svg_elt.appendChild(document.createTextNode("\n"));
+  svg_elt.appendChild(document.createTextNode('\n'));
   // 大域変数の更新
   P_GRAPH.v_links.push(vid);
   return(v_link);
@@ -1021,29 +1025,28 @@ function draw_new_v_link(upper_pt_x, upper_pt_y, lower_pt_x, lower_pt_y, vid, li
 */
 function draw_v_link(v_link, upper_pt_x, upper_pt_y, lower_pt_x, lower_pt_y, vid, link_type) {
   // d 属性の値 (文字列) を生成する
-  var d_str = "M " + upper_pt_x + "," + (upper_pt_y + 1).toString();
+  var d_str = 'M ' + upper_pt_x + ',' + (upper_pt_y + 1).toString();
   if (upper_pt_x == lower_pt_x) { // 縦の直線
-    d_str += " l 0," + (lower_pt_y - upper_pt_y - 1).toString();
+    d_str += ' l 0,' + (lower_pt_y - upper_pt_y - 1).toString();
   } else { // 折れ曲がる形
     // 決まった長さの分だけ、まず下へ降りる
-    d_str += " l 0," + CONFIG.dist_to_turning_pt;
+    d_str += ' l 0,' + CONFIG.dist_to_turning_pt;
     if (upper_pt_x < lower_pt_x) { // 右へ折れる形
-      d_str += " l " + (lower_pt_x - upper_pt_x).toString() + ",0";
+      d_str += ' l ' + (lower_pt_x - upper_pt_x).toString() + ',0';
     } else { // upper_pt_x > lower_pt_x の場合。左へ折れる形
-      d_str += " l " + (lower_pt_x - upper_pt_x).toString() + ",0";
+      d_str += ' l ' + (lower_pt_x - upper_pt_x).toString() + ',0';
     }
     // 最後にまた下に降りる
-    d_str += " l 0," + (lower_pt_y - upper_pt_y - CONFIG.dist_to_turning_pt - 2).toString();
+    d_str += ' l 0,' + (lower_pt_y - upper_pt_y - CONFIG.dist_to_turning_pt - 2).toString();
   }
 
-  v_link.setAttribute("d", d_str);
-  v_link.setAttribute("id", vid);
-  v_link.setAttribute("class", link_type);
+  v_link.setAttribute('d', d_str);
+  v_link.setAttribute('id', vid);
+  v_link.setAttribute('class', link_type);
   v_link.dataset.from_x = upper_pt_x;
   v_link.dataset.from_y = upper_pt_y;
   v_link.dataset.to_x = lower_pt_x;
   v_link.dataset.to_y = lower_pt_y;
-  //v_link.dataset.from_to = upper_pt_x + "," + upper_pt_y + "," + lower_pt_x + "," + lower_pt_y;
 }
 
 
@@ -1057,7 +1060,7 @@ function move_person() {
     selected_radio_choice(document.menu.moving_direction);
   const how_much_moved = parseInt(document.menu.how_much_moved.value);
   if (how_much_moved <= 0) {
-    alert("移動量は正の数を指定して下さい");
+    alert('移動量は正の数を指定して下さい');
     return;
   }
   // dx, dy (x 方向、y 方向それぞれの実際の移動量) を設定する
@@ -1092,7 +1095,9 @@ function move_person() {
 移動でやめておく。
 */
 function move_person_horizontally(pid, dx) {
-  if (CONFIG.now_debugging) { console.log('move_person_horizontally(' +  pid + ', ' + dx + ')'); }
+  if (CONFIG.now_debugging) { 
+    console.log('move_person_horizontally(' +  pid + ', ' + dx + ')');
+  }
   // 初期化
   var actual_dx = dx;
   const dataset = document.getElementById(pid + 'g').dataset;
@@ -1108,7 +1113,7 @@ function move_person_horizontally(pid, dx) {
   var l_linked_persons = [];
 
   // 右側でつながっている相手を求める
-  if (rhs != '') { // rhs は、たとえば、"h0,p1,h3,p5," のような文字列。
+  if (rhs != '') { // rhs は、たとえば、'h0,p1,h3,p5,' のような文字列。
     ids = rhs.slice(0, -1).split(',');  // 最後のカンマを除いてから、カンマで分割
     // ids[2*j] がリンクの ID で、ids[2*j+1] が人物の ID である。
     for (j = 0; j < ids.length/2; j++) {
@@ -1137,7 +1142,7 @@ function move_person_horizontally(pid, dx) {
   if (0 < actual_dx) { // 右への移動
     if (r_linked_persons.length == 0) { // 右側でつながっている相手はいない
       if (P_GRAPH.svg_width < x_max + actual_dx) {
-        alert("右枠からはみ出るので、枠を拡大します。");
+        alert('右枠からはみ出るので、枠を拡大します。');
         // 移動によって本人が右枠にぶつかるので、右枠を拡大する
         modify_width_0(x_max + actual_dx - P_GRAPH.svg_width);
       }
@@ -1151,7 +1156,8 @@ function move_person_horizontally(pid, dx) {
           if (actual_dx < 0) {  // エラー避け (不要な筈だが)
             actual_dx = 0;
           }
-          alert("右側でつながっている相手に近くなりすぎるので、移動量を" + actual_dx + "pxに減らします。");
+          alert('右側でつながっている相手に近くなりすぎるので、移動量を' + 
+                actual_dx + 'pxに減らします。');
         }
       }
     }
@@ -1160,8 +1166,8 @@ function move_person_horizontally(pid, dx) {
       if (x_min + actual_dx < 0) {
         // 移動によって左枠からはみ出るので、はみ出ない範囲の移動にとどめる
         actual_dx = -x_min;
-        alert("左枠からはみ出さないように、移動量を" + actual_dx 
-              + "pxに減らします。");
+        alert('左枠からはみ出さないように、移動量を' + actual_dx 
+              + 'pxに減らします。');
       }
     } else { // 左側でつながっている相手がいる
       for (j = 0; j < l_linked_persons.length; j++) {
@@ -1175,8 +1181,8 @@ function move_person_horizontally(pid, dx) {
           if (actual_dx > 0) {  // エラー避け (不要な筈だが)
             actual_dx = 0;
           }
-          alert("左側でつながっている相手に近くなりすぎるので、移動量を" 
-                + (-actual_dx).toString() + "pxに減らします。");
+          alert('左側でつながっている相手に近くなりすぎるので、移動量を' 
+                + (-actual_dx).toString() + 'pxに減らします。');
         }
       }
     }
@@ -1191,7 +1197,6 @@ function move_person_horizontally(pid, dx) {
 
   if (0 < r_links.length) {
     r_links.map(function (hid) {
-      //if (hid === null || hid == '') return;
       const h_link = document.getElementById(hid);
       // このリンクの元々の右端 (これは変更なし)
       const end_x = parseInt(h_link.dataset.end_x);
@@ -1201,7 +1206,6 @@ function move_person_horizontally(pid, dx) {
 
   if (0 < l_links.length) {
     l_links.map(function (hid) {
-      //if (hid === null || hid == '') return;
       const h_link = document.getElementById(hid);
       // このリンクの元々の左端 (これは変更なし)
       const start_x = parseInt(h_link.dataset.start_x);
@@ -1220,11 +1224,12 @@ function move_person_horizontally(pid, dx) {
       console.log('upper_links=[' + upper_links + ']');
     }
     upper_links.map(function (vid) {
-      //if (vid === null || vid == '') return;
       const v_link = document.getElementById(vid);
       draw_v_link(v_link, 
-                  parseInt(v_link.dataset.from_x), parseInt(v_link.dataset.from_y), 
-                  parseInt(v_link.dataset.to_x) + actual_dx, parseInt(v_link.dataset.to_y), 
+                  parseInt(v_link.dataset.from_x), 
+                  parseInt(v_link.dataset.from_y), 
+                  parseInt(v_link.dataset.to_x) + actual_dx, 
+                  parseInt(v_link.dataset.to_y), 
                   vid, v_link.getAttribute('class'));
     });
   }
@@ -1238,11 +1243,12 @@ function move_person_horizontally(pid, dx) {
       console.log('lower_links=[' + lower_links + ']');
     }
     lower_links.map(function (vid) {
-      //if (vid === null || vid == '') return;
       const v_link = document.getElementById(vid);
       draw_v_link(v_link, 
-                  parseInt(v_link.dataset.from_x) + actual_dx, parseInt(v_link.dataset.from_y), 
-                  parseInt(v_link.dataset.to_x), parseInt(v_link.dataset.to_y), 
+                  parseInt(v_link.dataset.from_x) + actual_dx, 
+                  parseInt(v_link.dataset.from_y), 
+                  parseInt(v_link.dataset.to_x), 
+                  parseInt(v_link.dataset.to_y), 
                   vid, v_link.getAttribute('class'));
     });
   }
@@ -1257,7 +1263,7 @@ function shift_all() {
     selected_radio_choice(document.menu.shift_direction);
   const how_much_shifted = parseInt(document.menu.how_much_shifted.value);
   if (how_much_shifted < 0) {
-    alert("移動量は正の数を指定して下さい");
+    alert('移動量は正の数を指定して下さい');
     return;
   }
   // dx, dy (x 方向、y 方向の実際の移動量) を設定する
@@ -1281,12 +1287,12 @@ pid という ID の人物を表す矩形とテキストを、x 方向に dx 動
 dy 動かす。連動なしの単純な操作。他の関数から呼び出すためのもの。
 */
 function move_rect_and_txt(pid, dx, dy) {
-  const rect = document.getElementById(pid + "r");
-  rect.setAttribute("x", parseInt(rect.getAttribute("x")) + dx);
-  rect.setAttribute("y", parseInt(rect.getAttribute("y")) + dy);
-  const txt = document.getElementById(pid + "t");
-  txt.setAttribute("x", parseInt(txt.getAttribute("x")) + dx);
-  txt.setAttribute("y", parseInt(txt.getAttribute("y")) + dy);
+  const rect = document.getElementById(pid + 'r');
+  rect.setAttribute('x', parseInt(rect.getAttribute('x')) + dx);
+  rect.setAttribute('y', parseInt(rect.getAttribute('y')) + dy);
+  const txt = document.getElementById(pid + 't');
+  txt.setAttribute('x', parseInt(txt.getAttribute('x')) + dx);
+  txt.setAttribute('y', parseInt(txt.getAttribute('y')) + dy);
 }
 
 
@@ -1299,18 +1305,18 @@ function move_link(id, dx, dy, is_h_link) {
   // 縦リンクか横リンクか、線の種類は何か、ということによらず、d 属性は、
   // 最初の MoveTo だけ絶対座標指定にしてあるので、そこの座標だけ
   // 書き換えればよい。
-  const matches = path_elt.getAttribute("d").match(/^M ([-]?\d+),([-]?\d+)(.+)$/);
+  const matches = path_elt.getAttribute('d').match(/^M ([-]?\d+),([-]?\d+)(.+)$/);
   if (matches === null || matches.length != 4) {
-    alert("error in move_link()");
-    console.log("d=" + path_elt.getAttribute("d"));
-    console.log("matches=" + matches);
+    alert('error in move_link()');
+    console.log('d=' + path_elt.getAttribute('d'));
+    console.log('matches=' + matches);
     return;
   }
   //matches[0] は d 属性の値全体 (マッチの対象文字列全体)
   const new_x = parseInt(matches[1]) + dx;
   const new_y = parseInt(matches[2]) + dy;
-  const new_d_str = "M " + new_x + "," + new_y + matches[3];
-  path_elt.setAttribute("d", new_d_str);
+  const new_d_str = 'M ' + new_x + ',' + new_y + matches[3];
+  path_elt.setAttribute('d', new_d_str);
 
   // ここからは、横リンクか縦リンクかによって異なる処理を行う
   if (is_h_link) { // 横リンクの移動に特有の処理を行う
@@ -1319,21 +1325,6 @@ function move_link(id, dx, dy, is_h_link) {
     path_elt.dataset.connect_pos_x = old_x + dx;
     path_elt.dataset.connect_pos_y = old_y + dy;
   } else { // 縦リンクの移動に特有の処理を行う
-/*
-    const from_to_matches = path_elt.dataset.from_to.match(/^([-]?\d+),([-]?\d+),([-]?\d+),([-]?\d+)$/);
-    if (from_to_matches === null || from_to_matches.length != 5) {
-      alert("error in shift_all()");
-      console.log(path_elt.dataset.from_to);
-      console.log("from_to_matches=" + from_to_matches);
-      return;
-    }
-    // from_to_matches[0] はマッチの対象文字列全体
-    const new_from_x = parseInt(from_to_matches[1]) + dx;
-    const new_from_y = parseInt(from_to_matches[2]) + dy;
-    const new_to_x = parseInt(from_to_matches[3]) + dx;
-    const new_to_y = parseInt(from_to_matches[4]) + dy;
-    path_elt.dataset.from_to = new_from_x + "," + new_from_y + "," + new_to_x + "," + new_to_y;
-*/
     path_elt.dataset.from_x = parseInt(path_elt.dataset.from_x) + dx;
     path_elt.dataset.from_y = parseInt(path_elt.dataset.from_y) + dy;
     path_elt.dataset.to_x = parseInt(path_elt.dataset.to_x) + dx;
@@ -1351,8 +1342,8 @@ function modify_height() {
 function modify_height_0(h_diff) {
   P_GRAPH.svg_height += h_diff;
   const s = document.getElementById('pedigree');
-  s.setAttribute("height", P_GRAPH.svg_height);
-  s.setAttribute("viewBox", "0 0 " + P_GRAPH.svg_width + " " + P_GRAPH.svg_height);
+  s.setAttribute('height', P_GRAPH.svg_height);
+  s.setAttribute('viewBox', '0 0 ' + P_GRAPH.svg_width + ' ' + P_GRAPH.svg_height);
   document.getElementById('current_height').textContent = P_GRAPH.svg_height;
 }
 
@@ -1366,8 +1357,8 @@ function modify_width() {
 function modify_width_0(w_diff) {
   P_GRAPH.svg_width += w_diff;
   const s = document.getElementById('pedigree');
-  s.setAttribute("width", P_GRAPH.svg_width);
-  s.setAttribute("viewBox", "0 0 " + P_GRAPH.svg_width + " " + P_GRAPH.svg_height);
+  s.setAttribute('width', P_GRAPH.svg_width);
+  s.setAttribute('viewBox', '0 0 ' + P_GRAPH.svg_width + ' ' + P_GRAPH.svg_height);
   document.getElementById('current_width').textContent = P_GRAPH.svg_width;
 }
 
@@ -1440,11 +1431,10 @@ function set_p_graph_values() {
   const g_elts = svg_elt.getElementsByTagName('g');
   const gN = g_elts.length;
   for (i=0; i<gN; i++) {
-    g_id = g_elts[i].getAttribute("id"); // "p0g" などの文字列
-    //console.log("g_elts[" + i + "].id is " + g_id);
+    g_id = g_elts[i].getAttribute('id'); // 'p0g' などの文字列
     m = g_id.match(/^p(\d+)g$/);
     if (m === null || m.length != 2) {
-      alert("error in set_p_graph_values(): " + g_id);
+      alert('error in set_p_graph_values(): ' + g_id);
       return;
     }
     // ID の数字部分を取り出して、「次の番号」用の変数を更新
@@ -1452,7 +1442,7 @@ function set_p_graph_values() {
     if (P_GRAPH.next_person_id <= id_No) {
       P_GRAPH.next_person_id = id_No + 1;
     }
-    // "p0" のような、人物を表すための ID を求め、それを登録
+    // 'p0' のような、人物を表すための ID を求め、それを登録
     pid = 'p' + id_No;
     P_GRAPH.persons.push(pid);
 
@@ -1461,8 +1451,8 @@ function set_p_graph_values() {
     // 初期化し、それを登録する。
     //rect = g_elts[i].getElementById(pid + 'r'); // これはエラー
     rect = document.getElementById(pid + 'r');
-    w = parseInt(rect.getAttribute("width"));
-    h = parseInt(rect.getAttribute("height"));
+    w = parseInt(rect.getAttribute('width'));
+    h = parseInt(rect.getAttribute('height'));
     mng = new RectMngr(pid, h, w);
     P_GRAPH.p_free_pos_mngrs.push(mng);
     // この初期化した mng に適切な値を設定しなくてはならないが、それは
@@ -1484,10 +1474,10 @@ function set_p_graph_values() {
   const pN = path_elts.length;
   var lhs_person_id, rhs_person_id, link_type, parent1_id, parent2_id, child_id, parent1_pos_idx, child_pos_idx;
   for (i=0; i<pN; i++) {
-    path_id = path_elts[i].getAttribute("id"); // "h0" または "v0" などの文字列
+    path_id = path_elts[i].getAttribute('id'); // 'h0' または 'v0' などの文字列
     m = path_id.match(/^([hv])(\d+)$/);
     if (m === null || m.length != 3) {
-      alert("error in set_p_graph_values(): " + path_id);
+      alert('error in set_p_graph_values(): ' + path_id);
       return;
     }
     // ID の数字部分を取り出す。
@@ -1503,7 +1493,7 @@ function set_p_graph_values() {
       rhs_person_id = path_elts[i].dataset.rhs_person;
       occupy_next_pos(rhs_person_id, 'left');
       // 縦リンクの追加メニューのプルダウンリストに選択肢を追加する
-      add_person_choice( document.getElementById("parents_2"), path_id,
+      add_person_choice( document.getElementById('parents_2'), path_id,
         svg_elt.getElementById(lhs_person_id + 't').textContent + 'と' +
         svg_elt.getElementById(rhs_person_id + 't').textContent );
     } else { // m[1] == 'v' つまり縦リンクを見ている
@@ -1513,7 +1503,7 @@ function set_p_graph_values() {
       }
       P_GRAPH.v_links.push(path_id);
 
-      link_type = path_elts[i].getAttribute("class");
+      link_type = path_elts[i].getAttribute('class');
       parent1_id = path_elts[i].dataset.parent1;
       parent2_id = path_elts[i].dataset.parent2;
       child_id = path_elts[i].dataset.child;
@@ -1535,7 +1525,7 @@ function set_p_graph_values() {
   }
   // 最後に印字して確認
   if (CONFIG.now_debugging) {
-    console.log("set_p_graph_values():");
+    console.log('set_p_graph_values():');
     P_GRAPH.print();
   }
 }
@@ -1555,7 +1545,7 @@ function set_EndPointsMngr_UL(pid, edge, link_type, pos_idx) {
         P_GRAPH.p_free_pos_mngrs[i].lower_side.points[pos_idx].status = 
           link_type;
       } else {
-        console.log("error @ set_ul()");
+        console.log('error @ set_ul()');
         return(-1);
       }
     }
