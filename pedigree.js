@@ -1511,7 +1511,11 @@ a タグの href 要素に設定する。
 function download_svg() {
   const s = document.getElementById('tree_canvas_div').innerHTML;
   const b = new Blob([s], {type :'image/svg+xml'});
-  document.getElementById('download_link').href = URL.createObjectURL(b);
+  var a = document.createElement('a');
+  document.getElementsByTagName('body')[0].appendChild(a);
+  a.download = 'pedigree.svg';
+  a.href = URL.createObjectURL(b);
+  a.click();
 }
 
 
