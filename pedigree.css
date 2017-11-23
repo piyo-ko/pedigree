@@ -56,4 +56,16 @@ th {
   background: powderblue;
   word-break: keep-all;
 }
-
+#svg_backup {
+  display: inline;
+  list-style: none;
+  margin-left: 0;
+  padding-left: 0;
+}
+#svg_backup > li {
+  display: inline;
+  margin-right: 1ex;
+}
+#svg_backup > li::before {
+  content: "🎨";
+}

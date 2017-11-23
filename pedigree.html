@@ -154,14 +154,19 @@
 </tr>
 
 <tr>
-<th>SVG コードを<wbr>出力する</th>
+<th rowspan="3">SVG コードを<wbr>出力する</th>
 <td>
-<input type="button" value="以下の枠内に出力する" onclick="output_svg_src()"><br>
+現状の図について<input type="button" value="以下の枠内に出力する" onclick="output_svg_src()"><br>
 <code id="svg_code"></code>
-
-または、SVG 形式のファイルを<input type="button" value="ダウンロードする" onclick="download_svg()">こともできます。
+</td>
+<tr>
+<td>
+または、現状の図について SVG 形式のファイルを<input type="button" value="ダウンロードする" onclick="download_svg()">こともできます。
 なお、ダウンロードした SVG ファイルと同じフォルダに、<a href="pedigree_svg.css" download="pedigree_svg.css">このスタイルシートファイル</a>を置いてください。
 </td>
+</tr>
+<tr>
+<td>作業の各段階での SVG ファイル: <ul id="svg_backup"></ul></td>
 </tr>
 
 <tr>

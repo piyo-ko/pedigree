@@ -215,6 +215,7 @@ var P_GRAPH = P_GRAPH || {
   next_person_id: 0, next_hlink_id: 0, next_vlink_id: 0,
   persons: [], p_free_pos_mngrs: [], h_links: [], v_links: [], 
   svg_height: 0, svg_width: 0,
+  step_No: 0,
   // 初期化
   reset_all: function () {
     this.next_person_id = 0;
@@ -226,6 +227,7 @@ var P_GRAPH = P_GRAPH || {
     this.v_links = [];
     this.svg_height = 0;
     this.svg_width = 0;
+    this.step_No = 0;
   },
   // 印字
   print: function () {
@@ -240,7 +242,8 @@ var P_GRAPH = P_GRAPH || {
     console.log('  v_links: ' + this.v_links);
     console.log('  p_free_pos_mngrs: [');
     this.p_free_pos_mngrs.map(function(mng) { mng.print(); });
-    console.log(']\n');
+    console.log(']');
+    console.log('  step_No: ' + this.step_No + '\n');
   }
 };
 
@@ -290,6 +293,7 @@ window.top.onload = function () {
   P_GRAPH.reset_all();
   document.menu.reset();
   print_current_svg_size();
+  backup_svg('初期状態');
 };
 
 
@@ -446,6 +450,7 @@ function add_person() {
     console.log('add_person() ends.');
     P_GRAPH.print();
   }
+  backup_svg(new_personal_name + 'を追加');
 }
 
 /*
@@ -578,6 +583,7 @@ function add_h_link() {
     console.log('add_h_link() ends.');
     P_GRAPH.print();
   }
+  backup_svg(displayed_str + 'の間の横の関係を追加');
 }
 
 
@@ -798,7 +804,9 @@ function add_v_link_1() {
     console.log('add_v_link_1() ends.');
     P_GRAPH.print();
   }
-
+  backup_svg(document.getElementById(p_id + 't').textContent + 'と' + 
+             document.getElementById(c_id + 't').textContent
+             + 'の間の縦の関係を追加');
 }
 
 
@@ -863,7 +871,11 @@ function add_v_link_2() {
     console.log('add_v_link_2() ends.');
     P_GRAPH.print();
   }
-
+  backup_svg(document.getElementById(p1_id + 't').textContent + 'と' + 
+             document.getElementById(p2_id + 't').textContent 
+             + 'を結ぶ横線から' + 
+             document.getElementById(c_id + 't').textContent
+             + 'への間の縦の関係を追加');
 }
 
 
@@ -976,15 +988,17 @@ function move_person() {
   }
   switch (moving_direction) {
     case 'up':
-      move_person_vertically(target_person, -how_much_moved); return;
+      move_person_vertically(target_person, -how_much_moved); break;
     case 'down':
-      move_person_vertically(target_person, how_much_moved); return;
+      move_person_vertically(target_person, how_much_moved); break;
     case 'left': 
-      move_person_horizontally(target_person, -how_much_moved); return;
+      move_person_horizontally(target_person, -how_much_moved); break;
     case 'right':
-      move_person_horizontally(target_person, how_much_moved); return;
+      move_person_horizontally(target_person, how_much_moved); break;
     default: alert('error in move_person()'); return;
   }
+  backup_svg(document.getElementById(target_person + 't').textContent
+             + 'を移動');
 }
 
 /*
@@ -1399,6 +1413,8 @@ function shift_all() {
   P_GRAPH.persons.map(function(pid) { move_rect_and_txt(pid, dx, dy); });
   P_GRAPH.h_links.map(function(hid) { move_link(hid, dx, dy, true); });
   P_GRAPH.v_links.map(function(vid) { move_link(vid, dx, dy, false); });
+
+  backup_svg('全体をずらす');
 }
 
 
@@ -1459,6 +1475,7 @@ function move_link(id, dx, dy, is_h_link) {
 */
 function modify_height() {
   modify_height_0(parseInt(document.menu.height_diff.value));
+  backup_svg('全体の高さを変える');
 }
 function modify_height_0(h_diff) {
   P_GRAPH.svg_height += h_diff;
@@ -1474,6 +1491,7 @@ function modify_height_0(h_diff) {
 */
 function modify_width() {
   modify_width_0(parseInt(document.menu.width_diff.value));
+  backup_svg('全体の幅を変える');
 }
 function modify_width_0(w_diff) {
   P_GRAPH.svg_width += w_diff;
@@ -1514,7 +1532,24 @@ function download_svg() {
   a.href = URL.createObjectURL(b);
   a.click();
 }
-
+/*
+作業の各段階での SVG ファイルをダウンロードするためのリンクを生成・追加する。
+各メニューに相当する関数の最後から呼び出す。
+description_str は、リンクテキストとして表示したい文字列。
+*/
+function backup_svg(description_str) {
+  const s = document.getElementById('tree_canvas_div').innerHTML;
+  const b = new Blob([s], {type :'image/svg+xml'});
+  const ul = document.getElementById('svg_backup');
+  var li = document.createElement('li');
+  ul.appendChild(li);
+  var a = document.createElement('a');
+  a.download = 'pedigree_step_' + P_GRAPH.step_No + '.svg';
+  P_GRAPH.step_No++;
+  a.href = URL.createObjectURL(b);
+  a.appendChild(document.createTextNode(description_str));
+  li.appendChild(a);
+}
 
 /*
 「作成済みのデータを読み込む」メニュー。
