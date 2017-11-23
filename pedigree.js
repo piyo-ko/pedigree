@@ -923,7 +923,9 @@ function draw_new_v_link(upper_pt_x, upper_pt_y, lower_pt_x, lower_pt_y, vid, li
   const svg_elt = document.getElementById('pedigree');
   const ns = svg_elt.namespaceURI;
   var v_link = document.createElementNS(ns, 'path');
-  draw_v_link(v_link, upper_pt_x, upper_pt_y, lower_pt_x, lower_pt_y, vid, link_type);
+  v_link.setAttribute('id', vid);
+  v_link.setAttribute('class', link_type);
+  draw_v_link(v_link, upper_pt_x, upper_pt_y, lower_pt_x, lower_pt_y);
   // この縦リンクを追加
   svg_elt.appendChild(v_link);
   svg_elt.appendChild(document.createTextNode('\n'));
@@ -934,7 +936,7 @@ function draw_new_v_link(upper_pt_x, upper_pt_y, lower_pt_x, lower_pt_y, vid, li
 /*
 縦リンクの新規作成と再描画での共通部分
 */
-function draw_v_link(v_link, upper_pt_x, upper_pt_y, lower_pt_x, lower_pt_y, vid, link_type) {
+function draw_v_link(v_link, upper_pt_x, upper_pt_y, lower_pt_x, lower_pt_y) {
   // d 属性の値 (文字列) を生成する
   var d_str = 'M ' + upper_pt_x + ',' + (upper_pt_y + 1).toString();
   if (upper_pt_x == lower_pt_x) { // 縦の直線
@@ -951,9 +953,7 @@ function draw_v_link(v_link, upper_pt_x, upper_pt_y, lower_pt_x, lower_pt_y, vid
     d_str += ' l 0,' + (lower_pt_y - upper_pt_y - CONFIG.dist_to_turning_pt - 2).toString();
   }
 
-  v_link.setAttribute('id', vid);
   v_link.setAttribute('d', d_str);
-  v_link.setAttribute('class', link_type);
   v_link.dataset.from_x = upper_pt_x;
   v_link.dataset.from_y = upper_pt_y;
   v_link.dataset.to_x = lower_pt_x;
@@ -1136,8 +1136,7 @@ function move_person_horizontally(pid, dx) {
                   parseInt(v_link.dataset.from_x), 
                   parseInt(v_link.dataset.from_y), 
                   parseInt(v_link.dataset.to_x) + actual_dx, 
-                  parseInt(v_link.dataset.to_y), 
-                  vid, v_link.getAttribute('class'));
+                  parseInt(v_link.dataset.to_y));
     });
   }
 
@@ -1155,8 +1154,7 @@ function move_person_horizontally(pid, dx) {
                   parseInt(v_link.dataset.from_x) + actual_dx, 
                   parseInt(v_link.dataset.from_y), 
                   parseInt(v_link.dataset.to_x), 
-                  parseInt(v_link.dataset.to_y), 
-                  vid, v_link.getAttribute('class'));
+                  parseInt(v_link.dataset.to_y));
     });
   }
 }
@@ -1362,8 +1360,8 @@ function move_person_vertically(pid, dy) {
     // 上辺に接続しているリンクなので、そのリンクの上端は動かない。
     // リンクの下端 (上辺上の点) のみが動く。
     draw_v_link(v, parseInt(v.dataset.from_x), parseInt(v.dataset.from_y), 
-                parseInt(v.dataset.to_x), parseInt(v.dataset.to_y) + actual_dy,
-                vid, v.getAttribute('class'));
+                parseInt(v.dataset.to_x), 
+                parseInt(v.dataset.to_y) + actual_dy);
   });
   target_l_links.map(function(vid) {
     const v = document.getElementById(vid);
@@ -1371,8 +1369,7 @@ function move_person_vertically(pid, dy) {
     // リンクの上端 (下辺上の点) のみが動く。
     draw_v_link(v, parseInt(v.dataset.from_x), 
                 parseInt(v.dataset.from_y) + actual_dy, 
-                parseInt(v.dataset.to_x), parseInt(v.dataset.to_y),
-                vid, v.getAttribute('class'));
+                parseInt(v.dataset.to_x), parseInt(v.dataset.to_y));
   });
 }
 
