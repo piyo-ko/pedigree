@@ -462,6 +462,10 @@ function add_h_link() {
   const p2_id = selected_choice(document.menu.partner_2);
   const link_type = selected_radio_choice(document.menu.horizontal_link_type);
 
+  if (p1_id == p2_id) {
+    alert('同一人物を指定しないでください');
+    return;
+  }
   if (already_h_linked(p1_id, p2_id)) {
     alert('もう横線でつないである組み合わせです。');
     return;
@@ -742,7 +746,11 @@ function add_v_link_1() {
   const p_id = selected_choice(document.menu.parent_1);
   const c_id = selected_choice(document.menu.child_1);
   const link_type = selected_radio_choice(document.menu.vertical_link1_type);
-  
+
+  if (p_id == c_id) {
+    alert('同一人物を指定しないでください');
+    return;
+  }
   if (already_v_linked(p_id, c_id)) {
     alert('すでに親子関係にあります。');
     return;
@@ -824,6 +832,10 @@ function add_v_link_2() {
   const p1_id = h_link.dataset.lhs_person;
   const p2_id = h_link.dataset.rhs_person;
   
+  if (p1_id == c_id || p2_id == c_id) {
+    alert('親と子に同一人物を指定しないでください');
+    return;
+  }
   if (already_v_linked(p1_id, c_id) || already_v_linked(p2_id, c_id)) {
     alert('すでに親子関係にあります。');
     return;
