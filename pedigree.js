@@ -451,6 +451,8 @@ function add_person() {
     P_GRAPH.print();
   }
   backup_svg(new_personal_name + 'を追加');
+  // 最後に名前の入力欄をクリアする
+  document.menu.new_personal_name.value = '';
 }
 
 /*
