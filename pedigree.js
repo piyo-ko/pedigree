@@ -282,7 +282,7 @@ const CONFIG = {
   dist_to_turning_pt: 32,
 
   // デバッグ中はtrueに書き換えること。
-  now_debugging: true
+  now_debugging: false
 };
 
 
@@ -500,7 +500,7 @@ function add_h_link() {
     return;
   }
 
-  // 横方向のリンクを追加する余地があるかどうかをチェックする
+  // 横方向のリンクを追加する余地 (辺上の空き場所) があるかどうかをチェックする
   var can_add_link; // 初期値
   if (r1_is_left) {
     // r1 が左にあるときは、r1 の右辺と r2 の左辺に空きが必要
@@ -511,7 +511,7 @@ function add_h_link() {
       free_pos_found(p1_id, 'left') && free_pos_found(p2_id, 'right');
   }
   if (! can_add_link) {
-    alert('横方向のリンクが多すぎる人を指定したのでエラーです。');
+    alert('横方向のリンクが既に多すぎる人を指定したのでエラーです。');
     return;
   }
 
@@ -538,20 +538,17 @@ function add_h_link() {
   diff = r1_pos_tmp - r2_pos_tmp;
 
   // 差分を埋めるように、諸要素を移動させることにより、横リンクを水平に保つ。
-  // まず、矩形 r1, r2 のどちらを移動させるかを決める。
-  var target_ids = [];
+  // 矩形 r1, r2 のどちらを移動させるべきかに応じて場合分けする。
   if (diff > 0) {
     // 矩形 r1 側の端点の方が下にあるので、矩形 r2 を diff 下げる
     // とともに、r2 に連動させるべき諸要素も、diff 下げる必要がある。
-    target_ids.push(p2_id);
-    // TO DO (連動)
+    move_down_collectively(p1_id, p2_id, diff);
     // リンクの y 位置は、固定される矩形 r1 の側で求めた r1_pos_tmp となる。
     link_y = r1_pos_tmp;
   } else if (diff < 0) {
     // 矩形 r2 の端点の方が下にあるので、矩形 r1 を -diff 下げる
-    // とともに、r1 に連動させるべき諸要素も、diff 下げる必要がある。
-    target_ids.push(p1_id);
-    // TO DO (連動)
+    // とともに、r1 に連動させるべき諸要素も、-diff 下げる必要がある。
+    move_down_collectively(p2_id, p1_id, -diff);
     // リンクの y 位置は、固定される矩形 r2 の側で求めた r2_pos_tmp となる。
     link_y = r2_pos_tmp;
   } else {
@@ -559,16 +556,12 @@ function add_h_link() {
     link_y = r1_pos_tmp;
   }
 
-  // 移動
-  // TO DO (連動)
-  target_ids.map(function(pid) { move_rect_and_txt(pid, 0, Math.abs(diff)); });
-
-  // IDを生成
+  // 横リンクのための ID を生成
   const hid = 'h' + P_GRAPH.next_hlink_id++;
   // 横リンクを描画する
-  if (r1_is_left) { // r1、このリンク、r2、の順に配置されている
+  if (r1_is_left) { // 左から、r1、このリンク、r2、の順に配置されている
     draw_new_h_link(hid, link_start_x, link_end_x, link_y, link_type, p1_id, p2_id);
-  } else { // r2、このリンク、r1、の順に配置されている
+  } else { // 左から、r2、このリンク、r1、の順に配置されている
     draw_new_h_link(hid, link_start_x, link_end_x, link_y, link_type, p2_id, p1_id);
   }
 
@@ -655,6 +648,250 @@ function occupy_next_pos(pid, edge) {
   return(-2);
 }
 
+
+/*
+「横の関係を追加する」メニューのための部品。
+pid_fixed と pid_moved は、これから横リンクでつなごうとする二人の ID。
+pid_fixed の方は位置をそのままにして、pid_moved の矩形の位置を amount だけ
+下げる。
+
+(a) このとき、その人物と横方向に推移閉包的につながっている人物すべてと、
+その推移閉包に含まれる人物の子孫にあたる人物すべてと、
+それらをつなぐ横リンクと縦リンクを、まとめて下へ移動させるべきである。
+
+(b) その際、下にはみ出るようなら、枠を拡大する。
+
+(c) また、このようにして下に移動させた人物のうち、この移動対象内に親を持たない
+人物については、その親への縦リンクがもし存在するなら (つまり移動対象外の
+人物が親として指定されているなら)、その縦リンクの再描画が必要になる 
+(上の点は変わらず、下の点のみが下へ移動し、リンクが下へ伸びることになる)。
+
+(d) なお、例外的な場合として、推移閉包・子孫をたどった際に、
+「これから横リンクでつなごうとしている二人のうちの固定された方 (※)」
+にたどり着いてしまう場合は、そのたどり着くことになる横リンクまたは
+縦リンクを、再描画する。
+とりあえず「要注意対象」のクラスを設定して警告を出すだけで、描画は変に
+なっても放置。本来どうするのが良いのかは後日考える。
+
+(e) 同様に、例外的な場合として、(c) に該当する親が (※) の人物の場合も、
+「要注意対象」のクラスを設定して警告を出す。
+これについても、本来どうするのが良いのかは後日考える。
+
+*/
+function move_down_collectively(pid_fixed, pid_moved, amount) {
+  // (a) の通常処理用 (移動対象を記録する配列)
+  var persons_to_move_down = [pid_moved];
+  var hlinks_to_move_down = [];
+  var vlinks_to_move_down = [];
+  // 動かす対象の矩形の下辺の y 座標のうちの最大値。初期化。(b) の処理に必要。
+  var max_y = 0;
+  // (c) の処理対象の縦リンクを記録する配列
+  var vlinks_to_extend = [];
+  // (d) に該当する例外的な横リンクを記録する配列
+  var exceptional_hlinks = [];
+  // (e) に該当する例外的な縦リンクを記録する配列
+  var exceptional_vlinks = [];
+
+  var i, rect, rect_y_min, rect_y_max, gr, cur_pid, cur_hid;
+  var links_str, ids, j, vids;
+
+  // persons_to_move_down.length は for 文の中で変化することに注意。
+  // persons_to_move_down[i] という ID の人物に、順に着目してゆく。
+  for (i = 0; i < persons_to_move_down.length; i++) {
+    // この人物を表す矩形
+    rect = document.getElementById(persons_to_move_down[i] + 'r');
+    rect_y_min = parseInt(rect.getAttribute('y'));
+    rect_y_max = rect_y_min + parseInt(rect.getAttribute('height'));
+    if (max_y < rect_y_max) {
+      max_y = rect_y_max;
+    }
+    // この人物を表す矩形を含む g 要素の属性として、縦横リンクのつながりが
+    // 記録されている。
+    gr = document.getElementById(persons_to_move_down[i] + 'g');
+
+    // まず、persons_to_move_down[i] の横のつながりを確認する。
+    // links_str は、たとえば 'h0,p1,h3,p5,' のような文字列、または空文字列。
+    links_str = gr.dataset.right_links + gr.dataset.left_links;
+    if (links_str !== '') {
+      // 最後のカンマを除いてから、カンマで分割
+      ids = links_str.slice(0, -1).split(',');
+      // ids[2*j] が横リンクの ID で、ids[2*j+1] が人物の ID である。
+      for (j = 0; j < ids.length/2; j++) {
+        cur_hid = ids[2*j];
+        cur_pid = ids[2*j+1];
+        if (cur_pid === pid_fixed) { // (d) に該当する例外的な場合
+          // まずこの例外的な横リンクについての情報を記録する
+          exceptional_hlinks.push({ 
+            hlink_id: cur_hid, 
+            from_whom_linked: persons_to_move_down[i]
+            // この横リンクのつなぎ先は pid_fixed なので特に記録しない
+          });
+          // この例外的横リンクから下に伸びている縦リンクがあるかもしれない
+          vids = document.getElementById(cur_hid).dataset.lower_links;
+          if (vids !== '') { // もしあったら、
+            // その縦リンクも「(d) に該当する例外的な場合」として扱う。
+            vids.slice(0, -1).split(',').map(function(v) {
+              exceptional_vlinks.push({
+                vlink_id: v,
+                type: 'vlink_from_exceptional_hlink',
+                from_which_hlink: cur_hid,
+                parent_to_move: persons_to_move_down[i]
+                // もう一人の親は pid_fixed なので特に記録しない
+              });
+              // ただし、その縦リンクのつなぎ先の子は「(a) に該当するもの」
+              // として扱う。
+              const child_id = document.getElementById(v).dataset.child;
+              if (! persons_to_move_down.includes(child_id) ) {
+                persons_to_move_down.push(child_id);
+              }
+            });
+          }
+        } else {
+          // cur_pid なる ID の人物の横の接続先が (a) に該当する普通の場合
+          if (! persons_to_move_down.includes(cur_pid) ) { // 未登録の人物
+            persons_to_move_down.push(cur_pid);
+          }
+          if (! hlinks_to_move_down.includes(cur_hid) ) { // 未登録の横リンク
+            hlinks_to_move_down.push(cur_hid);
+            // この横リンクから下に伸びている縦リンクがあるかもしれない
+            vids = document.getElementById(cur_hid).dataset.lower_links;
+            if (vids !== '') { // もしあったら、
+              vids.slice(0, -1).split(',').map(function(v) {
+                const child_id = document.getElementById(v).dataset.child;
+                if (child_id === pid_fixed) { // (d) に該当する例外的な場合
+                  exceptional_vlinks.push({
+                    vlink_id: v,
+                    type: 'vlink_from_hlink_downward_to_given_fixed_person',
+                    from_which_hlink: cur_hid,
+                    parent1_to_move: persons_to_move_down[i],
+                    parent2_to_move: cur_pid
+                  });
+                } else { // (a) に該当する普通の場合
+                  if (! persons_to_move_down.includes(child_id) ) {
+                    persons_to_move_down.push(child_id);
+                  }
+                  if (! vlinks_to_move_down.includes(v) ) {
+                    // 多分この if による場合分けはせずに一律に push して良い
+                    // はずだが、念のため。
+                    vlinks_to_move_down.push(v);
+                  }
+                }
+              });
+            }
+          } // 記録にない横リンクだった場合
+        } // j 番目の接続先が例外的 (pid_fixed) かどうかの if 文
+      } // j の for ループの終わり。
+    } // ids[2*j+1] なる ID の人物に横リンクの接続先が存在するかどうかの if 文
+
+    // persons_to_move_down[i] という ID の人物について、次は、上辺に
+    // つながる縦リンクを調べる。
+    links_str = gr.dataset.upper_links;
+    if (links_str !== '') { // links_str は、たとえば、'v1,v3,' のような文字列
+      ids = links_str.slice(0, -1).split(',');
+      ids.map(function(v) {
+        // この縦リンクの接続先 (一人の親に接続、または、親同士の間の横リンクに
+        // 接続) については、この段階では深くは調べない。
+        // 最低限のチェックによる場合分けのみ行う。
+        const vlink = document.getElementById(v);
+        const p1 = vlink.dataset.parent1;
+        const p2 = vlink.dataset.parent2;
+        if (p1 === pid_fixed || p2 === pid_fixed) {
+          exceptional_vlinks.push({
+            vlink_id: v,
+            type: 'vlink_upward_to_given_fixed_person',
+            child_to_move: persons_to_move_down[i]
+          });
+        } else {
+          vlinks_to_extend.push(v);
+        }
+      });
+    }
+
+    // persons_to_move_down[i] という ID の人物について、次は、下辺に
+    // つながる縦リンクを調べる。
+    links_str = gr.dataset.lower_links;
+    if (links_str !== '') { // links_str は、たとえば、'v1,v3,' のような文字列
+      ids = links_str.slice(0, -1).split(',');
+      ids.map(function(v) {
+        const child_id = document.getElementById(v).dataset.child;
+        if (child_id === pid_fixed) { // (d) に該当する例外的な場合
+          // まずこの例外的な横リンクについての情報を記録する
+          exceptional_vlinks.push({ 
+            vlink_id: v,
+            type: 'vlink_from_parent_downward_to_given_fixed_person',
+            parent_id: persons_to_move_down[i]
+          });
+        } else { // (a) に該当する普通の場合
+          if (! persons_to_move_down.includes(child_id) ) {
+            persons_to_move_down.push(child_id)
+          }
+          if (! vlinks_to_move_down.includes(v) ) {
+            vlinks_to_move_down.push(v);
+          }
+        }
+      });
+    }
+
+  }
+
+
+  // 必要に応じて縦方向の長さを増やす。
+  if (P_GRAPH.svg_height < max_y + amount) {
+    modify_height_0(max_y + amount - P_GRAPH.svg_height);
+  }
+
+  if (CONFIG.now_debugging || true) {
+    console.log('persons_to_move_down is [' + persons_to_move_down + ']');
+    console.log('hlinks_to_move_down is [' + hlinks_to_move_down + ']');
+    console.log('vlinks_to_move_down is [' + vlinks_to_move_down + ']');
+    console.log('vlinks_to_extend is [' + vlinks_to_extend + ']');
+    var msg = 'exceptional_hlinks is [';
+    exceptional_hlinks.map(function(h, idx) { 
+      if (0 < idx) { msg +=','; }
+      msg += h.hlink_id;
+    });
+    console.log(msg + ']');
+    msg = 'exceptional_vlinks is [';
+    exceptional_vlinks.map(function(v, idx) { 
+      if (0 < idx) { msg += ',';}
+      msg += v.vlink_id;
+    });
+    console.log(msg + ']');
+  }
+
+  //最後に移動・再描画
+  persons_to_move_down.map(function(pid) { 
+    move_rect_and_txt(pid, 0, amount);
+  });
+  hlinks_to_move_down.map(function(hid) {
+    move_link(hid, 0, amount, true);
+  });
+  vlinks_to_move_down.map(function(vid) {
+    move_link(vid, 0, amount, false);
+  });
+  vlinks_to_extend.map(function(vid) {
+    if (! vlinks_to_move_down.includes(vid) ) {
+      const vlink = document.getElementById(vid);
+      draw_v_link(vlink, 
+        parseInt(vlink.dataset.from_x), parseInt(vlink.dataset.from_y),
+        parseInt(vlink.dataset.to_x), parseInt(vlink.dataset.to_y) + amount );
+    }
+  });
+  exceptional_hlinks.map(function(hlink_info) {
+    const hid = hlink_info.hlink_id;
+    const hlink = document.getElementById(hid);
+    // TO DO: どうやって再描画するか
+    hlink.setAttribute('class', hlink.getAttribute('class') + ' exceptional');
+  });
+  exceptional_vlinks.map(function(vlink_info) {
+    const vid = vlink_info.vlink_id;
+    const vlink = document.getElementById(vid);
+    // TO DO: どうやって再描画するか
+    vlink.setAttribute('class', vlink.getAttribute('class') + ' exceptional');
+  });
+}
+
+
 /*
 「横の関係を追加する」メニューのための部品。
 新規の横リンクを描画する。
@@ -722,19 +959,6 @@ function draw_h_link(h_link, link_start_x, link_end_x, link_y) {
   h_link.dataset.end_x = link_end_x;
   h_link.dataset.y = link_y;
 }
-
-/*
-
-(A) 横リンクの追加の際、一方の人物を下へ移動させる。
-このとき、その人物と横方向に推移閉包的につながっている人物すべてと、
-その推移閉包に含まれる人物の子孫にあたる人物すべてと、
-それらをつなぐ横リンクと縦リンクを、まとめて下へ移動させるべきである。
-その際、下にはみ出るようなら、枠を拡大する。
-また、このようにして下に移動させた人物のうち、この移動対象内に親を持たない
-人物については、その親への縦リンクがもし存在するなら (つまり移動対象外の
-人物が親として指定されているなら)、その縦リンクの再描画が必要になる 
-(上の点は変わらず、下の点のみが下へ移動し、リンクが下へ伸びることになる)。
-*/
 
 
 /*
@@ -1202,7 +1426,7 @@ function move_person_horizontally(pid, dx) {
 上 (または下) へ移動する)。
 */
 function move_person_vertically(pid, dy) {
-  if (CONFIG.now_debugging || true) { 
+  if (CONFIG.now_debugging) { 
     console.log('move_person_vertically(' +  pid + ', ' + dy + ')');
   }
   // 初期化
@@ -1224,7 +1448,7 @@ function move_person_vertically(pid, dy) {
     y_min = parseInt(rect.getAttribute('y'));
     y_max = y_min + parseInt(rect.getAttribute('height'));
 
-    if (CONFIG.now_debugging || true) {
+    if (CONFIG.now_debugging) {
       console.log('i=' + i + ', target_persons[i]=' + target_persons[i]);
       console.log('y_min=' + y_min + ', y_max=' + y_max + ', actual_dy=' + actual_dy);
     }
@@ -1246,7 +1470,7 @@ function move_person_vertically(pid, dy) {
     // 記録されている。それを読み取る。
     gr = document.getElementById(target_persons[i] + 'g');
     rhs = gr.dataset.right_links; // 右辺側でのつながり
-    if (CONFIG.now_debugging || true) {
+    if (CONFIG.now_debugging) {
       console.log('rhs=[' + rhs + ']');
     }
     if (rhs !== '') { // rhs は、たとえば、'h0,p1,h3,p5,' のような文字列。
@@ -1274,7 +1498,7 @@ function move_person_vertically(pid, dy) {
 
     // 左辺側についても同様
     lhs = gr.dataset.left_links;
-    if (CONFIG.now_debugging || true) {
+    if (CONFIG.now_debugging) {
       console.log('lhs=[' + lhs + ']');
     }
     if (lhs !== '') {
@@ -1299,7 +1523,7 @@ function move_person_vertically(pid, dy) {
 
     // 上辺
     u_side = gr.dataset.upper_links;
-    if (CONFIG.now_debugging || true) {
+    if (CONFIG.now_debugging) {
       console.log('u_side=[' + u_side + ']');
     }
     if (u_side !== '') { // u_side は、たとえば、'v1,v3,' のような文字列
@@ -1338,7 +1562,7 @@ function move_person_vertically(pid, dy) {
     }
     // 下辺
     l_side = gr.dataset.lower_links;
-    if (CONFIG.now_debugging || true) {
+    if (CONFIG.now_debugging) {
       console.log('l_side=[' + l_side + ']');
     }
     if (l_side !== '') {
@@ -1365,7 +1589,7 @@ function move_person_vertically(pid, dy) {
   //
   if (actual_dy === 0) { return; }
 
-  if (CONFIG.now_debugging || true) {
+  if (CONFIG.now_debugging) {
     console.log('** fixed **: actual_dy=' + actual_dy);
     console.log('target_persons=[' + target_persons + ']');
     console.log('target_h_links=[' + target_h_links + ']');
