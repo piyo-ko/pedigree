@@ -1800,8 +1800,10 @@ function read_in() {
     // 読み込んだテキストの内容を、divタグ (IDは 'display_test') の中身
     // として書き出す。
     document.getElementById('tree_canvas_div').innerHTML = e.target.result;
-    // TO DO: SVGの各要素を読み取って、変数の設定を行う。
+    // SVGの各要素を読み取って、変数の設定を行う。
     set_p_graph_values();
+    // バックアップ用のリンクも一応作る
+    backup_svg('作成済みのデータを読み込む');
   }
   // テキストファイルとして読み込む。
   reader.readAsText(document.getElementById('input_svg_file').files[0]);
