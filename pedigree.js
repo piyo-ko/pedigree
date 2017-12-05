@@ -1359,6 +1359,17 @@ function move_person_horizontally(pid, dx) {
       const end_x = parseInt(h_link.dataset.end_x);
       // このリンクの左端はこの人物の右端 (x_max) であり、ここが動く。
       draw_h_link(h_link, x_max, end_x, parseInt(h_link.dataset.y));
+      // この横リンクから下へ縦リンクがのびている場合は、横リンクの中点を
+      // 計算し直して、その中点から縦リンクを再描画せねばならない。
+      const links_to_children = h_link.dataset.lower_links;
+      if (links_to_children !== '') {
+        const mid_x = Math.floor( (x_max + end_x)/2 );
+        links_to_children.slice(0, -1).split(',').map(function(v) {
+          const v_elt = document.getElementById(v);
+          draw_v_link(v_elt, mid_x, parseInt(h_link.dataset.connect_pos_y),
+            parseInt(v_elt.dataset.to_x), parseInt(v_elt.dataset.to_y));
+        });
+      }
     });
   }
 
@@ -1369,6 +1380,17 @@ function move_person_horizontally(pid, dx) {
       const start_x = parseInt(h_link.dataset.start_x);
       // このリンクの右端はこの人物の左端 (x_min) であり、ここが動く。
       draw_h_link(h_link, start_x, x_min, parseInt(h_link.dataset.y));
+      // この横リンクから下へ縦リンクがのびている場合は、横リンクの中点を
+      // 計算し直して、その中点から縦リンクを再描画せねばならない。
+      const links_to_children = h_link.dataset.lower_links;
+      if (links_to_children !== '') {
+        const mid_x = Math.floor( (start_x + x_min)/2 );
+        links_to_children.slice(0, -1).split(',').map(function(v) {
+          const v_elt = document.getElementById(v);
+          draw_v_link(v_elt, mid_x, parseInt(h_link.dataset.connect_pos_y),
+            parseInt(v_elt.dataset.to_x), parseInt(v_elt.dataset.to_y));
+        });
+      }
     });
   }
 
