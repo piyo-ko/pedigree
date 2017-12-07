@@ -46,11 +46,7 @@ EndPointsMngr_RL.prototype.next_position = function() {
 調べる。残っていれば true。
 */
 EndPointsMngr_RL.prototype.is_available = function() {
-  if (this.next_position_idx < this.positions.length) {
-    return(true);
-  } else {
-    return(false);
-  }
+  return(this.next_position_idx < this.positions.length);
 };
 
 /* [クラス定義]
@@ -60,11 +56,8 @@ EndPointsMngr_RL.prototype.is_available = function() {
 var EndPointsMngr_UL = function(len) {
   this.points = new Array(3);
   for (var i=0; i<3; i++) {
-    this.points[i] = {
-      idx: i,
-      status: 'unused',  // 'unused', 'solid', 'dashed' のどれか
-      dx: Math.floor( len * (i+1)/4 )
-    };
+    // status の値は 'unused', 'solid', 'dashed' のどれか
+    this.points[i] = {idx: i, status: 'unused', dx: Math.floor(len * (i+1)/4)};
   }
 };
 /*
@@ -241,7 +234,7 @@ var P_GRAPH = P_GRAPH || {
     console.log('  h_links: ' + this.h_links);
     console.log('  v_links: ' + this.v_links);
     console.log('  p_free_pos_mngrs: [');
-    this.p_free_pos_mngrs.map(function(mng) { mng.print(); });
+    this.p_free_pos_mngrs.map(mng => { mng.print(); });
     console.log(']');
     console.log('  step_No: ' + this.step_No + '\n');
   }
@@ -590,6 +583,7 @@ function add_h_link() {
 「横の関係を追加する」メニューのための部品。
 もう横線でつないである組み合わせかどうかを確認する。
 */
+/*
 function already_h_linked(pid1, pid2) {
   const L = P_GRAPH.h_links.length;
   for (var i = 0; i < L; i++) {
@@ -602,6 +596,14 @@ function already_h_linked(pid1, pid2) {
   }
   return(false);
 }
+*/
+function already_h_linked(pid1, pid2) {
+  return(P_GRAPH.h_links.some(function(hid) {
+    const lhs = document.getElementById(hid).dataset.lhs_person;
+    const rhs = document.getElementById(hid).dataset.rhs_person;
+    return( (lhs === pid1 && rhs === pid2) || (lhs === pid2 && rhs === pid1) );
+  }));
+}
 
 
 /*
@@ -609,6 +611,7 @@ function already_h_linked(pid1, pid2) {
 pid という ID を持つ人物を表す矩形の縦の辺 (右辺か左辺) に、
 横リンクを追加できる空きがあるかどうかを調べる。
 */
+/*
 function free_pos_found(pid, edge) {
   const L = P_GRAPH.p_free_pos_mngrs.length;
   for (var i=0; i<L; i++) {
@@ -625,7 +628,28 @@ function free_pos_found(pid, edge) {
   }
   return(false);
 }
-
+*/
+function free_pos_found(pid, edge) {
+  const mng = P_GRAPH.p_free_pos_mngrs.find(m => (m.pid === pid));
+  if (mng === undefined) { return(false); }
+  if (edge === 'right') { return(mng.right_side.is_available()); }
+  if (edge === 'left')  { return(mng.left_side.is_available()); }
+  return(false);
+}
+/*
+function free_pos_found(pid, edge) {
+  return(P_GRAPH.p_free_pos_mngrs.some(function(mng) {
+    if (mng.pid === pid) {
+      if (edge === 'right') { return(mng.right_side.is_available()); }
+      if (edge === 'left')  { return(mng.left_side.is_available()); }
+      console.log('error @ free_pos_found()');
+      return(false);
+    } else { 
+      return(false);
+    }
+  }));
+}
+*/
 
 /*
 「横の関係を追加する」メニューのための部品。
@@ -633,6 +657,7 @@ free_pos_found() で空きを確認した後に使うこと。
 pid という ID を持つ人物を表す矩形の縦の辺 (右辺か左辺) における、
 次の接続先の点の位置 (矩形の最上部からの差分で表したもの) を求める。
 */
+/*
 function occupy_next_pos(pid, edge) {
   const L = P_GRAPH.p_free_pos_mngrs.length;
   for (var i=0; i<L; i++) {
@@ -649,8 +674,18 @@ function occupy_next_pos(pid, edge) {
   }
   return(-2);
 }
-
-
+*/
+function occupy_next_pos(pid, edge) {
+  const i = P_GRAPH.p_free_pos_mngrs.findIndex(m => (m.pid === pid));
+  if (i < 0) { return(-2); }
+  if (edge === 'right') {
+    return(P_GRAPH.p_free_pos_mngrs[i].right_side.next_position());
+  } else if  (edge === 'left') {
+    return(P_GRAPH.p_free_pos_mngrs[i].left_side.next_position());
+  } else {
+    return(-1);
+  }
+}
 /*
 「横の関係を追加する」メニューのための部品。
 pid_fixed と pid_moved は、これから横リンクでつなごうとする二人の ID。
@@ -862,16 +897,10 @@ function move_down_collectively(pid_fixed, pid_moved, amount) {
   }
 
   //最後に移動・再描画
-  persons_to_move_down.map(function(pid) { 
-    move_rect_and_txt(pid, 0, amount);
-  });
-  hlinks_to_move_down.map(function(hid) {
-    move_link(hid, 0, amount, true);
-  });
-  vlinks_to_move_down.map(function(vid) {
-    move_link(vid, 0, amount, false);
-  });
-  vlinks_to_extend.map(function(vid) {
+  persons_to_move_down.map(pid => { move_rect_and_txt(pid, 0, amount); });
+  hlinks_to_move_down.map(hid => { move_link(hid, 0, amount, true); });
+  vlinks_to_move_down.map(vid => { move_link(vid, 0, amount, false); });
+  vlinks_to_extend.map(vid => {
     if (! vlinks_to_move_down.includes(vid) ) {
       const vlink = document.getElementById(vid);
       draw_v_link(vlink, 
@@ -879,13 +908,13 @@ function move_down_collectively(pid_fixed, pid_moved, amount) {
         parseInt(vlink.dataset.to_x), parseInt(vlink.dataset.to_y) + amount );
     }
   });
-  exceptional_hlinks.map(function(hlink_info) {
+  exceptional_hlinks.map(hlink_info => {
     const hid = hlink_info.hlink_id;
     const hlink = document.getElementById(hid);
     // TO DO: どうやって再描画するか
     hlink.setAttribute('class', hlink.getAttribute('class') + ' exceptional');
   });
-  exceptional_vlinks.map(function(vlink_info) {
+  exceptional_vlinks.map(vlink_info => {
     const vid = vlink_info.vlink_id;
     const vlink = document.getElementById(vid);
     // TO DO: どうやって再描画するか
@@ -1121,6 +1150,7 @@ function add_v_link_2() {
 「横の関係を追加する」「縦の関係を追加する」メニューのための部品。
 もう縦線でつないである組み合わせかどうかを確認する。
 */
+/*
 function already_v_linked(pid1, pid2) {
   const L = P_GRAPH.v_links.length;
   for (var i = 0; i < L; i++) {
@@ -1135,13 +1165,23 @@ function already_v_linked(pid1, pid2) {
   }
   return(false);
 }
-
+*/
+function already_v_linked(pid1, pid2) {
+  return(P_GRAPH.v_links.some(function(vid) {
+    const parent1 = document.getElementById(vid).dataset.parent1;
+    const parent2 = document.getElementById(vid).dataset.parent2;
+    const child = document.getElementById(vid).dataset.child;
+    return ((parent1 === pid1 || parent2 === pid1) && child === pid2 || 
+            (parent1 === pid2 || parent2 === pid2) && child === pid1 );
+  }));
+}
 
 /*
 「縦の関係を追加する」メニューのための部品。
 上辺または下辺の、真ん中・右寄り・左寄りのうち、どの場所にリンクをつなぐかを
 決める。
 */
+/*
 function decide_where_to_connect(pid, edge, link_type, right_side_preferred) {
   var i;
   const L = P_GRAPH.p_free_pos_mngrs.length;
@@ -1161,7 +1201,18 @@ function decide_where_to_connect(pid, edge, link_type, right_side_preferred) {
   }
   return(-2);
 }
-
+*/
+function decide_where_to_connect(pid, edge, link_type, right_side_preferred) {
+  const i = P_GRAPH.p_free_pos_mngrs.findIndex(m => (m.pid === pid));
+  if (i < 0) { return(-2); }
+  if (edge === 'upper') {
+    return(P_GRAPH.p_free_pos_mngrs[i].upper_side.next_position(link_type, right_side_preferred));
+  } else if (edge === 'lower') {
+    return(P_GRAPH.p_free_pos_mngrs[i].lower_side.next_position(link_type, right_side_preferred));
+  } else {
+    return(-1);
+  }
+}
 
 /*
 「縦の関係を追加する」メニューのための部品。
@@ -1621,15 +1672,15 @@ function move_person_vertically(pid, dy) {
     console.log('target_l_links=[' + target_l_links + ']');
   }
 
-  target_persons.map(function(pid) { move_rect_and_txt(pid, 0, actual_dy); });
+  target_persons.map(pid => { move_rect_and_txt(pid, 0, actual_dy); });
 
-  target_h_links.map(function(hid) {
+  target_h_links.map(hid => {
     const h = document.getElementById(hid);
     draw_h_link(h, parseInt(h.dataset.start_x), parseInt(h.dataset.end_x),
                 parseInt(h.dataset.y) + actual_dy);
   });
 
-  target_u_links.map(function(vid) {
+  target_u_links.map(vid => {
     const v = document.getElementById(vid);
     // 上辺に接続しているリンクなので、そのリンクの上端は動かない。
     // リンクの下端 (上辺上の点) のみが動く。
@@ -1637,7 +1688,7 @@ function move_person_vertically(pid, dy) {
                 parseInt(v.dataset.to_x), 
                 parseInt(v.dataset.to_y) + actual_dy);
   });
-  target_l_links.map(function(vid) {
+  target_l_links.map(vid => {
     const v = document.getElementById(vid);
     // 下辺に接続しているリンクなので、そのリンクの下端は動かない。
     // リンクの上端 (下辺上の点) のみが動く。
@@ -1670,9 +1721,9 @@ function shift_all() {
     default     : dx = 0; dy = 0; break;
   }
   // 移動させる
-  P_GRAPH.persons.map(function(pid) { move_rect_and_txt(pid, dx, dy); });
-  P_GRAPH.h_links.map(function(hid) { move_link(hid, dx, dy, true); });
-  P_GRAPH.v_links.map(function(vid) { move_link(vid, dx, dy, false); });
+  P_GRAPH.persons.map(pid => { move_rect_and_txt(pid, dx, dy); });
+  P_GRAPH.h_links.map(hid => { move_link(hid, dx, dy, true); });
+  P_GRAPH.v_links.map(vid => { move_link(vid, dx, dy, false); });
 
   backup_svg('全体をずらす');
 }
@@ -1955,6 +2006,7 @@ function set_p_graph_values() {
 /*
 set_p_graph_values() の中から呼び出すためのもの。
 */
+/*
 function set_EndPointsMngr_UL(pid, edge, link_type, pos_idx) {
   var i;
   const L = P_GRAPH.p_free_pos_mngrs.length;
@@ -1973,4 +2025,16 @@ function set_EndPointsMngr_UL(pid, edge, link_type, pos_idx) {
     }
   }
   return(-2);
+}
+*/
+function set_EndPointsMngr_UL(pid, edge, link_type, pos_idx) {
+  const i = P_GRAPH.p_free_pos_mngrs.findIndex(m => (m.pid === pid));
+  if (i < 0) { return(-2); }
+  if (edge === 'upper') {
+    P_GRAPH.p_free_pos_mngrs[i].upper_side.points[pos_idx].status = link_type;
+  } else if (edge === 'lower') {
+    P_GRAPH.p_free_pos_mngrs[i].lower_side.points[pos_idx].status = link_type;
+  } else {
+    return(-1);
+  }
 }
