@@ -1676,7 +1676,7 @@ function download_svg() {
   const b = new Blob([s], {type :'image/svg+xml'});
   var a = document.createElement('a');
   document.getElementsByTagName('body')[0].appendChild(a);
-  a.download = 'pedigree.svg';
+  a.download = document.menu.filename_prefix.value + '.svg';
   a.href = URL.createObjectURL(b);
   a.click();
 }
@@ -1692,11 +1692,33 @@ function backup_svg(description_str) {
   var li = document.createElement('li');
   ul.appendChild(li);
   var a = document.createElement('a');
-  a.download = 'pedigree_step_' + P_GRAPH.step_No + '.svg';
+  a.download = document.menu.filename_prefix.value + '_step_' + P_GRAPH.step_No + '.svg';
   P_GRAPH.step_No++;
   a.href = URL.createObjectURL(b);
   a.appendChild(document.createTextNode(description_str));
   li.appendChild(a);
+}
+
+
+/*
+作業の各段階での SVG ファイルのダウンロード用リンク (作成済みのもの) の 
+download 属性の値を、入力された接頭辞に置換する。
+接頭辞の入力欄の内容が変化したときに呼ばれる。
+*/
+function set_prefix() {
+  const prefix_str = document.menu.filename_prefix.value;
+  const backup_links = 
+    document.getElementById('svg_backup').getElementsByTagName('a');
+  const L = backup_links.length;
+  var i, matches;
+  for (i = 0; i < L; i++) {
+    matches = backup_links[i].download.match(/^.+_step_(\d+)\.svg$/);
+    if (matches === null || matches.length != 2) {
+      alert('error in set_prefix()');
+      return;
+    }
+    backup_links[i].download = prefix_str + '_step_' + matches[1] + '.svg';
+  }
 }
 
 /*
