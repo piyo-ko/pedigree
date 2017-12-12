@@ -7,9 +7,9 @@
 
 現状は、「簡単な系図なら作れるが、源氏物語や日本の古代・中世のような複雑な系図を作ろうとすると対処しきれない」というレベルだが、一応公開する。
 
-* [実際に系図を作るページ](pedigree.html)
-* 作った SVG ファイルと同じフォルダに置くべき[スタイルファイル](pedigree_svg.css)
-* [技術的なメモ](attributes.html)
+* [実際に系図を作るページ](https://piyo-ko.github.io/pedigree/pedigree.html)
+* 作った SVG ファイルと同じフォルダに置くべき[スタイルファイル](https://piyo-ko.github.io/pedigree/pedigree_svg.css)
+* [技術的なメモ](https://piyo-ko.github.io/pedigree/attributes.html)
 
 御感想などは [Twitter](https://twitter.com/share?text=@pi__yo__ko%20) でどうぞ。
 
