@@ -11,7 +11,7 @@
 * 作った SVG ファイルと同じフォルダに置くべき[スタイルファイル](https://piyo-ko.github.io/pedigree/pedigree_svg.css)
 * [技術的なメモ](https://piyo-ko.github.io/pedigree/attributes.html)
 
-御感想などは [Twitter](https://twitter.com/share?text=@pi__yo__ko%20) でどうぞ。
+御感想などは <a href="https://twitter.com/share?text=@pi__yo__ko%20">Twitter</a> でどうぞ。
 
 ## 今後の課題
 
