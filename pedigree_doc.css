@@ -1,0 +1,71 @@
+body {
+  background: silver;
+  color: navy;
+  font-family: serif;
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: 0;
+  padding-right: 0;
+}
+div.main {
+  position: static;
+  width: 74%;
+  margin-top: 3vh;
+  margin-left: 2%;
+  padding-left: 1em;
+  padding-right: 1em;
+}
+div.toc {
+  position: fixed; 
+  top: 3vh;
+  height: 94vh;
+  left: 80%;
+  right: 2%;
+  min-width: 10%;
+  overflow: auto;
+  padding-left: 1em;
+  padding-right: 1em;
+  background: lavender;
+  border: solid 1pt;
+}
+div.toc > nav ul {
+  padding-left: 1ex;
+  padding-right: 1ex;
+}
+h1, h2, h3 {
+  font-family: "筑紫B丸ゴシック", sans-serif;
+  text-align: center;
+  color: white;
+  background: teal;
+}
+code {
+  display: inline;
+  white-space: keep-all;
+  font-family: "Ricty Discord", "Courier New", monospace;
+  padding: 2pt;
+}
+
+a {
+  color: royalblue;
+}
+a:hover {
+  background: royalblue;
+  color: white;
+  font-weight: bold;
+}
+
+table {
+  border-collapse: collapse;
+  margin: 1em;
+}
+td, th {
+  border: solid 1px navy;
+  padding: 4pt;
+}
+th {
+  color: teal;
+  background: powderblue;
+}
+p {
+  text-indent: 1em;
+}

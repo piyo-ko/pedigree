@@ -39,7 +39,7 @@
 
 <input type="button" value="この人を追加する" onclick="add_person()">
 <br>
-(※ 光源氏のような人物の場合には、名前の前後に全角空白をいくつか入れて縦書きを指定することで、十分に縦に長い矩形を作ってください。)
+(※ 光源氏のように横の関係が異常に多い人物の場合には、名前の前後に全角空白をいくつか入れて縦書きを指定することで、十分に縦に長い矩形を作ってください。)
 </td>
 </tr>
 
@@ -106,8 +106,7 @@
 <label for="moving_direction_right">右</label>
 
 に <input type="text" name="how_much_moved" size="3"> px だけ
-<input type="button" value="動かす" onclick="move_person()">
-(縦または横につながっている人物も連動させる予定)。
+<input type="button" value="動かす" onclick="move_person()">。
 </td>
 </tr>
 
@@ -154,15 +153,20 @@
 </tr>
 
 <tr>
-<th>SVG コードを<wbr>出力する</th>
+<th rowspan="3">SVG コードを<wbr>出力する</th>
 <td>
-<input type="button" value="以下の枠内に出力する" onclick="output_svg_src()"><br>
+現状の図について<input type="button" value="以下の枠内に出力する" onclick="output_svg_src()"><br>
 <code id="svg_code"></code>
-
-または、ダウンロード用のリンクを<input type="button" value="設定して…" onclick="download_svg()"><a id="download_link" download="pedigree.svg">ダウンロードする</a>
-(「設定して…」ボタンをタップするとダウンロード用のリンクが有効になります)。
+</td>
+<tr>
+<td>
+または、現状の図について SVG 形式のファイルを<input type="button" value="ダウンロードする" onclick="download_svg()">こともできます
+(ファイル名の接頭辞: <input type="text" size="10" name="filename_prefix" value="pedigree" onchange="set_prefix()"/>)。
 なお、ダウンロードした SVG ファイルと同じフォルダに、<a href="pedigree_svg.css" download="pedigree_svg.css">このスタイルシートファイル</a>を置いてください。
 </td>
+</tr>
+<tr>
+<td>作業の各段階での SVG ファイル (ファイル名の接頭辞は上の入力欄のものを使います): <ul id="svg_backup"></ul></td>
 </tr>
 
 <tr>
@@ -171,8 +175,6 @@
 (<input type="file" id="input_svg_file" name="input_svg_file" />)、
 その内容を上の枠内に
 <input type="button" value="表示する" onclick="read_in()">。
-<br>
-(※ 現状はただ表示するだけで、表示した系図の再編集機能はありません。)
 </td>
 </tr>
 
@@ -181,7 +183,7 @@
 
 <nav>[
 <a href="https://piyo-ko.github.io">ホーム</a> |
-<a href="https://twitter.com/share?text=@pi__yo__ko%20">Twitter でバグなどを連絡する</a>
+バグなどを<a href="https://twitter.com/share?text=@pi__yo__ko%20" target="_blank">Twitter で連絡する</a>
 ]</nav>
 </body>
 </html>
