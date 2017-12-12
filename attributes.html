@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="pedigree_doc.css" type="text/css">
+<base target="_top">
+<title>SVG 各要素に設定する属性とスタイル設定について</title>
+</head>
+<body>
+
+
+<div class="toc">
+<nav>
+<ul>
+<li><a href="#top">このページの先頭</a></li>
+<li><a href="#element_for_person">人を表す要素</a>
+  <ul>
+  <li><a href="#g_element"><code>g</code> 要素</a></li>
+  <li><a href="#rect_element"><code>rect</code> 要素</a></li>
+  <li><a href="#text_element"><code>text</code> 要素</a></li>
+  </ul>
+</li>
+<li><a href="#element_for_hlinks">横リンクを表す要素</a></li>
+<li><a href="#element_for_vlinks">縦リンクを表す要素</a></li>
+<li><a href="#css">CSS によるスタイル設定</a></li>
+<li><a href="#svg_file">SVG ファイルの利用</a></li>
+</ul>
+<hr>
+<ul>
+<li><a href="pedigree.html">系図作成ページ</a></li>
+<li><a href="README.md">README</a></li>
+<li><a href="https://piyo-ko.github.io/">ホーム</a></li>
+<li><a href="https://twitter.com/share?text=@pi__yo__ko%20">Twitter で連絡</a></li>
+</ul>
+</nav>
+</div>
+
+<div class="main">
+<h1 id="top">SVG 各要素に設定する属性とスタイル設定について</h1>
+
+<p>このページは、<a href="pedigree.html">「系図を描いて SVG データにしてみよう」というページ</a>に関する技術メモです。プログラムを書いているうちに自分が「この属性なんだっけ?」となるので備忘録として作りましたが、できあがった SVG ファイルの再利用の際などにも役立つかもしれません (ほんとかな?)。</p>
+
+
+<h2 id="element_for_person">人を表す要素</h2>
+
+<p>
+人名の文字列を <code>text</code> 要素で表し、それを <code>rect</code> 要素の矩形で囲い、両要素を <code>g</code> 要素によりグループ化して、一人の人物を表現している。
+各人物の ID は <code>p0</code> 等の文字列で (ただし、この ID は SVG 要素の中には出てこなくて、プログラム内部で使うだけ)、その人物に対応する各要素の <code>id</code> 属性には、その ID にそれぞれ英文字を一文字追加した値が設定される。
+</p>
+
+<h3 id="g_element"><code>g</code> 要素</h3>
+<table>
+<tr>
+<th>属性名</th><th>値の例</th><th>設定のタイミング</th><th>その他の説明</th>
+</tr>
+
+<tr>
+<th><code>id</code></th>
+<td><code>p0g</code> など。</td>
+<td>人物の作成時に自動的に割り当てられる。変更されない。</td>
+<td>人物の ID に g という接尾辞をつけたもの。すべての SVG 要素の中で一意な ID。</td>
+</tr>
+
+<tr>
+<th><code>data-right_links</code></th>
+<td><code>h0,p1,</code> など。</td>
+<td>人物を追加した段階では空文字列。右側に存在する人物との間に横リンクを設定するごとにリストがのびてゆく。</td>
+<td>矩形の右辺から延びる横リンクとそのリンク先の人物のリスト。空文字列またはこの例のようにカンマで終わる文字列。</td>
+</tr>
+
+<tr>
+<th><code>data-left_links</code></th>
+<td><code>h3,p2,h5,p3,</code> など。</td>
+<td>人物を追加した段階では空文字列。左側に存在する人物との間に横リンクを設定するごとにリストがのびてゆく。</td>
+<td>左辺に関する同様のリスト。</td>
+</tr>
+
+<tr>
+<th><code>data-upper_links</code></th>
+<td><code>v0,</code> など。</td>
+<td>人物を追加した段階では空文字列。上側に存在する一人の人物との間に縦リンクを設定するか、または、上側に存在する二人の人物同士を結ぶ横リンクとの間に縦リンクを設定するごとに、リストがのびてゆく。</td>
+<td>矩形の上辺から延びる縦リンクのリスト。空文字列またはこの例のようにカンマで終わる文字列。</td>
+</tr>
+
+<tr>
+<th><code>data-lower_links</code></th>
+<td><code>v7,</code> など。</td>
+<td>人物を追加した段階では空文字列。下側に存在する一人の人物との間に縦リンクを設定するごとに、リストがのびてゆく。</td>
+<td>矩形の下辺から延びる縦リンクのリスト。空文字列またはこの例のようにカンマで終わる文字列。</td>
+</tr>
+</table>
+
+<h3 id="rect_element"><code>rect</code> 要素</h3>
+
+<table>
+<tr>
+<th>属性名</th><th>値の例</th><th>設定のタイミング</th><th>その他の説明</th>
+</tr>
+
+<tr>
+<th><code>id</code></th>
+<td><code>p0r</code> など。</td>
+<td>人物の作成時に自動的に割り当てられる。変更されない。</td>
+<td>人物の ID に r という接尾辞をつけたもの。すべての SVG 要素の中で一意な ID。</td>
+</tr>
+
+<tr>
+<th><code>class</code></th>
+<td><code>feminine</code> か <code>masculine</code> か <code>neutral</code> のいずれか。</td>
+<td>ユーザの指定した内容に応じた値が、人物の作成時に割り当てられる。変更されない。</td>
+<td>矩形のスタイル指定のためにクラスを指定している。<a href="pedigree.html">系図作成ページ</a>で選択する「女性」「男性」「なし」に対応する。</td>
+</tr>
+
+<tr>
+<th><code>x</code></th>
+<td>数値</td>
+<td>人物の作成時にランダムに割り当てられる。その後は、この人物が移動するたびに変化する (明示的に移動対象として指定された場合にも、他の人物の移動にともなって移動させられるなど暗黙的な場合にも、変化する)。</td>
+<td>矩形の左上隅の x 座標。</td>
+</tr>
+
+<tr>
+<th><code>y</code></th>
+<td>数値</td>
+<td>同上。</td>
+<td>矩形の左上隅の y 座標。</td>
+</tr>
+
+<tr>
+<th><code>width</code></th>
+<td>数値</td>
+<td>人物名が横書きか縦書きか、人物名の文字数はどれだけか、に応じて、人物の作成時に自動的に決められる。変化しない。</td>
+<td>矩形の幅。</td>
+</tr>
+
+<tr>
+<th><code>height</code></th>
+<td>数値</td>
+<td>同上。</td>
+<td>矩形の高さ。</td>
+</tr>
+</table>
+
+<h3 id="text_element"><code>text</code> 要素</h3>
+
+<table>
+<tr>
+<th>属性名</th><th>値の例</th><th>設定のタイミング</th><th>その他の説明</th>
+</tr>
+
+<tr>
+<th><code>id</code></th>
+<td><code>p0t</code> など。</td>
+<td>人物の作成時に自動的に割り当てられる。変更されない。</td>
+<td>人物の ID に t という接尾辞をつけたもの。すべての SVG 要素の中で一意な ID。</td>
+</tr>
+
+<tr>
+<th><code>x</code></th>
+<td>数値</td>
+<td><code>rect</code> 要素のものと同様。</td>
+<td>左上隅の x 座標。<code>rect</code> 要素のものと同じ値。</td>
+</tr>
+
+<tr>
+<th><code>y</code></th>
+<td>数値</td>
+<td><code>rect</code> 要素のものと同様。</td>
+<td>左上隅の y 座標。<code>rect</code> 要素のものと同じ値。</td>
+</tr>
+
+<tr>
+<th><code>dx</code></th>
+<td>数値</td>
+<td>人物の作成時に決められる。変更はされない。</td>
+<td>x 方向の左側余白。</td>
+</tr>
+
+<tr>
+<th><code>dy</code></th>
+<td>数値</td>
+<td>同上。</td>
+<td>y 方向の上側余白。</td>
+</tr>
+
+<tr>
+<th><code>writing-mode</code></th>
+<td><code>tb</code></td>
+<td>ユーザがこの人物について縦書きを指定した場合のみ、人物の作成時に設定される。変更はされない。</td>
+<td>縦書きのときのみ、この要素を設定している (その場合の値は <code>tb</code> である)。</td>
+</tr>
+</table>
+
+<h2 id="element_for_hlinks">横リンクを表す要素</h2>
+<p>使うのは <code>path</code> 要素。</p>
+
+<table>
+<tr>
+<th>属性名</th><th>値の例</th><th>設定のタイミング</th><th>その他の説明</th>
+</tr>
+
+<tr>
+<th><code>id</code></th>
+<td><code>h0</code> など</td>
+<td>横リンクの作成時に自動的に割り当てられる。変更されない。</td>
+<td>すべての SVG 要素の中で一意な ID。</td>
+</tr>
+
+<tr>
+<th><code>class</code></th>
+<td><code>single</code> と <code>double</code> のいずれか。</td>
+<td>ユーザの指定した内容に応じた値が、横リンクの作成時に割り当てられる。変更されない。</td>
+<td>一重線か二重線かを示す。</td>
+</tr>
+
+<tr>
+<th><code>d</code></th>
+<td><code>M 441,170 l 102,0</code> など (一重線の場合)。<br><br>
+<code>M 213,114 l 250,0 m 0,4 l -250,0</code> など (二重線の場合)。</td>
+<td>横リンクが追加されたときに初めて設定される。この横リンクにつながる人物が移動するたびに変化する (明示的にその人物が移動対象として指定された場合にも、他の人物の移動にともなって移動させられるなど暗黙的な場合にも、変化する)。
+<br>なお、長さが変わらずに位置だけ移動する場合と、長さが変化する場合<!--と、位置と長さの双方が変化する場合-->がある。</td>
+<td>相対移動で表現したパスの文字列。一重線か二重線を描くようなパスを指定する文字列になっている。<br>
+左端は、左側の人物の矩形の <code>x + width + 1</code> に相当。
+右端は、右側の人物の矩形の <code>x - 1</code> に相当。
+ここで 1 を足したり引いたりしているのは、線幅 (2px) の半分が 1 だからである。この調整をしないと、矩形の輪郭の縦線に横リンクが半幅分だけ食い込んでしまって汚い。描画関数 <code>draw_h_link</code> に引数として渡される左右両端の x 座標の値は、この半幅調整後の値である。<br>
+なお、この横リンクが二重線の場合、描画関数 <code>draw_h_link</code> に引数として渡される y 座標の値に ±2 した値が、上の線と下の線それぞれの y 座標である (その差が 4px となるため、左記の例に見られる通り、二重線を描く際には <code>m 0,4</code> という真下への 4px の移動が生じる)。</td>
+</tr>
+
+<tr>
+<th><code>data-connect_pos_x</code></th>
+<td>数値</td>
+<td>この横リンクを描画するたびに (横リンクを新規作成した際、および、左右の人物の一方または双方の移動にともなって横リンクを再描画する際)、計算して設定する。</td>
+<td>この横リンクから下へ縦リンクをのばすときに起点となる点の x 座標。
+具体的には、この横リンクの x 方向における中点。なお、中点を求める際に 2 で割って端数が出る場合は、小数点以下を切り捨てている。</td>
+</tr>
+
+<tr>
+<th><code>data-connect_pos_y</code></th>
+<td>数値</td>
+<td>同上。</td>
+<td>その縦リンクの起点となる点の y 座標。この横リンクが一重線の場合は、この横リンク自体の y 座標に等しい。この横リンクが二重線の場合は、下の線の y 座標に等しい。<code>d</code> 属性の説明も参照。</td>
+</tr>
+
+<tr>
+<th><code>data-start_x</code></th>
+<td>数値</td>
+<td>同上。</td>
+<td>この横リンクの左端の x 座標。<code>d</code> 属性の説明も参照。</td>
+</tr>
+
+<tr>
+<th><code>data-end_x</code></th>
+<td>数値</td>
+<td>同上。</td>
+<td>この横リンクの右端の x 座標。<code>d</code> 属性の説明も参照。</td>
+</tr>
+
+<tr>
+<th><code>data-y</code></th>
+<td>数値</td>
+<td>同上。</td>
+<td>この横リンクの y 座標。一重線か二重線かによらず、描画用関数 <code>draw_h_link</code> に y 座標を指定するための引数として与えられた値を、この属性に設定している。</td>
+</tr>
+
+<tr>
+<th><code>data-lhs_person</code></th>
+<td><code>p0</code> など。</td>
+<td>ユーザの指定した内容に応じた値が、横リンクの作成時に割り当てられる。変更されない。</td>
+<td>この横リンクの左側の人物の ID。</td>
+</tr>
+
+<tr>
+<th><code>data-rhs_person</code></th>
+<td><code>p1</code> など。</td>
+<td>同上。</td>
+<td>この横リンクの右側の人物の ID。</td>
+</tr>
+
+<tr>
+<th><code>data-lower_links</code></th>
+<td><code>v1,</code> など。</td>
+<td>横リンクを追加した段階では空文字列。下側に存在する一人の人物との間に縦リンクを設定するごとに、リストがのびてゆく。</td>
+<td>この横リンクから下へのびる縦リンクの ID のリスト。空文字列、または、この例のようにカンマで終わる文字列。</td>
+</tr>
+</table>
+
+
+<h2 id="element_for_vlinks">縦リンクを表す要素</h2>
+<p>使うのは <code>path</code> 要素。縦リンクは、まっすぐな縦の直線か、鉤の手に二回曲がる線である。後者の場合、縦リンクの上端となる点から固定長 (<code>CONFIG.dist_to_turning_pt</code>) だけまず真下に降りて、左右いずれかに適宜の距離だけ移動し、その後、縦リンクの下端となる点まで真下に降りる、という形である。</p>
+
+<table>
+<tr>
+<th>属性名</th><th>値の例</th><th>設定のタイミング</th><th>その他の説明</th>
+</tr>
+
+
+<tr>
+<th><code>id</code></th>
+<td><code>v1</code> など。</td>
+<td>縦リンクの作成時に自動的に割り当てられる。変更されない。</td>
+<td>すべての SVG 要素の中で一意な ID。</td>
+</tr>
+
+<tr>
+<th><code>class</code></th>
+<td><code>solid</code> と <code> dashed</code> のいずれか。</td>
+<td>ユーザの指定した内容に応じた値が、縦リンクの作成時に割り当てられる。変更されない。</td>
+<td>実線か破線かを示す。</td>
+</tr>
+
+<tr>
+<th><code>d</code></th>
+<td><code>M 1130,405 l 0,95</code> など (縦の直線の場合)<br><br><code>M 292,65 l 0,32 l -160,0 l 0,78</code> など (鉤の手に二回曲がる線の場合)</td>
+<td>縦リンクが追加されたときに初めて設定される。この縦リンクに (直接的に、または、縦リンクの上端が位置する横リンクを介して間接的に) つながる人物が移動するたびに、変化する (明示的にその人物が移動対象として指定された場合にも、他の人物の移動にともなって移動させられるなど暗黙的な場合にも、変化する)。
+<br>
+なお、位置だけ移動する場合と、長さが変化する場合と、線の形状 (縦の直線か、鉤の手に二回曲がる線か) までもが変化する場合がある。</td>
+<td>相対移動で表現したパスの文字列。縦の直線か、鉤の手に二回曲がる線を指定する。
+<br>
+縦リンクの上端は、(i) 人物を示す矩形の下辺に位置する場合と、(ii) 横リンク上に位置する場合がある。
+(i) の場合、上側の人物の <code>x</code> から <code>x + width</code> までの範囲の、「左から 1/4 の点」「中点」「左から 3/4 の点」のうちのいずれかが、縦リンクの上端の x 座標として描画関数 <code>draw_v_link</code> に与えられる。また、上側の人物の <code>y + height</code> が、縦リンクの上端の y 座標として描画関数 <code>draw_v_link</code> に与えられる。
+(ii) の場合、横リンクの <code>data-connect_pos_x</code> 属性と <code>data-connect_pos_y</code> 属性の値が、上端の位置を表す引数として描画関数 <code>draw_v_link</code> に与えられる。
+<br>
+そして、(i) と (ii) のいずれにせよ縦リンクの下端は、人物を示す矩形の上辺にある。この人物 (要するに子) の <code>x</code> から <code>x + width</code> までの範囲の、「左から 1/4 の点」「中点」「左から 3/4 の点」のうちのいずれかが、縦リンクの下端の x 座標として描画関数 <code>draw_v_link</code> に与えられる。また、この人物の <code>y</code> が、縦リンクの下端の y 座標として描画関数 <code>draw_v_link</code> に与えられる。
+<br>
+なお、横リンクの描画の場合と同様の理由から線幅の半分 (つまり 1px) の調整が必要だが、その調整は描画関数 <code>draw_v_link</code> の内部で行っているので、描画関数に与えられる引数の値は、調整前の値である (なお、横リンクの場合は調整後の値を引数として与える形にしているので、不統一で分かりづらいかもしれない)。</td>
+</tr>
+
+<tr>
+<th><code>data-from_x</code></th>
+<td>数値</td>
+<td>この縦リンクの新規描画・再描画のたびに、描画関数 <code>draw_v_link</code> に引数として与えられた値がこの属性に記録される。</td>
+<td>上端の点の x 座標。</td>
+</tr>
+
+<tr>
+<th><code>data-from_y</code></th>
+<td>数値</td>
+<td>同上。</td>
+<td>同じく y 座標。</td>
+</tr>
+
+<tr>
+<th><code>data-to_x</code></th>
+<td>数値</td>
+<td>同上。</td>
+<td>下端の点の x 座標。</td>
+</tr>
+
+<tr>
+<th><code>data-to_y</code></th>
+<td>数値</td>
+<td>同上。</td>
+<td>同じく y 座標。</td>
+</tr>
+
+<tr>
+<th><code>data-parent1</code></th>
+<td><code>p0</code> など。</td>
+<td>ユーザの指定した内容に応じた値が、縦リンクの作成時に割り当てられる。変更されない。</td>
+<td>この縦リンクが一人の人物から下にのびている場合はその人物 (つまり親)。
+逆に、この縦リンクが横リンクの真ん中から下にのびている場合は、その横リンクでつながれた二人 (つまり両親) のうち左側の人物。</td>
+</tr>
+
+<tr>
+<th><code>data-parent1_pos_idx</code></th>
+<td><code>0</code> または <code>1</code> または <code>2</code></td>
+<td>縦リンクの作成時に割り当てられる。変更されない。</td>
+<td>この縦リンクが一人の人物 (親) から下にのびている場合にのみ使う属性。その人物の矩形の幅の、「左から 1/4 の点」「中点」「左から 3/4 の点」を、それぞれ <code>0</code>, <code>1</code>, <code>2</code> で表している。いずれの点がこの縦リンクの上端なのかを示す。</td>
+</tr>
+
+<tr>
+<th><code>data-parent2</code></th>
+<td><code>p1</code> など。</td>
+<td>ユーザの指定した内容に応じた値が、縦リンクの作成時に割り当てられる。変更されない。</td>
+<td>この縦リンクが横リンクの真ん中から下にのびている場合にのみ使う属性。
+その横リンクでつながれた二人のうち右側の人物の ID。</td>
+</tr>
+
+<tr>
+<th><code>data-child</code></th>
+<td><code>p2</code> など。</td>
+<td>ユーザの指定した内容に応じた値が、縦リンクの作成時に割り当てられる。変更されない。</td>
+<td>縦リンクの下端でつながる人物 (つまり子) の ID。</td>
+</tr>
+
+<tr>
+<th><code>data-child_pos_idx</code></th>
+<td><code>0</code> または <code>1</code> または <code>2</code></td>
+<td>縦リンクの作成時に割り当てられる。変更されない。</td>
+<td>縦リンクの下端に位置する人物 (子) の矩形の幅の、「左から 1/4 の点」「中点」「左から 3/4 の点」を、それぞれ <code>0</code>, <code>1</code>, <code>2</code> で表している。いずれの点がこの縦リンクの下端なのかを示す。</td>
+</tr>
+
+</table>
+
+<h2 id="css">CSS によるスタイル設定</h2>
+
+<p>
+生成される SVG ファイルは、<a href="pedigree_svg.css"><code>pedigree_svg.css</code></a> というスタイルファイルを参照している。
+ユーザが自分で新たにスタイルファイルを定義し、それを参照するように SVG ファイルを書き換えてもよい
+(SVG ファイルもスタイルファイルもテキストエディタで編集可能)。
+ただし、その際は以下の点に注意してほしい。
+</p>
+
+
+<h3>系図を作成する際の前提条件として利用している値</h3>
+<p>現段階では下記の点を描画の前提条件として利用している。そのため、下記の点をスタイルファイルで書き換えてしまうと、表示が崩れるおそれがある。SVG 画像はスケーラブルなので (つまり下記の点を書き換えなくても綺麗に拡大・縮小できるから)、書き換えの必要はまずないものと思われる。</p>
+
+<ul>
+<li>テキストのフォントサイズは固定 (24px)。</li>
+<li>矩形の輪郭線、横リンクに用いる線、縦リンクに用いる線は、どれも 2px の太さである。</li>
+</ul>
+
+<h3>ユーザ定義の CSS ファイルで自由に設定しても表示が崩れない (はずの) もの</h3>
+<ul>
+<li>色に関する設定は自由に書き換えて構わない。<a href="pedigree_svg.css"><code>pedigree_svg.css</code></a> では、描画の作業中に人物同士が重なってしまってもなんとなく分かるように背景色を半透明にしているが、不透明な背景を使ってもよいし、背景を塗りつぶさなくてもよい。</li>
+<li><code>path.dashed</code> (破線の縦リンク) 用の <code>stroke-dasharray</code> の設定は、自由に書き換えて構わない (たとえば一点鎖線にするなど)。書き方の例は <a href="https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/stroke-dasharray">MDN</a> を参照。もちろん、<code>stroke-dasharray</code> を設定せずに、代わりに線の色を設定するなどしてもよい。</li>
+<li><code>text</code> 要素に対する <code>font-family</code> の指定は、好きなフォントに書き換えてよいが、場合によっては文字が矩形の枠からはみ出てしまうかもしれない。</li>
+</ul>
+
+<h2 id="svg_file">SVG ファイルの利用</h2>
+
+<p>
+<a href="pedigree.html">系図作成ページ</a> で作ったデータは、SVG ファイルとして一時保存 (ダウンロード) できる。そして、後日それを読み込んで続きから作業することも可能である。ダウンロードした SVG ファイルは、ブラウザでも閲覧できる。
+</p>
+
+<p>
+また、ダウンロードしたファイルを変換ないし編集することも可能である。たとえば、<a href="https://piyo-ko.github.io/tools/svg2png.html">PNG 形式へ変換できる</a>し、何らかのソフトウェアで加工することもできる。
+他のソフトウェアで SVG データを編集する際には、<code>data-*</code> の形の属性は削除しても問題ないが、それらの属性を削除したデータを再度 <a href="pedigree.html">系図作成ページ</a> で読み込んだ場合は、続きから編集作業を行える保証はない。
+</p>
+</div>
+
+</body>
+</html>
