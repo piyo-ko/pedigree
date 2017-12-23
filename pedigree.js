@@ -247,6 +247,9 @@ function add_person() {
     box_h = CONFIG.h_text_height;
     box_w = CONFIG.font_size * L + CONFIG.h_text_dx * 2;
   }
+  // 名前が長すぎたら枠を強制的に拡大する。
+  if (box_h > P_GRAPH.svg_height) {modify_height_0(box_h - P_GRAPH.svg_height);}
+  if (box_w > P_GRAPH.svg_width) {modify_width_0(box_w - P_GRAPH.svg_width);}
 
   // 面倒なので、とりあえずランダムな場所に配置する。
   const x = Math.floor( Math.random(Date.now()) *
@@ -268,10 +271,11 @@ function add_person() {
   add_text_node(t, new_personal_name);
   if (verticalize) { // 縦書き
     t_attr = new Map([['id', new_personal_id + 't'], ['x', x], ['y', y],
-      ['writing-mode', 'tb'],
+      ['textLength', CONFIG.font_size * L], ['writing-mode', 'tb'],
       ['dx', CONFIG.v_text_dx], ['dy', CONFIG.v_text_dy]]);
   } else { // 横書き
     t_attr = new Map([['id', new_personal_id + 't'], ['x', x], ['y', y],
+      ['textLength', CONFIG.font_size * L], 
       ['dx', CONFIG.h_text_dx], ['dy', CONFIG.h_text_dy]]);
   }
   t_attr.forEach(function(val, key) { t.setAttribute(key, val); });
