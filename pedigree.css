@@ -21,6 +21,7 @@ code {
 }
 #svg_code {
   height: 5em;
+  width: 50em;
   display: block;
   overflow: auto;
   padding: 2pt;
