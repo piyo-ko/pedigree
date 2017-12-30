@@ -1160,7 +1160,7 @@ function move_person_vertically(pid, dy) {
 function shift_all() {
   const amount = parseInt(document.menu.how_much_shifted.value);
   if (amount < 0) { alert('移動量は正の数を指定して下さい'); return; }
-  // dx, dy (x 方向、y 方向の実際の移動量) を設定する
+  // dx, dy (x 方向、y 方向の移動量) を設定する
   var dx, dy;
   switch ( selected_radio_choice(document.menu.shift_direction) ) {
     case 'up'   : dx = 0; dy = -amount; break;
@@ -1169,10 +1169,31 @@ function shift_all() {
     case 'right': dx = amount; dy = 0; break;
     default     : dx = 0; dy = 0; break;
   }
+  // 現状位置の各矩形の範囲を見て、全体としての上下左右の端を求める
+  var min_x = P_GRAPH.svg_width, max_x = 0;  // 初期化
+  var min_y = P_GRAPH.svg_height, max_y = 0;  // 初期化
+  P_GRAPH.persons.map(pid => {
+    const rect = document.getElementById(pid + 'r');
+    const x_start = parseInt(rect.getAttribute('x'));
+    const x_end = x_start + parseInt(rect.getAttribute('width'));
+    const y_start = parseInt(rect.getAttribute('y'));
+    const y_end = y_start + parseInt(rect.getAttribute('height'));
+    if (x_start < min_x) { min_x = x_start; }
+    if (max_x < x_end) { max_x = x_end; }
+    if (y_start < min_y) { min_y = y_start; }
+    if (max_y < y_end) { max_y = y_end; }
+  });
+  // 仮に指定通りに動かしたら枠からはみ出る場合は、枠を広げる。
+  var new_min_x = min_x + dx, new_max_x = max_x + dx, new_dx = dx;
+  var new_min_y = min_y + dy, new_max_y = max_y + dy, new_dy = dy;
+  if (new_min_x < 0) { modify_width_0(-new_min_x); new_dx -= new_min_x; }
+  if (new_min_y < 0) { modify_height_0(-new_min_y); new_dy -= new_min_y; }
+  if (P_GRAPH.svg_width < new_max_x) { modify_width_0(new_max_x - P_GRAPH.svg_width); }
+  if (P_GRAPH.svg_height < new_max_y) { modify_height_0(new_max_y - P_GRAPH.svg_height); }
   // 移動させる
-  P_GRAPH.persons.map(pid => { move_rect_and_txt(pid, dx, dy); });
-  P_GRAPH.h_links.map(hid => { move_link(hid, dx, dy, true); });
-  P_GRAPH.v_links.map(vid => { move_link(vid, dx, dy, false); });
+  P_GRAPH.persons.map(pid => { move_rect_and_txt(pid, new_dx, new_dy); });
+  P_GRAPH.h_links.map(hid => { move_link(hid, new_dx, new_dy, true); });
+  P_GRAPH.v_links.map(vid => { move_link(vid, new_dx, new_dy, false); });
 
   backup_svg('全体をずらす');
 }
