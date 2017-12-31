@@ -1,106 +1,105 @@
 'use strict';
 
-/* [クラス定義] 人と人の間の縦リンク・横リンクを管理するためのクラスとして、
+/* 人と人の間の縦リンク・横リンクを管理するためのクラスとして、
 EndPointsMngr_RL と EndPointsMngr_UL と RectMngr を定義する。*/
 
-/* [クラス定義] 人を表す矩形の各辺ごとに、その辺に接続しているリンクを管理する。
-このクラスは右辺・左辺 (縦の辺) 用。具体的には、
-  - 矩形の縦の辺には、7本までの横リンクを接続可能とする
-  - それらのリンクの接続位置は、上または左から順に 1, 2, ……という番号で表す
-  - その番号同士の間には優先順位があって、その順に新しいリンクの接続位置
-    として埋まってゆく
-といった想定をしている。*/
-var EndPointsMngr_RL = function(len) {
-  this.positions = [4, 2, 6, 1, 7, 3, 5];  // この順に埋めていく
-  this.next_position_idx = 0;  // positions の添え字 (次に埋めるべき位置に対応)
-  this.edge_length = len;      // 辺の長さ
-};
-/* デバッグ用の印字関数 */
-EndPointsMngr_RL.prototype.print = function() {
-  console.log('   next position is positions[' + this.next_position_idx + 
-    '] (== ' + this.positions[this.next_position_idx] + 
-    '), and edge_length is ' + this.edge_length);
-};
-/* [クラス定義: メソッド追加]
-この辺においてリンクの接続位置として空いている次の位置を、番号ではなくて
-実際の長さで表して、返す。また、「次の位置」も更新する。 */
-EndPointsMngr_RL.prototype.next_position = function() {
-  if (this.next_position_idx === this.positions.length) {
-    // すでに全箇所が埋まっているのでエラー
-    alert('そんなに多くの関係は設定できません!');  return(-1);
+/* 人を表す矩形の各辺ごとに、その辺に接続しているリンクを管理する。
+このクラスは右辺・左辺 (縦の辺) 用。具体的には、以下のような想定をしている。
+1       * * * *     - 矩形の縦の辺には、7本までの横リンクを接続可能とする
+2   * * * * * *     - それらのリンクの接続位置を上から順に 1, 2, ……という
+3           * *       番号で表す
+4 * * * * * * *     - その番号同士の間には優先順位があって、その順に新しい
+5             *       リンクの接続位置として埋まってゆく
+6     * * * * *
+7         * * *
+-----------------> 埋まってゆく順 */
+class EndPointsMngr_RL {
+  constructor(len) {
+    this.positions = [4, 2, 6, 1, 7, 3, 5];  // この順に埋めていく
+    this.next_position_idx = 0; // positions の添え字 (次に埋めるべき位置に対応)
+    this.edge_length = len;     // 辺の長さ
   }
-  const pos = Math.floor( this.edge_length * this.positions[this.next_position_idx] / (this.positions.length + 1) );
-  this.next_position_idx++;
-  return(pos);
-};
-/* [クラス定義: メソッド追加]
-この辺に、リンクの接続位置として利用可能な位置が残っているかどうかを
-調べる。残っていれば true。 */
-EndPointsMngr_RL.prototype.is_available = function() {
-  return(this.next_position_idx < this.positions.length);
-};
+  print() { // デバッグ用の印字関数
+    console.log('   next position is positions[' + this.next_position_idx + 
+      '] (== ' + this.positions[this.next_position_idx] + 
+      '), and edge_length is ' + this.edge_length);
+  }
+  // この辺においてリンクの接続位置として空いている次の位置を、番号ではなくて
+  //実際の長さで表して、返す。また、「次の位置」も更新する。
+  next_position() {
+    if (this.next_position_idx === this.positions.length) {
+      // すでに全箇所が埋まっているのでエラー
+      alert('そんなに多くの関係は設定できません!');  return(-1);
+    }
+    const pos = Math.floor( this.edge_length * this.positions[this.next_position_idx] / (this.positions.length + 1) );
+    this.next_position_idx++;
+    return(pos);
+  }
+  // この辺に、リンクの接続位置として利用可能な位置が残っているかどうかを
+  // 調べる。残っていれば true。
+  is_available() { return(this.next_position_idx < this.positions.length); }
+}
 
-/* [クラス定義]
-人を表す矩形の上辺・下辺 (横の辺) に接続するリンクを管理する。
+/* 人を表す矩形の上辺・下辺 (横の辺) に接続するリンクを管理する。
 辺上の、左・真ん中・右の3箇所が接続先の候補である。 */
-var EndPointsMngr_UL = function(len) {
-  this.points = new Array(3);
-  for (var i=0; i<3; i++) {
-    this.points[i] = {idx: i, status: 'unused', dx: Math.floor(len * (i+1)/4)};
-  } // status の値は 'unused', 'solid', 'dashed' のいずれかである。
-};
-/* デバッグ用の印字関数 */
-EndPointsMngr_UL.prototype.print = function() {
-  for (var i=0; i<3; i++) {
-    console.log('   points[' + i + '] is { idx: ' + this.points[i].idx + ', status: ' + this.points[i].status + ', dx: ' + this.points[i].dx + '}\n');
+class EndPointsMngr_UL {
+  constructor (len) {
+    this.points = new Array(3);
+    for (let i = 0; i < 3; i++) {
+      this.points[i] = {idx:i, status:'unused', dx:Math.floor(len * (i+1)/4)};
+    } // status の値は 'unused', 'solid', 'dashed' のいずれかである。
   }
-};
-/* [クラス定義: メソッド追加]
-上辺・下辺につながるリンク (縦リンク) の種類は、実線と破線のみ。
-この人物の矩形に最初に接続するリンクは、真ん中へつなぐことにする。
-また、その最初のリンクとは逆の種類の線の接続先として、左右の位置を (暗黙的に) 
-予約する。違う種類の線は同じ位置につながないが、同じ種類の線は同じ位置に
-つないでよいものとする。すると、あり得るパターンは以下のa〜iのみ。
-  a  なし-なし-なし
-  b  なし-実線-なし    f  なし-破線-なし
-  c  破線-実線-なし    g  実線-破線-なし
-  d  なし-実線-破線    h  なし-破線-実線
-  e  破線-実線-破線    i  実線-破線-実線    */
-EndPointsMngr_UL.prototype.next_position = function(link_type, right_side_preferred) {
-  // 真ん中が空いているか、これから追加したいリンクと同種のリンクの接続先に
-  // なっている場合、真ん中につなぐ
-  if (this.points[1].status === 'unused' || 
-      this.points[1].status === link_type) {
-    this.points[1].status = link_type;  return(this.points[1]);
+  print() { // デバッグ用の印字関数
+    for (let i=0; i<3; i++) {
+      console.log('   points[' + i + '] is { idx: ' + this.points[i].idx + ', status: ' + this.points[i].status + ', dx: ' + this.points[i].dx + '}\n');
+    }
   }
-  // 真ん中は既に、これから追加したいリンクとは別の種類のリンクの接続先に
-  // なっていて、塞がっている。よって、左右どちらかに接続する。
-  if (right_side_preferred) {
-    this.points[2].status = link_type;  return(this.points[2]);
-  } else {
-    this.points[0].status = link_type;  return(this.points[0]);
+  // 上辺・下辺につながるリンク (縦リンク) の種類は、実線と破線のみ。
+  // この人物の矩形に最初に接続するリンクは、真ん中へつなぐことにする。
+  // また、その最初のリンクとは逆の種類の線の接続先として、左右の位置を
+  // (暗黙的に) 予約する。違う種類の線は同じ位置につながないが、同じ種類の線は
+  // 同じ位置につないでよいものとする。すると、あり得るパターンは以下のa〜iのみ。
+  // a  なし-なし-なし
+  // b  なし-実線-なし    f  なし-破線-なし
+  // c  破線-実線-なし    g  実線-破線-なし
+  // d  なし-実線-破線    h  なし-破線-実線
+  // e  破線-実線-破線    i  実線-破線-実線
+  next_position(link_type, right_side_preferred) {
+    // 真ん中が空いているか、これから追加したいリンクと同種のリンクの接続先に
+    // なっている場合、真ん中につなぐ
+    if (this.points[1].status === 'unused' || 
+        this.points[1].status === link_type) {
+      this.points[1].status = link_type;  return(this.points[1]);
+    }
+    // 真ん中は既に、これから追加したいリンクとは別の種類のリンクの接続先に
+    // なっていて、塞がっている。よって、左右どちらかに接続する。
+    if (right_side_preferred) {
+      this.points[2].status = link_type;  return(this.points[2]);
+    } else {
+      this.points[0].status = link_type;  return(this.points[0]);
+    }
   }
-};
+}
 
-/* [クラス定義] pid という ID で表される人物の矩形の、高さ (h) と幅 (w) を
-引数にとる。この矩形につながるリンクを管理するクラス。 */
-var RectMngr = function(pid, h, w) {
-  this.pid = pid;
-  this.right_side = new EndPointsMngr_RL(h);
-  this.left_side = new EndPointsMngr_RL(h);
-  this.upper_side = new EndPointsMngr_UL(w);
-  this.lower_side = new EndPointsMngr_UL(w);
-};
-
-/* デバッグ用の印字関数 */
-RectMngr.prototype.print = function() {
-  console.log('* RectMngr (pid: ' + this.pid + '):');
-  console.log(' - right side:');  this.right_side.print();
-  console.log(' - left side:');   this.left_side.print();
-  console.log(' - upper_side:');  this.upper_side.print();
-  console.log(' - lower_side:');  this.lower_side.print();
-  console.log('\n');
-};
+/* この矩形につながるリンクを管理するクラス。 */
+class RectMngr {
+  // pid という ID で表される人物の矩形の、高さ (h) と幅 (w) を引数にとる。
+  constructor(pid, h, w) {
+    this.pid = pid;
+    this.right_side = new EndPointsMngr_RL(h);
+    this.left_side = new EndPointsMngr_RL(h);
+    this.upper_side = new EndPointsMngr_UL(w);
+    this.lower_side = new EndPointsMngr_UL(w);
+  }
+  print() { // デバッグ用の印字関数
+    console.log('* RectMngr (pid: ' + this.pid + '):');
+    console.log(' - right side:');  this.right_side.print();
+    console.log(' - left side:');   this.left_side.print();
+    console.log(' - upper_side:');  this.upper_side.print();
+    console.log(' - lower_side:');  this.lower_side.print();
+    console.log('\n');
+  }
+}
 
 /* svg 要素の中身を、大域変数 (たるオブジェクトの属性値) として保持する。
 (擬似的な名前空間を作っている感じ) */
