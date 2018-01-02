@@ -498,7 +498,7 @@ function move_down_collectively(pid_fixed, pid_moved, amount) {
         exceptional_hlinks.push({ hlink_id: cur_hid, 
           from_whom_linked: cur_person }); 
         // この例外的横リンクから下に伸びている縦リンクがあるかもしれない
-        let vids = document.getElementById(cur_hid).dataset.lower_links;
+        const vids = document.getElementById(cur_hid).dataset.lower_links;
         // もしあれば、その縦リンクも「(d) に該当する例外的な場合」として扱う。
         id_str_to_arr(vids).map(function(v) {
           exceptional_vlinks.push({ vlink_id: v, 
@@ -519,7 +519,7 @@ function move_down_collectively(pid_fixed, pid_moved, amount) {
       if (hlinks_to_move_down.includes(cur_hid) ) { return; }
       hlinks_to_move_down.push(cur_hid);  // 横リンクが未登録なのでまず登録。
       // この横リンクから下に伸びている縦リンクがあるかもしれない
-      vids = document.getElementById(cur_hid).dataset.lower_links;
+      const vids = document.getElementById(cur_hid).dataset.lower_links;
       id_str_to_arr(vids).map(function(v) {
         const child_id = document.getElementById(v).dataset.child;
         if (child_id === pid_fixed) { // (d) に該当する例外的な場合
