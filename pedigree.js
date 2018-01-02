@@ -49,10 +49,11 @@ class EndPointsMngr_UL {
       this.points[i] = {idx:i, status:'unused', dx:Math.floor(len * (i+1)/4)};
     } // status の値は 'unused', 'solid', 'dashed' のいずれかである。
   }
+
   print() { // デバッグ用の印字関数
-    for (let i=0; i<3; i++) {
-      console.log('   points[' + i + '] is { idx: ' + this.points[i].idx + ', status: ' + this.points[i].status + ', dx: ' + this.points[i].dx + '}\n');
-    }
+    this.points.map(function(pt, i) {
+      console.log('   points[' + i + '] is { idx: ' + pt.idx + ', status: ' + pt.status + ', dx: ' + pt.dx + '}\n');
+    });
   }
   // 上辺・下辺につながるリンク (縦リンク) の種類は、実線と破線のみ。
   // この人物の矩形に最初に接続するリンクは、真ん中へつなぐことにする。
@@ -186,7 +187,7 @@ function selected_choice(select_elt) {
 /* [汎用モジュール] ラジオボタンで選択されている項目の value を返す。 */
 function selected_radio_choice(radio_elt) {
   const L = radio_elt.length;
-  for (var i = 0; i < L; i++) {
+  for (let i = 0; i < L; i++) {
     if (radio_elt[i].checked) { return(radio_elt[i].value); }
   }
   return('');  // エラー避けに一応、最後につけておく。
@@ -203,7 +204,7 @@ function add_person_choice(sel_elt, id, displayed_name) {
 /* [汎用モジュール] 
 配列 a に要素 e が含まれていない場合にのみ、a に e を追加する。 */
 function push_if_not_included(a, e) { if (! a.includes(e) ) { a.push(e); } }
-/* [汎用モジュール] 
+/* [汎用モジュール] ID のリストを表す文字列を配列に変換して返す。
 引数は、カンマで区切られた ID のリストを表す文字列。空文字列の場合がある。
 非空の場合は最後がカンマ。たとえば 'h0,p1,h3,p5,' や 'v3,' など。 */
 function id_str_to_arr(comma_separated_ids) {
@@ -214,8 +215,8 @@ function id_str_to_arr(comma_separated_ids) {
 /* [汎用モジュール] */
 function apply_to_each_hid_pid_pair(hid_pid_list_str, func) {
   const ids = id_str_to_arr(hid_pid_list_str), L = ids.length/2;
- // ids[2*j] が横リンクの ID、ids[2*j+1] が人物の ID。
-  for (var j = 0; j < L; j++) { func(ids[2*j], ids[2*j+1]); }
+  // ids[2*j] が横リンクの ID、ids[2*j+1] が人物の ID。
+  for (let j = 0; j < L; j++) { func(ids[2*j], ids[2*j+1]); }
 }
 /* [汎用モジュール] SVG 要素または HTML 要素に文字列 t のテキストノードを追加 */
 function add_text_node(elt, t) { elt.appendChild(document.createTextNode(t)); }
@@ -224,9 +225,9 @@ function add_text_node(elt, t) { elt.appendChild(document.createTextNode(t)); }
 function add_person() {
   const new_personal_id = 'p' + P_GRAPH.next_person_id++; // IDを生成
   // 入力内容を読み込む
-  var new_personal_name = document.menu.new_personal_name.value;
+  let new_personal_name = document.menu.new_personal_name.value;
   if (new_personal_name === '') { alert('名前を入力してください'); return; }
-  var verticalize = false; // デフォルト値
+  let verticalize = false; // デフォルト値
   if (document.menu.verticalize.checked) {
     verticalize = true;
     new_personal_name = new_personal_name.replace(/[(（]/g, '︵').replace(/[)）]/g, '︶');
@@ -234,10 +235,10 @@ function add_person() {
   const gender = selected_radio_choice(document.menu.new_personal_gender);
 
   // グループ化のための g 要素を作る。
-  var g = document.createElementNS(SVG_NS, 'g');
+  const g = document.createElementNS(SVG_NS, 'g');
   g.setAttribute('id', new_personal_id + 'g');
   // 矩形の幅と高さを計算する。
-  var box_w, box_h;
+  let box_w, box_h;
   const L = new_personal_name.length;
   if (verticalize) { // 縦書き
     box_h = CONFIG.font_size * L + CONFIG.v_text_dy * 2;
@@ -259,24 +260,22 @@ function add_person() {
             * CONFIG.grid_size;
 
   // 矩形を作る
-  var r = document.createElementNS(SVG_NS, 'rect');
+  const r = document.createElementNS(SVG_NS, 'rect');
   const r_attr = new Map([['id', new_personal_id + 'r'], ['class', gender], 
     ['x', x], ['y', y], ['width', box_w], ['height', box_h]]);
   r_attr.forEach(function(val, key) { r.setAttribute(key, val); });
   // グループに矩形要素を追加。
   add_text_node(g, '\n  ');  g.appendChild(r);  add_text_node(g, '\n  ');
   // 文字を設定する
-  var t = document.createElementNS(SVG_NS, 'text'), t_attr;
+  const t = document.createElementNS(SVG_NS, 'text');
   add_text_node(t, new_personal_name);
-  if (verticalize) { // 縦書き
-    t_attr = new Map([['id', new_personal_id + 't'], ['x', x], ['y', y],
+  const t_attr = (verticalize) ?
+    ( new Map([['id', new_personal_id + 't'], ['x', x], ['y', y],
       ['textLength', CONFIG.font_size * L], ['writing-mode', 'tb'],
-      ['dx', CONFIG.v_text_dx], ['dy', CONFIG.v_text_dy]]);
-  } else { // 横書き
-    t_attr = new Map([['id', new_personal_id + 't'], ['x', x], ['y', y],
+      ['dx', CONFIG.v_text_dx], ['dy', CONFIG.v_text_dy]]) ) :
+    ( new Map([['id', new_personal_id + 't'], ['x', x], ['y', y],
       ['textLength', CONFIG.font_size * L], 
-      ['dx', CONFIG.h_text_dx], ['dy', CONFIG.h_text_dy]]);
-  }
+      ['dx', CONFIG.h_text_dx], ['dy', CONFIG.h_text_dy]]) );
   t_attr.forEach(function(val, key) { t.setAttribute(key, val); });
   g.appendChild(t);  add_text_node(g, '\n  ');
   // data-* 属性の設定。左右上下にくっついているリンクについての情報である。
@@ -287,8 +286,7 @@ function add_person() {
   svg_elt.appendChild(g);  add_text_node(svg_elt, '\n');
   // P_GRAPHへの反映
   P_GRAPH.persons.push(new_personal_id);
-  const mng = new RectMngr(new_personal_id, box_h, box_w);
-  P_GRAPH.p_free_pos_mngrs.push(mng);
+  P_GRAPH.p_free_pos_mngrs.push(new RectMngr(new_personal_id, box_h, box_w));
   // プルダウンリストへの反映
   add_person_choice(document.menu.partner_1, new_personal_id, new_personal_name);
   add_person_choice(document.menu.partner_2, new_personal_id, new_personal_name);
@@ -329,7 +327,7 @@ function add_h_link() {
   const y_end2 = y_start2 + parseInt(r2.getAttribute('height'));
 
   // 横方向に最小限の隙間があるかどうかをチェックする
-  var r1_is_left;
+  let r1_is_left;
   if (x_end1 + CONFIG.min_h_link_len <= x_start2) {
     r1_is_left = true;  // 矩形 r1 が左にあり、矩形 r2 が右にある。
   } else if (x_end2 + CONFIG.min_h_link_len <= x_start1) {
@@ -342,7 +340,7 @@ function add_h_link() {
   }
 
   // 横方向のリンクを追加する余地 (辺上の空き場所) があるかどうかをチェックする
-  var can_add_link;
+  let can_add_link;
   if (r1_is_left) { // r1 が左にあるときは、r1 の右辺と r2 の左辺に空きが必要
     can_add_link = 
       free_pos_found(p1_id, 'right') && free_pos_found(p2_id, 'left');
@@ -355,7 +353,7 @@ function add_h_link() {
   }
 
   // ここにくるのは、リンクを追加して良い場合。
-  var r1_dy, r2_dy, link_start_x, link_end_x, link_y;
+  let r1_dy, r2_dy, link_start_x, link_end_x, link_y;
   if (r1_is_left) { // r1 が左にある
     r1_dy = occupy_next_pos(p1_id, 'right');
     r2_dy = occupy_next_pos(p2_id, 'left');
@@ -369,9 +367,9 @@ function add_h_link() {
   }
 
   // 矩形位置が現状のままだと仮定して、リンクをつなぐ y 位置を求める
-  var r1_pos_tmp = y_start1 + r1_dy, r2_pos_tmp = y_start2 + r2_dy;
+  let r1_pos_tmp = y_start1 + r1_dy, r2_pos_tmp = y_start2 + r2_dy;
   // その差分を求める。
-  var diff = r1_pos_tmp - r2_pos_tmp;
+  let diff = r1_pos_tmp - r2_pos_tmp;
 
   // 差分を埋めるように、諸要素を移動させることにより、横リンクを水平に保つ。
   // 矩形 r1, r2 のどちらを移動させるべきかに応じて場合分けする。
@@ -400,7 +398,7 @@ function add_h_link() {
   // 縦リンクの追加メニューのプルダウンリストに選択肢を追加する
   const t1 = document.getElementById(p1_id + 't').textContent;
   const t2 = document.getElementById(p2_id + 't').textContent;
-  var displayed_str = r1_is_left ? (t1 + 'と' + t2) : (t2 + 'と' + t1);
+  const displayed_str = r1_is_left ? (t1 + 'と' + t2) : (t2 + 'と' + t1);
   add_person_choice(document.getElementById('parents_2'), hid, displayed_str);
 
   if (CONFIG.now_debugging) {
@@ -468,31 +466,31 @@ pid_fixed の方は位置をそのままにして、pid_moved の矩形の位置
     これについても、本来どうするのが良いのかは後日考える。 */
 function move_down_collectively(pid_fixed, pid_moved, amount) {
   // (a) の通常処理用 (移動対象を記録する配列)
-  var persons_to_move_down = [pid_moved];
-  var hlinks_to_move_down = [], vlinks_to_move_down = [];
+  let persons_to_move_down = [pid_moved];
+  let hlinks_to_move_down = [], vlinks_to_move_down = [];
   // 動かす対象の矩形の下辺の y 座標のうちの最大値。初期化。(b) の処理に必要。
-  var max_y = 0;
+  let max_y = 0;
   // (c) の処理対象の縦リンクを記録する配列
-  var vlinks_to_extend = [];
+  let vlinks_to_extend = [];
   // (d) に該当する例外的な横リンクを記録する配列
-  var exceptional_hlinks = [];
+  let exceptional_hlinks = [];
   // (e) に該当する例外的な縦リンクを記録する配列
-  var exceptional_vlinks = [];
+  let exceptional_vlinks = [];
 
   // persons_to_move_down.length は for 文の中で変化することに注意。
   // persons_to_move_down[i] (=== cur_person) なる ID の人物に順に着目してゆく。
-  for (var i = 0; i < persons_to_move_down.length; i++) {
-    var cur_person = persons_to_move_down[i];
-    var rect = document.getElementById(cur_person + 'r');  // この人物を表す矩形
-    var rect_y_min = parseInt(rect.getAttribute('y'));
-    var rect_y_max = rect_y_min + parseInt(rect.getAttribute('height'));
+  for (let i = 0; i < persons_to_move_down.length; i++) {
+    let cur_person = persons_to_move_down[i];
+    let rect = document.getElementById(cur_person + 'r');  // この人物を表す矩形
+    let rect_y_min = parseInt(rect.getAttribute('y'));
+    let rect_y_max = rect_y_min + parseInt(rect.getAttribute('height'));
     if (max_y < rect_y_max) { max_y = rect_y_max; }
     // この人物を表す矩形を含む g 要素の属性として、縦横リンクのつながりが
     // 記録されている。
-    var gr = document.getElementById(cur_person + 'g');
+    let gr = document.getElementById(cur_person + 'g');
     // まず、cur_person の横のつながりを確認する。
     // links_str は、たとえば 'h0,p1,h3,p5,' のような文字列、または空文字列。
-    var links_str = gr.dataset.right_links + gr.dataset.left_links;
+    let links_str = gr.dataset.right_links + gr.dataset.left_links;
     apply_to_each_hid_pid_pair(links_str, function(cur_hid, cur_pid) {
       if (cur_pid === pid_fixed) { // (d) に該当する例外的な場合
         // まずこの例外的な横リンクについての情報を記録する
@@ -500,7 +498,7 @@ function move_down_collectively(pid_fixed, pid_moved, amount) {
         exceptional_hlinks.push({ hlink_id: cur_hid, 
           from_whom_linked: cur_person }); 
         // この例外的横リンクから下に伸びている縦リンクがあるかもしれない
-        var vids = document.getElementById(cur_hid).dataset.lower_links;
+        let vids = document.getElementById(cur_hid).dataset.lower_links;
         // もしあれば、その縦リンクも「(d) に該当する例外的な場合」として扱う。
         id_str_to_arr(vids).map(function(v) {
           exceptional_vlinks.push({ vlink_id: v, 
@@ -572,7 +570,7 @@ function move_down_collectively(pid_fixed, pid_moved, amount) {
   }
 
   if (CONFIG.now_debugging) {
-    var msg = 'persons_to_move_down is [' + persons_to_move_down + ']' + 
+    let msg = 'persons_to_move_down is [' + persons_to_move_down + ']' + 
               'hlinks_to_move_down is [' + hlinks_to_move_down + ']' + 
               'vlinks_to_move_down is [' + vlinks_to_move_down + ']' + 
               'vlinks_to_extend is [' + vlinks_to_extend + ']' + 
@@ -612,7 +610,7 @@ function move_down_collectively(pid_fixed, pid_moved, amount) {
 
 /* 「横の関係を追加する」メニューのための部品。新規の横リンクを描画する。 */
 function draw_new_h_link(hid, link_start_x, link_end_x, link_y, link_type, pid_left, pid_right) {
-  var h_link = document.createElementNS(SVG_NS, 'path');
+  let h_link = document.createElementNS(SVG_NS, 'path');
   h_link.setAttribute('id', hid);  // IDを記録
   h_link.setAttribute('class', link_type);  // 線種も記録
   // その path 要素に対して属性を設定することで横リンクを描画する
@@ -638,12 +636,12 @@ function draw_h_link(h_link, link_start_x, link_end_x, link_y) {
     console.log('draw_h_link(h_link,' + link_start_x + ',' + link_end_x + ',' + link_y + ')');
   }
   // d 属性の値 (文字列) を生成する
-  var d_str;
+  let d_str;
   const link_len = link_end_x - link_start_x;
   // この横リンクを起点にして将来的に縦リンクを作成する場合に備え、
   // 縦リンクの起点の座標も計算しておく (後で data-* 属性として設定する)
   const connect_pos_x = link_start_x + Math.floor(link_len / 2);
-  var connect_pos_y;
+  let connect_pos_y;
   if (h_link.getAttribute('class') === 'double') { // 二重線
     const upper_line_y = link_y - 2, lower_line_y = link_y + 2;
     connect_pos_y = lower_line_y;
@@ -692,9 +690,9 @@ function add_v_link_1() {
   const vid = 'v' + P_GRAPH.next_vlink_id++;  // IDを生成
   // 親の矩形の下辺におけるリンクの接続位置と、
   // 子の矩形の上辺におけるリンクの接続位置を求める
-  var p_x_mid = (p_x_start + p_x_end) / 2;
-  var c_x_mid = (c_x_start + c_x_end) / 2;
-  var p_x_pos, c_x_pos, p_offset_info, c_offset_info;
+  const p_x_mid = (p_x_start + p_x_end) / 2;
+  const c_x_mid = (c_x_start + c_x_end) / 2;
+  let p_x_pos, c_x_pos, p_offset_info, c_offset_info;
   if (c_x_mid <= p_x_mid) { // 子供の方が親より左寄り気味なので、
     // 子供の上辺では右側を優先、親の下辺では左側を優先する。
     p_offset_info = decide_where_to_connect(p_id, 'lower', link_type, false);
@@ -755,7 +753,7 @@ function add_v_link_2() {
   // ここにくるのは、リンクを追加して良い場合。
   const vid = 'v' + P_GRAPH.next_vlink_id++;  // IDを生成
   //子の矩形の上辺におけるリンクの接続位置を求める
-  var end_pos_x, offset_info;
+  let end_pos_x, offset_info;
   if ((c_x_start + c_x_end) / 2 <= start_pos_x) {
     // 子供の方が、親同士をつなぐ横リンクの中点より左寄り気味なので、
     // 子供の上辺では右側を優先する
@@ -813,7 +811,7 @@ function decide_where_to_connect(pid, edge, link_type, right_side_preferred) {
 指定された点と点の間の縦リンクを描く (他の関数から呼ぶためのもの)
 始点・終点の位置以外の data-* 属性の設定は、呼び出し側で行うこと。 */
 function draw_new_v_link(upper_pt_x, upper_pt_y, lower_pt_x, lower_pt_y, vid, link_type) {
-  var v_link = document.createElementNS(SVG_NS, 'path');
+  let v_link = document.createElementNS(SVG_NS, 'path');
   v_link.setAttribute('id', vid);
   v_link.setAttribute('class', link_type);
   draw_v_link(v_link, upper_pt_x, upper_pt_y, lower_pt_x, lower_pt_y);
@@ -826,7 +824,7 @@ function draw_new_v_link(upper_pt_x, upper_pt_y, lower_pt_x, lower_pt_y, vid, li
 /* 縦リンクの新規作成と再描画での共通部分 */
 function draw_v_link(v_link, upper_pt_x, upper_pt_y, lower_pt_x, lower_pt_y) {
   // d 属性の値 (文字列) を生成する
-  var d_str = 'M ' + upper_pt_x + ',' + (upper_pt_y + 1).toString();
+  let d_str = 'M ' + upper_pt_x + ',' + (upper_pt_y + 1).toString();
   if (upper_pt_x === lower_pt_x) { // 縦の直線
     d_str += ' l 0,' + (lower_pt_y - upper_pt_y - 1).toString();
   } else { // 折れ曲がる形
@@ -877,13 +875,13 @@ function move_person_horizontally(pid, dx) {
   if (CONFIG.now_debugging) { 
     console.log('move_person_horizontally(' + pid + ', ' + dx + ')');
   }
-  var actual_dx = dx; // 初期化
+  let actual_dx = dx; // 初期化
   const dataset = document.getElementById(pid + 'g').dataset;
   const rhs = dataset.right_links, lhs = dataset.left_links;
   const r = document.getElementById(pid + 'r');
-  var x_min = parseInt(r.getAttribute('x'));
-  var x_max = x_min + parseInt(r.getAttribute('width'));
-  var r_links = [], l_links = [], r_linked_persons = [], l_linked_persons = [];
+  let x_min = parseInt(r.getAttribute('x'));
+  let x_max = x_min + parseInt(r.getAttribute('width'));
+  let r_links = [], l_links = [], r_linked_persons = [], l_linked_persons = [];
 
   // 右側でつながっている相手を求める
   // rhs は、たとえば、'h0,p1,h3,p5,' のような文字列または空文字列。
@@ -1013,17 +1011,17 @@ function move_person_vertically(pid, dy) {
     console.log('move_person_vertically(' +  pid + ', ' + dy + ')');
   }
   // 初期化
-  var actual_dy = dy, target_persons = [pid];
+  let actual_dy = dy, target_persons = [pid];
   // for horizontal, upper, and lower links, respectively
-  var target_h_links = [], target_u_links = [], target_l_links = [];
+  let target_h_links = [], target_u_links = [], target_l_links = [];
 
   // target_persons.length は for 文の中で変化することに注意。
   // target_persons[i] という ID の人物に、順に着目してゆく。
-  for (var i = 0; i < target_persons.length; i++) {
+  for (let i = 0; i < target_persons.length; i++) {
     // この人物を表す矩形の縦方向の範囲を求める
-    var rect = document.getElementById(target_persons[i] + 'r');
-    var y_min = parseInt(rect.getAttribute('y'));
-    var y_max = y_min + parseInt(rect.getAttribute('height'));
+    let rect = document.getElementById(target_persons[i] + 'r');
+    let y_min = parseInt(rect.getAttribute('y'));
+    let y_max = y_min + parseInt(rect.getAttribute('height'));
 
     if (CONFIG.now_debugging) {
       console.log('i=' + i + ', target_persons[i]=' + target_persons[i] +
@@ -1045,8 +1043,8 @@ function move_person_vertically(pid, dy) {
 
     // この人物を表す矩形を含む g 要素の属性として、縦横リンクのつながりが
     // 記録されている。それを読み取る。
-    var gr = document.getElementById(target_persons[i] + 'g');
-    var rhs = gr.dataset.right_links; // 右辺側でのつながり
+    let gr = document.getElementById(target_persons[i] + 'g');
+    let rhs = gr.dataset.right_links; // 右辺側でのつながり
     if (CONFIG.now_debugging) { console.log('rhs=[' + rhs + ']'); }
     // rhs は、たとえば、'h0,p1,h3,p5,' のような文字列。または空文字列。
     apply_to_each_hid_pid_pair(rhs, function(cur_hid, cur_pid) {
@@ -1058,7 +1056,7 @@ function move_person_vertically(pid, dy) {
         function(v) { push_if_not_included(target_l_links, v); });
     });
     // 左辺側についても同様
-    var lhs = gr.dataset.left_links;
+    let lhs = gr.dataset.left_links;
     if (CONFIG.now_debugging) { console.log('lhs=[' + lhs + ']'); }
     apply_to_each_hid_pid_pair(lhs, function(cur_hid, cur_pid) {
       push_if_not_included(target_persons, cur_pid);
@@ -1069,7 +1067,7 @@ function move_person_vertically(pid, dy) {
     });
 
     // 上辺
-    var u_side = gr.dataset.upper_links;
+    let u_side = gr.dataset.upper_links;
     if (CONFIG.now_debugging) { console.log('u_side=[' + u_side + ']'); }
     // u_side は、たとえば、'v1,v3,' のような文字列
     id_str_to_arr(u_side).map(function(cur_vid) {
@@ -1085,7 +1083,7 @@ function move_person_vertically(pid, dy) {
         const p1_rect = document.getElementById(p1_id + 'r');
         const p1_bottom = parseInt(p1_rect.getAttribute('y')) + 
                     parseInt(p1_rect.getAttribute('height'));
-        var gap = y_min + actual_dy - p1_bottom;
+        let gap = y_min + actual_dy - p1_bottom;
         // gap (今の actual_dy だけ動いたと仮定した場合の隙間) が計算
         // できたので、これで十分かどうか調べて、必要に応じて調整
         if (gap < CONFIG.min_v_link_len) {
@@ -1102,7 +1100,7 @@ function move_person_vertically(pid, dy) {
       }
     });
     // 下辺
-    var l_side = gr.dataset.lower_links;
+    let l_side = gr.dataset.lower_links;
     if (CONFIG.now_debugging) { console.log('l_side=[' + l_side + ']'); }
     id_str_to_arr(l_side).map(function(cur_vid) {
       // (! target_l_links.includes(cur_vid) ) かどうかのチェックは不要の筈。
@@ -1160,7 +1158,7 @@ function shift_all() {
   const amount = parseInt(document.menu.how_much_shifted.value);
   if (amount < 0) { alert('移動量は正の数を指定して下さい'); return; }
   // dx, dy (x 方向、y 方向の移動量) を設定する
-  var dx, dy;
+  let dx, dy;
   switch ( selected_radio_choice(document.menu.shift_direction) ) {
     case 'up'   : dx = 0; dy = -amount; break;
     case 'down' : dx = 0; dy = amount; break;
@@ -1169,8 +1167,8 @@ function shift_all() {
     default     : dx = 0; dy = 0; break;
   }
   // 現状位置の各矩形の範囲を見て、全体としての上下左右の端を求める
-  var min_x = P_GRAPH.svg_width, max_x = 0;  // 初期化
-  var min_y = P_GRAPH.svg_height, max_y = 0;  // 初期化
+  let min_x = P_GRAPH.svg_width, max_x = 0;  // 初期化
+  let min_y = P_GRAPH.svg_height, max_y = 0;  // 初期化
   P_GRAPH.persons.map(pid => {
     const rect = document.getElementById(pid + 'r');
     const x_start = parseInt(rect.getAttribute('x'));
@@ -1183,8 +1181,8 @@ function shift_all() {
     if (max_y < y_end) { max_y = y_end; }
   });
   // 仮に指定通りに動かしたら枠からはみ出る場合は、枠を広げる。
-  var new_min_x = min_x + dx, new_max_x = max_x + dx, new_dx = dx;
-  var new_min_y = min_y + dy, new_max_y = max_y + dy, new_dy = dy;
+  let new_min_x = min_x + dx, new_max_x = max_x + dx, new_dx = dx;
+  let new_min_y = min_y + dy, new_max_y = max_y + dy, new_dy = dy;
   if (new_min_x < 0) { modify_width_0(-new_min_x); new_dx -= new_min_x; }
   if (new_min_y < 0) { modify_height_0(-new_min_y); new_dy -= new_min_y; }
   if (P_GRAPH.svg_width < new_max_x) { modify_width_0(new_max_x - P_GRAPH.svg_width); }
@@ -1284,7 +1282,7 @@ href 要素に設定する。 */
 function download_svg() {
   const s = document.getElementById('tree_canvas_div').innerHTML;
   const b = new Blob([s], {type :'image/svg+xml'});
-  var a = document.createElement('a');
+  const a = document.createElement('a');
   document.getElementsByTagName('body')[0].appendChild(a);
   a.download = document.menu.filename_prefix.value + '.svg';
   a.href = URL.createObjectURL(b);
@@ -1297,9 +1295,9 @@ function backup_svg(description_str) {
   const s = document.getElementById('tree_canvas_div').innerHTML;
   const b = new Blob([s], {type :'image/svg+xml'});
   const ul = document.getElementById('svg_backup');
-  var li = document.createElement('li');
+  const li = document.createElement('li');
   ul.appendChild(li);
-  var a = document.createElement('a');
+  const a = document.createElement('a');
   a.download = document.menu.filename_prefix.value + '_step_' + P_GRAPH.step_No + '.svg';
   P_GRAPH.step_No++;
   a.href = URL.createObjectURL(b);  add_text_node(a, description_str);
@@ -1313,8 +1311,8 @@ function set_prefix() {
   const prefix_str = document.menu.filename_prefix.value;
   const backup_links = document.getElementById('svg_backup').getElementsByTagName('a');
   const L = backup_links.length;
-  for (var i = 0; i < L; i++) {
-    var matches = backup_links[i].download.match(/^.+_step_(\d+)\.svg$/);
+  for (let i = 0; i < L; i++) {
+    let matches = backup_links[i].download.match(/^.+_step_(\d+)\.svg$/);
     if (matches === null || matches.length !== 2) {
       alert('error in set_prefix()'); return;
     }
@@ -1325,7 +1323,7 @@ function set_prefix() {
 /* 「作成済みのデータを読み込む」メニュー。本当は、読み取った内容が所望の形式か
 どうかを検査した方が良いが、そうしたエラーチェックは省略したままにするかも。 */
 function read_in() {
-  var reader = new FileReader();
+  const reader = new FileReader();
   reader.onload = function (e) {
     // 読み込んだテキストの内容を、divタグ (IDは 'display_test') の中身
     // として書き出す。
@@ -1344,38 +1342,35 @@ function set_p_graph_values() {
   P_GRAPH.reset_all();
   document.menu.reset();
   print_current_svg_size();  // svg 要素の大きさ (幅と高さ) を表示し直す。
-
   const svg_elt = document.getElementById('pedigree');
-  var i, g_id, path_id, id_No, pid, m, rect, w, h, mng, txt;
 
-  // 人物を一人ずつ見てゆく (g 要素でループを回す)
+  // 人物を一人ずつ見てゆく (各 g 要素に注目する)
   const g_elts = svg_elt.getElementsByTagName('g'), gN = g_elts.length;
-  for (i=0; i<gN; i++) {
-    g_id = g_elts[i].getAttribute('id'); // 'p0g' などの文字列
-    m = g_id.match(/^p(\d+)g$/);
+  for (let i = 0; i < gN; i++) {
+    let cur_g = g_elts[i];
+    let g_id = cur_g.getAttribute('id'); // 'p0g' などの文字列
+    let m = g_id.match(/^p(\d+)g$/);
     if (m === null || m.length !== 2) {
       alert('error in set_p_graph_values(): ' + g_id); return;
     }
     // ID の数字部分を取り出して、「次の番号」用の変数を更新
-    id_No = parseInt(m[1]);
+    let id_No = parseInt(m[1]);
     if (P_GRAPH.next_person_id <= id_No) { P_GRAPH.next_person_id = id_No + 1; }
     // 'p0' のような、人物を表すための ID を求め、それを登録
-    pid = 'p' + id_No;
-    P_GRAPH.persons.push(pid);
+    let pid = 'p' + id_No;  P_GRAPH.persons.push(pid);
 
     // 今見ている g 要素の子要素には rect と text があるはず。
     // まず rect から幅と高さを読み取り、リンク管理用の RectMngr オブジェクトを
     // 初期化し、それを登録する。
-    rect = document.getElementById(pid + 'r');
-    w = parseInt(rect.getAttribute('width'));
-    h = parseInt(rect.getAttribute('height'));
-    mng = new RectMngr(pid, h, w);
-    P_GRAPH.p_free_pos_mngrs.push(mng);
+    let rect = document.getElementById(pid + 'r');
+    let w = parseInt(rect.getAttribute('width'));
+    let h = parseInt(rect.getAttribute('height'));
+    P_GRAPH.p_free_pos_mngrs.push(new RectMngr(pid, h, w));
     // この初期化した mng に適切な値を設定しなくてはならないが、それは
     // 後でリンクを見たときに行う。
 
     // プルダウンリストへの反映
-    txt = document.getElementById(pid + 't').textContent;
+    let txt = document.getElementById(pid + 't').textContent;
     add_person_choice(document.menu.partner_1, pid, txt);
     add_person_choice(document.menu.partner_2, pid, txt);
     add_person_choice(document.menu.parent_1, pid, txt);
@@ -1386,21 +1381,21 @@ function set_p_graph_values() {
 
   // リンクを一つずつ見てゆく
   const path_elts = svg_elt.getElementsByTagName('path'), pN = path_elts.length;
-  var lhs_person_id, rhs_person_id, link_type, parent1_id, parent2_id, child_id, parent1_pos_idx, child_pos_idx;
-  for (i=0; i<pN; i++) {
-    path_id = path_elts[i].getAttribute('id'); // 'h0' または 'v0' などの文字列
-    m = path_id.match(/^([hv])(\d+)$/);
+  for (let i = 0; i < pN; i++) {
+    let cur_path = path_elts[i];
+    let path_id = cur_path.getAttribute('id'); // 'h0' または 'v0' などの文字列
+    let m = path_id.match(/^([hv])(\d+)$/);
     if (m === null || m.length !== 3) {
       alert('error in set_p_graph_values(): ' + path_id); return;
     }
-    id_No = parseInt(m[2]); // ID の数字部分を取り出す。
+    let id_No = parseInt(m[2]); // ID の数字部分を取り出す。
     if (m[1] === 'h') { // 横リンクを見ている
       //「次の番号」用の変数を更新
       if (P_GRAPH.next_hlink_id <= id_No) { P_GRAPH.next_hlink_id = id_No + 1; }
       P_GRAPH.h_links.push(path_id);
-      lhs_person_id = path_elts[i].dataset.lhs_person;
+      let lhs_person_id = cur_path.dataset.lhs_person;
       occupy_next_pos(lhs_person_id, 'right');
-      rhs_person_id = path_elts[i].dataset.rhs_person;
+      let rhs_person_id = cur_path.dataset.rhs_person;
       occupy_next_pos(rhs_person_id, 'left');
       // 縦リンクの追加メニューのプルダウンリストに選択肢を追加する
       add_person_choice( document.getElementById('parents_2'), path_id,
@@ -1410,19 +1405,18 @@ function set_p_graph_values() {
       //「次の番号」用の変数を更新
       if (P_GRAPH.next_vlink_id <= id_No) { P_GRAPH.next_vlink_id = id_No + 1; }
       P_GRAPH.v_links.push(path_id);
-      link_type = path_elts[i].getAttribute('class');
-      parent1_id = path_elts[i].dataset.parent1;
-      parent2_id = path_elts[i].dataset.parent2;
-      child_id = path_elts[i].dataset.child;
-      child_pos_idx = parseInt(path_elts[i].dataset.child_pos_idx);
+      let link_type = cur_path.getAttribute('class');
+      let parent1_id = cur_path.dataset.parent1;
+      let parent2_id = cur_path.dataset.parent2;
       if (parent2_id === undefined || parent2_id === null ||
           parent2_id === '') { // 一人の親から子へと縦リンクでつないでいる場合。
         // 親の下辺の使用状況を設定する。
-        parent1_pos_idx = parseInt(path_elts[i].dataset.parent1_pos_idx);
-        set_EndPointsMngr_UL(parent1_id, 'lower', link_type, parent1_pos_idx);
+        set_EndPointsMngr_UL(parent1_id, 'lower', link_type, 
+                             parseInt(cur_path.dataset.parent1_pos_idx));
       }
       // 子の上辺については、リンクのつなぎ方によらず、その使用状況を設定する。
-      set_EndPointsMngr_UL(child_id, 'upper', link_type, child_pos_idx);
+      set_EndPointsMngr_UL(cur_path.dataset.child, 'upper', link_type,
+                           parseInt(cur_path.dataset.child_pos_idx));
       // なお、二人の親を結ぶ横リンクから、子へと縦リンクでつないでいるときは、
       // 親の下辺の使用状況の設定は不要 (この縦リンクによって状況が変化する
       // 訳ではないため)。
