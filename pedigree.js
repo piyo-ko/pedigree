@@ -18,6 +18,7 @@ class EndPointsMngr_RL {
     this.positions = [4, 2, 6, 1, 7, 3, 5];  // この順に埋めていく
     this.next_position_idx = 0; // positions の添え字 (次に埋めるべき位置に対応)
     this.edge_length = len;     // 辺の長さ
+    this.hlink_ids = []; // この辺につながる横リンクの ID の配列
   }
   print() { // デバッグ用の印字関数
     console.log('   next position is positions[' + this.next_position_idx + 
@@ -25,19 +26,26 @@ class EndPointsMngr_RL {
       '), and edge_length is ' + this.edge_length);
   }
   // この辺においてリンクの接続位置として空いている次の位置を、番号ではなくて
-  //実際の長さで表して、返す。また、「次の位置」も更新する。
-  next_position() {
+  // 実際の長さで表して、返す。また、「次の位置」も更新する。
+  next_position(hid) { // 引数は、更新前の「次の位置」につなぐべき横リンクの ID
     if (this.next_position_idx === this.positions.length) {
       // すでに全箇所が埋まっているのでエラー
       alert('そんなに多くの関係は設定できません!');  return(-1);
     }
     const pos = Math.floor( this.edge_length * this.positions[this.next_position_idx] / (this.positions.length + 1) );
     this.next_position_idx++;
+    this.hlink_ids.push(hid);
     return(pos);
   }
   // この辺に、リンクの接続位置として利用可能な位置が残っているかどうかを
   // 調べる。残っていれば true。
   is_available() { return(this.next_position_idx < this.positions.length); }
+  // 「矩形の高さを増やす」メニューにより辺の長さを増やすときに使う。
+  extend_length() { this.edge_length += CONFIG.font_size * 2; }
+  which_pos_No(hid) {
+    const pos_No = this.positions[this.hlink_ids.findIndex(h => (h === hid))];
+    return(pos_No);
+  }
 }
 
 /* 人を表す矩形の上辺・下辺 (横の辺) に接続するリンクを管理する。
@@ -288,18 +296,92 @@ function add_person() {
   P_GRAPH.persons.push(new_personal_id);
   P_GRAPH.p_free_pos_mngrs.push(new RectMngr(new_personal_id, box_h, box_w));
   // プルダウンリストへの反映
-  add_person_choice(document.menu.partner_1, new_personal_id, new_personal_name);
-  add_person_choice(document.menu.partner_2, new_personal_id, new_personal_name);
-  add_person_choice(document.menu.parent_1, new_personal_id, new_personal_name);
-  add_person_choice(document.menu.child_1, new_personal_id, new_personal_name);
-  add_person_choice(document.menu.child_2, new_personal_id, new_personal_name);
-  add_person_choice(document.menu.target_person, new_personal_id, new_personal_name);
+  const m = document.menu;
+  [m.person_to_be_extended, m.partner_1, m.partner_2, m.parent_1, m.child_1, 
+   m.child_2, m.target_person].map(s => { 
+     add_person_choice(s, new_personal_id, new_personal_name);
+  });
 
   if (CONFIG.now_debugging) {
     console.log('add_person() ends.');  P_GRAPH.print();
   }
   backup_svg(new_personal_name + 'を追加');
   document.menu.new_personal_name.value = ''; // 最後に名前の入力欄をクリアする
+}
+
+/* 「矩形の高さを増やす」メニュー。増やす量は、縦書きでも横書きでも、一定値
+(CONFIG.font_size * 2) とする。 */
+function extend_rect() {
+  const pid = selected_choice(document.menu.person_to_be_extended);
+  const g = document.getElementById(pid + 'g');
+  const lower_links = g.dataset.lower_links;
+  const lower_links_arr = id_str_to_arr(lower_links);
+  const rect = document.getElementById(pid + 'r');
+  const cur_rect_y_start = parseInt(rect.getAttribute('y'));
+  const cur_height = parseInt(rect.getAttribute('height'));
+  const cur_rect_y_end = cur_rect_y_start + cur_height;
+  // 下辺から誰かにつながっている場合に、その誰かの矩形までの距離として現状で確保
+  // されているべき (拡張を行うために必要な) 最小値。
+  const min_gap = CONFIG.font_size * 2 + CONFIG.min_v_link_len;
+  // 下辺から誰にもつながっていなければ拡張可能。一人以上の子につながっている
+  // 場合は、min_gap の距離を確保できていない子が一人でもいれば、拡張不可。
+  const extendable = (lower_links === '') ? true : 
+    !(lower_links_arr.some(vid => {
+      const cid = document.getElementById(vid).dataset.child;
+      const c_top = parseInt(document.getElementById(cid + 'r').getAttribute('y'));
+      return(c_top - cur_rect_y_end < min_gap);
+    }));
+  if (!extendable) { alert('リンク先の子が近すぎます'); return; }
+
+  // ここに来るのは高さを増やしても良い場合のみ。
+  // 本人の矩形の高さを増やし、名前の文字の配置も調整する。
+  rect.setAttribute('height', cur_height + CONFIG.font_size * 2);
+  const txt = document.getElementById(pid + 't');
+  const writing_mode = txt.getAttribute('writing-mode');
+  const cur_dy = parseInt(txt.getAttribute('dy'));
+  if (writing_mode === 'tb') { // 縦書き
+    txt.setAttribute('dy', cur_dy + Math.floor(CONFIG.font_size / 2));
+    let cur_textLength = parseInt(txt.getAttribute('textLength'));
+    if (isNaN(cur_textLength)) { // 古い版では textLength 指定をしていないので
+      cur_textLength = CONFIG.font_size * txt.textContent.length;
+    }
+    txt.setAttribute('textLength', cur_textLength + CONFIG.font_size);
+  } else { // 横書き
+    txt.setAttribute('dy', cur_dy + CONFIG.font_size);
+  }
+  // 右辺・左辺の管理用オブジェクトを更新する。
+  const mng = P_GRAPH.p_free_pos_mngrs.find(m => (m.pid === pid));
+  mng.right_side.extend_length();
+  mng.left_side.extend_length();
+  // 下辺から子への縦リンクを再描画する。
+  const new_rect_y_end = cur_rect_y_end + CONFIG.font_size * 2;
+  lower_links_arr.map(vid => {
+    const vlink = document.getElementById(vid);
+    draw_v_link(vlink, parseInt(vlink.dataset.from_x), new_rect_y_end,
+      parseInt(vlink.dataset.to_x), parseInt(vlink.dataset.to_y));
+  });
+  // 右辺・左辺でつながっている相手 (とさらにその先の関係者たち) を下に
+  // 移動させ、横リンクも再描画する。その横リンクからぶら下がっている縦リンクが
+  // あれば、それらも再描画する。
+  const diff_unit_len = Math.floor(CONFIG.font_size * 2 / 8);
+  function move_down_together(hlink_ids_str, edge_mng) {
+    apply_to_each_hid_pid_pair(hlink_ids_str, function(hid, partner_pid) {
+      const diff = edge_mng.which_pos_No(hid) * diff_unit_len;
+      const hlink = document.getElementById(hid);
+      move_down_collectively(pid, partner_pid, diff, hid);
+      move_link(hid, 0, diff, true);
+      id_str_to_arr(hlink.dataset.lower_links).map(function(vid) {
+        const vlink = document.getElementById(vid);
+        draw_v_link(vlink, parseInt(vlink.dataset.from_x), 
+          parseInt(vlink.dataset.from_y) + diff, 
+          parseInt(vlink.dataset.to_x), parseInt(vlink.dataset.to_y));
+      });
+    });
+  }
+  move_down_together(g.dataset.right_links, mng.right_side);
+  move_down_together(g.dataset.left_links, mng.left_side);
+
+  backup_svg(txt.textContent + 'の矩形の高さを増やす');
 }
 
 /* 「横の関係を追加する」メニュー。 */
@@ -353,15 +435,16 @@ function add_h_link() {
   }
 
   // ここにくるのは、リンクを追加して良い場合。
+  const hid = 'h' + P_GRAPH.next_hlink_id++; // 横リンクのための ID を生成
   let r1_dy, r2_dy, link_start_x, link_end_x, link_y;
   if (r1_is_left) { // r1 が左にある
-    r1_dy = occupy_next_pos(p1_id, 'right');
-    r2_dy = occupy_next_pos(p2_id, 'left');
+    r1_dy = occupy_next_pos(p1_id, 'right', hid);
+    r2_dy = occupy_next_pos(p2_id, 'left', hid);
     link_start_x = x_end1 + 1;  // 線の幅の半分だけ調整する
     link_end_x = x_start2 - 1;  // 線の幅の半分だけ調整する
   } else { // r1 が右にある
-    r1_dy = occupy_next_pos(p1_id, 'left');
-    r2_dy = occupy_next_pos(p2_id, 'right');
+    r1_dy = occupy_next_pos(p1_id, 'left', hid);
+    r2_dy = occupy_next_pos(p2_id, 'right', hid);
     link_start_x = x_end2 + 1;
     link_end_x = x_start1 - 1;
   }
@@ -387,7 +470,6 @@ function add_h_link() {
     link_y = r1_pos_tmp; // 何も移動する必要がないが、変数の設定は必要。
   }
 
-  const hid = 'h' + P_GRAPH.next_hlink_id++; // 横リンクのための ID を生成
   // 横リンクを描画する
   if (r1_is_left) { // 左から、r1、このリンク、r2、の順に配置されている
     draw_new_h_link(hid, link_start_x, link_end_x, link_y, link_type, p1_id, p2_id);
@@ -432,13 +514,13 @@ function free_pos_found(pid, edge) {
 free_pos_found() で空きを確認した後に使うこと。
 pid という ID を持つ人物を表す矩形の縦の辺 (右辺か左辺) における、
 次の接続先の点の位置 (矩形の最上部からの差分で表したもの) を求める。 */
-function occupy_next_pos(pid, edge) {
+function occupy_next_pos(pid, edge, new_hid) {
   const i = P_GRAPH.p_free_pos_mngrs.findIndex(m => (m.pid === pid));
   if (i < 0) { return(-2); } // エラー
   if (edge === 'right') {
-    return(P_GRAPH.p_free_pos_mngrs[i].right_side.next_position());
+    return(P_GRAPH.p_free_pos_mngrs[i].right_side.next_position(new_hid));
   } else if  (edge === 'left') {
-    return(P_GRAPH.p_free_pos_mngrs[i].left_side.next_position());
+    return(P_GRAPH.p_free_pos_mngrs[i].left_side.next_position(new_hid));
   }
   return(-1); // エラー
 }
@@ -463,8 +545,12 @@ pid_fixed の方は位置をそのままにして、pid_moved の矩形の位置
     なっても放置。本来どうするのが良いのかは後日考える。
 (e) 同様に、例外的な場合として、(c) に該当する親が (※) の人物の場合も、
     「要注意対象」のクラスを設定して警告を出す。
-    これについても、本来どうするのが良いのかは後日考える。 */
-function move_down_collectively(pid_fixed, pid_moved, amount) {
+    これについても、本来どうするのが良いのかは後日考える。
+なお、「矩形の高さを増やす」メニューでも使える処理なので、そちらでも使う。
+hid_to_ignore は、たどる必要のない無視すべき横リンクの ID を示す。
+「矩形の高さを増やす」メニューで使う場合は、高さを増やす本人とつながっている
+横リンク。 */
+function move_down_collectively(pid_fixed, pid_moved, amount, hid_to_ignore = '') {
   // (a) の通常処理用 (移動対象を記録する配列)
   let persons_to_move_down = [pid_moved];
   let hlinks_to_move_down = [], vlinks_to_move_down = [];
@@ -492,6 +578,8 @@ function move_down_collectively(pid_fixed, pid_moved, amount) {
     // links_str は、たとえば 'h0,p1,h3,p5,' のような文字列、または空文字列。
     let links_str = gr.dataset.right_links + gr.dataset.left_links;
     apply_to_each_hid_pid_pair(links_str, function(cur_hid, cur_pid) {
+      // 「矩形の高さを増やす」メニューで使う場合での例外処理。
+      if (cur_hid === hid_to_ignore) { return; }
       if (cur_pid === pid_fixed) { // (d) に該当する例外的な場合
         // まずこの例外的な横リンクについての情報を記録する
         // (が、この横リンクのつなぎ先は pid_fixed なので特に記録しない)。
@@ -1371,12 +1459,11 @@ function set_p_graph_values() {
 
     // プルダウンリストへの反映
     let txt = document.getElementById(pid + 't').textContent;
-    add_person_choice(document.menu.partner_1, pid, txt);
-    add_person_choice(document.menu.partner_2, pid, txt);
-    add_person_choice(document.menu.parent_1, pid, txt);
-    add_person_choice(document.menu.child_1, pid, txt);
-    add_person_choice(document.menu.child_2, pid, txt);
-    add_person_choice(document.menu.target_person, pid, txt);
+    let mn = document.menu;
+    [mn.person_to_be_extended, mn.partner_1, mn.partner_2, mn.parent_1, 
+     mn.child_1, mn.child_2, mn.target_person].map(s => {
+      add_person_choice(s, pid, txt);
+    });
   }
 
   // リンクを一つずつ見てゆく
@@ -1394,9 +1481,9 @@ function set_p_graph_values() {
       if (P_GRAPH.next_hlink_id <= id_No) { P_GRAPH.next_hlink_id = id_No + 1; }
       P_GRAPH.h_links.push(path_id);
       let lhs_person_id = cur_path.dataset.lhs_person;
-      occupy_next_pos(lhs_person_id, 'right');
+      occupy_next_pos(lhs_person_id, 'right', path_id);
       let rhs_person_id = cur_path.dataset.rhs_person;
-      occupy_next_pos(rhs_person_id, 'left');
+      occupy_next_pos(rhs_person_id, 'left', path_id);
       // 縦リンクの追加メニューのプルダウンリストに選択肢を追加する
       add_person_choice( document.getElementById('parents_2'), path_id,
         svg_elt.getElementById(lhs_person_id + 't').textContent + 'と' +
