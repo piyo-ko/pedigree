@@ -1417,6 +1417,7 @@ function read_in() {
     // として書き出す。
     document.getElementById('tree_canvas_div').innerHTML = e.target.result;
     set_p_graph_values(); // SVGの各要素を読み取って、変数の設定を行う。
+    backup_svg('初期状態');
     backup_svg('作成済みのデータを読み込む'); // バックアップ用リンクも一応作る
   }
   // テキストファイルとして読み込む。
@@ -1427,6 +1428,12 @@ function read_in() {
 形式は正しいものと仮定して (チェックは省略して) 変数を設定する。
 TO DO: 余裕があれば、後でチェック機能を追加する。 */
 function set_p_graph_values() {
+  // 現在のデータに基づくセレクタ選択肢とダウンロードリンクをすべて削除する。
+  ['person_to_be_extended', 'partner_1', 'partner_2', 'parent_1', 'child_1',
+   'parents_2', 'child_2', 'target_person', 'svg_backup'].map(parent_id => { 
+    const elt = document.getElementById(parent_id);
+    while (elt.firstChild) { elt.removeChild(elt.firstChild); }
+  });
   P_GRAPH.reset_all();
   document.menu.reset();
   print_current_svg_size();  // svg 要素の大きさ (幅と高さ) を表示し直す。
