@@ -70,3 +70,12 @@ th {
 #svg_backup > li::before {
   content: "🎨";
 }
+p.info {
+  border: 1px solid royalblue;
+  margin-left: 1em;
+  margin-right: 1em;
+}
+span.info {
+  font-family: "Monaco", "Ricty Discord", "Courier New", monospace;
+  background: lightcyan;
+}

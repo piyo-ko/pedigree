@@ -272,6 +272,7 @@ function add_person() {
   const r_attr = new Map([['id', new_personal_id + 'r'], ['class', gender], 
     ['x', x], ['y', y], ['width', box_w], ['height', box_h]]);
   r_attr.forEach(function(val, key) { r.setAttribute(key, val); });
+  r.onmouseover = function() {show_info(new_personal_id, new_personal_name);};
   // グループに矩形要素を追加。
   add_text_node(g, '\n  ');  g.appendChild(r);  add_text_node(g, '\n  ');
   // 文字を設定する
@@ -1391,7 +1392,6 @@ function backup_svg(description_str) {
   a.href = URL.createObjectURL(b);  add_text_node(a, description_str);
   li.appendChild(a);
 }
-
 /* 作業の各段階での SVG ファイルのダウンロード用リンク (作成済みのもの) の 
 download 属性の値を、入力された接頭辞に置換する。
 接頭辞の入力欄の内容が変化したときに呼ばれる。 */
@@ -1471,6 +1471,8 @@ function set_p_graph_values() {
      mn.child_1, mn.child_2, mn.target_person].map(s => {
       add_person_choice(s, pid, txt);
     });
+    // 座標情報の表示用
+    rect.onmouseover = function() {show_info(pid, txt);};
   }
 
   // リンクを一つずつ見てゆく
@@ -1532,4 +1534,21 @@ function set_EndPointsMngr_UL(pid, edge, link_type, pos_idx) {
   } else {
     return(-1); // エラー
   }
+}
+
+/* ID が pid で名前が pname の人物の矩形に対するマウスオーバ・イベントが発生
+したら、座標情報を表示する。 */
+function show_info(pid, pname) {
+  const rect = document.getElementById(pid + 'r');
+  const x_start = parseInt(rect.getAttribute('x'));
+  const w = parseInt(rect.getAttribute('width'));
+  const x_end = x_start + w, x_mid = x_start + Math.floor(w/2);
+  const y_start = parseInt(rect.getAttribute('y'));
+  const y_end = y_start + parseInt(rect.getAttribute('height'));
+  const id_val_map = new Map([['info_pid', pid], ['info_name', pname], 
+    ['info_x_start', x_start], ['info_x_end', x_end], ['info_x_mid', x_mid], 
+    ['info_y_start', y_start], ['info_y_end', y_end]]);
+  id_val_map.forEach(function(val, elt_id) { 
+    document.getElementById(elt_id).textContent = val;
+  });
 }
