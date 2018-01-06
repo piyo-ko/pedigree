@@ -4,6 +4,15 @@ body {
   font-family: serif;
   padding: 0;
 }
+input[type="button"] {
+  padding-left: 1em;
+  padding-right: 1em;
+}
+
+select > option {
+  padding-left: 1em;
+  padding-right: 1em;
+}
 h1 {
   font-size: large;
   font-family: "筑紫B丸ゴシック", sans-serif;
@@ -27,7 +36,7 @@ code {
   padding: 2pt;
 }
 a {
-  color: royalblue;
+  color: crimson;
 }
 a:hover {
   background: royalblue;
@@ -51,6 +60,13 @@ table {
 }
 td, th {
   border: solid 1px navy;
+  padding: 4pt;
+}
+tr:nth-child(2n) > td {
+  background: cadetblue;
+}
+tr:nth-child(2n+1) > td {
+  background: darkgrey;
 }
 th {
   color: teal;
@@ -74,6 +90,7 @@ p.info {
   border: 1px solid royalblue;
   margin-left: 1em;
   margin-right: 1em;
+  padding: 4pt;
 }
 span.info {
   font-family: "Monaco", "Ricty Discord", "Courier New", monospace;
