@@ -326,12 +326,34 @@ function extend_rect() {
   const min_gap = CONFIG.font_size * 2 + CONFIG.min_v_link_len;
   // 下辺から誰にもつながっていなければ拡張可能。一人以上の子につながっている
   // 場合は、min_gap の距離を確保できていない子が一人でもいれば、拡張不可。
-  const extendable = (lower_links === '') ? true : 
+  let extendable = (lower_links === '') ? true : 
     !(lower_links_arr.some(vid => {
       const cid = document.getElementById(vid).dataset.child;
       const c_top = parseInt(document.getElementById(cid + 'r').getAttribute('y'));
       return(c_top - cur_rect_y_end < min_gap);
     }));
+  // さらに厳しくチェック。横リンクと、そこからぶら下がっている縦リンクが
+  // ある場合には、矩形の拡大にともなってその横リンクの位置が下がってもなお、
+  // その縦リンクが十分な長さを有するのかを調べる。
+  const diff_unit_len = Math.floor(CONFIG.font_size * 2 / 8);
+  function check_more(hid_pid_str, edge_mng) {
+    apply_to_each_hid_pid_pair(hid_pid_str, function(hid, partner_pid) {
+      if (!extendable) {return;}
+      const vids = document.getElementById(hid).dataset.lower_links;
+      if (vids === '') {return;}
+      const diff = edge_mng.which_pos_No(hid) * diff_unit_len;
+      extendable = !(id_str_to_arr(vids).some(function(vid) {
+        const vlink = document.getElementById(vid);
+        const from_y = parseInt(vlink.dataset.from_y);
+        const to_y = parseInt(vlink.dataset.to_y);
+        return(to_y - (from_y + diff) < min_gap);
+      }));
+    });
+  }
+  const mng = P_GRAPH.p_free_pos_mngrs.find(m => (m.pid === pid));
+  check_more(g.dataset.right_links, mng.right_side);
+  check_more(g.dataset.left_links, mng.left_side);
+
   if (!extendable) { alert('リンク先の子が近すぎます'); return; }
 
   // ここに来るのは高さを増やしても良い場合のみ。
@@ -351,7 +373,6 @@ function extend_rect() {
     txt.setAttribute('dy', cur_dy + CONFIG.font_size);
   }
   // 右辺・左辺の管理用オブジェクトを更新する。
-  const mng = P_GRAPH.p_free_pos_mngrs.find(m => (m.pid === pid));
   mng.right_side.extend_length();
   mng.left_side.extend_length();
   // 下辺から子への縦リンクを再描画する。
@@ -364,9 +385,8 @@ function extend_rect() {
   // 右辺・左辺でつながっている相手 (とさらにその先の関係者たち) を下に
   // 移動させ、横リンクも再描画する。その横リンクからぶら下がっている縦リンクが
   // あれば、それらも再描画する。
-  const diff_unit_len = Math.floor(CONFIG.font_size * 2 / 8);
-  function move_down_together(hlink_ids_str, edge_mng) {
-    apply_to_each_hid_pid_pair(hlink_ids_str, function(hid, partner_pid) {
+  function move_down_together(hid_pid_str, edge_mng) {
+    apply_to_each_hid_pid_pair(hid_pid_str, function(hid, partner_pid) {
       const diff = edge_mng.which_pos_No(hid) * diff_unit_len;
       const hlink = document.getElementById(hid);
       move_down_collectively(pid, partner_pid, diff, hid);
@@ -1181,7 +1201,7 @@ function move_person_vertically(pid, dy) {
         }
       } else { // 二人の親を結ぶ横リンクから、子へと縦リンクでつないでいる場合
         const v_starting_pt_y = parseInt(v_link.dataset.from_y);
-        gap = y_min + actual_dy - v_starting_pt_y;
+        let gap = y_min + actual_dy - v_starting_pt_y;
         if (gap < CONFIG.min_v_link_len) {
           actual_dy = - (y_min - v_starting_pt_y - CONFIG.min_v_link_len);
           if (actual_dy > 0) { actual_dy = 0; } // 一応エラー避け
