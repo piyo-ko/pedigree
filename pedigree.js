@@ -203,7 +203,7 @@ function selected_radio_choice(radio_elt) {
 プルダウンリストに選択肢を追加して、それを選択済み状態にする。 */
 function add_person_choice(sel_elt, id, displayed_name) {
   const opt = document.createElement('option');
-  add_text_node(opt, displayed_name);  opt.value = id;
+  add_text_node(opt, '[' + id + '] ' + displayed_name);  opt.value = id;
   sel_elt.appendChild(opt);  sel_elt.selectedIndex = sel_elt.options.length - 1;
 }
 
