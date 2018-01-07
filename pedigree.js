@@ -709,9 +709,11 @@ function move_down_collectively(pid_fixed, pid_moved, amount, hid_to_ignore = ''
     hlink.setAttribute('class', hlink.getAttribute('class') + ' exceptional');
   });
   exceptional_vlinks.map(vlink_info => {
-    const vlink = document.getElementById(vlink_info.vlink_id);
-    // TO DO: どうやって再描画するか
+    const vlink = document.getElementById(vlink_info.vlink_id), dat = vlink.dataset;
+    // TO DO: どうやって再描画するか。一応 vlinks_to_extend と同様にしておく。
     vlink.setAttribute('class', vlink.getAttribute('class') + ' exceptional');
+    draw_v_link(vlink, parseInt(dat.from_x), parseInt(dat.from_y),
+      parseInt(dat.to_x), parseInt(dat.to_y) + amount );
   });
 }
 
