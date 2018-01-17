@@ -78,6 +78,14 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 </tr>
 
 <tr>
+<th>横の関係を<wbr>削除する</th>
+<td>
+<select id="hlink_to_remove"></select> の間の関係を
+<input type="button" value="削除する" onclick="remove_h_link()">。
+</td>
+</tr>
+
+<tr>
 <th>縦の関係を<wbr>追加する</th>
 <td>
 親 (祖先) <select id="parent_1" name="parent_1"></select> と
@@ -103,6 +111,15 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 <label for="vertical_link2_type_dashed">破線</label>
 
 で <input type="button" value="結ぶ" onclick="add_v_link_2()">。
+</td>
+</tr>
+
+
+<tr>
+<th>縦の関係を<wbr>削除する</th>
+<td>
+<select id="vlink_to_remove"></select> の縦の関係を
+<input type="button" value="削除する" onclick="remove_v_link()">。
 </td>
 </tr>
 

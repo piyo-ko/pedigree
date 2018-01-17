@@ -5,10 +5,12 @@
 const MODE = {
   func_add_person: 0,
   func_add_h_link: 0,
-  func_move_down_collectively: 1,
+  func_remove_h_link_0: 1,
+  func_move_down_collectively: 0,
   func_draw_h_link: 0,
   func_add_v_link_1: 0,
   func_add_v_link_2: 0,
+  func_remove_v_link_0: 1,
   func_move_person_horizontally: 0,
   func_move_person_vertically: 0,
   func_set_p_graph_values: 0

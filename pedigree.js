@@ -24,6 +24,7 @@ class EndPointsMngr_RL {
     console.log('   next position is positions[' + this.next_position_idx + 
       '] (== ' + this.positions[this.next_position_idx] + 
       '), and edge_length is ' + this.edge_length);
+    console.log('   ( positions is [' + this.positions + '] )');
   }
   // この辺においてリンクの接続位置として空いている次の位置を、番号ではなくて
   // 実際の長さで表して、返す。また、「次の位置」も更新する。
@@ -46,6 +47,29 @@ class EndPointsMngr_RL {
     const pos_No = this.positions[this.hlink_ids.findIndex(h => (h === hid))];
     return(pos_No);
   }
+  // 
+  remove_hlink(hid) {
+    let i, j, pos_No;
+    // 削除対象の横リンクの順位 (i) と位置番号 (pos_No) を求める。
+    for (i = 0; i < this.next_position_idx; i++) {
+      if (this.hlink_ids[i] === hid) { pos_No = this.positions[i]; break; }
+    }
+    if (i === this.next_position_idx) { return; } // あり得ない筈だが一応。
+    // 残っている既存の横リンクの順位を繰り上げる。
+    for (j = i; j+1 < this.next_position_idx; j++) {
+      this.positions[j] = this.positions[j+1];
+      this.hlink_ids[j] = this.hlink_ids[j+1];
+    }
+    // 削除した横リンクのあった位置を、次の追加の際に使うことにする
+    this.next_position_idx--;
+    this.positions[this.next_position_idx] = pos_No;
+    this.hlink_ids.length--;
+    // 最後に、今回の削除によって横リンクがまったくなくなる場合は、優先順位を
+    // 初期状態と同じにする (今までの追加・削除の履歴の影響をなくす)。
+    if (this.next_position_idx === 0) {
+      this.positions = [4, 2, 6, 1, 7, 3, 5];
+    }
+  }
 }
 
 /* 人を表す矩形の上辺・下辺 (横の辺) に接続するリンクを管理する。
@@ -54,13 +78,16 @@ class EndPointsMngr_UL {
   constructor (len) {
     this.points = new Array(3);
     for (let i = 0; i < 3; i++) {
-      this.points[i] = {idx:i, status:'unused', dx:Math.floor(len * (i+1)/4)};
-    } // status の値は 'unused', 'solid', 'dashed' のいずれかである。
+      // status の値は 'unused', 'solid', 'dashed' のいずれか。
+      // count はつながっている縦リンクの本数。
+      this.points[i] =
+        { idx:i, status:'unused', dx:Math.floor(len * (i+1)/4), count: 0 };
+    }
   }
 
   print() { // デバッグ用の印字関数
     this.points.map(function(pt, i) {
-      console.log('   points[' + i + '] is { idx: ' + pt.idx + ', status: ' + pt.status + ', dx: ' + pt.dx + '}\n');
+      console.log('   points[' + i + '] is { idx: ' + pt.idx + ', status: ' + pt.status + ', dx: ' + pt.dx + ', count: ' + pt.count + '}\n');
     });
   }
   // 上辺・下辺につながるリンク (縦リンク) の種類は、実線と破線のみ。
@@ -73,19 +100,31 @@ class EndPointsMngr_UL {
   // c  破線-実線-なし    g  実線-破線-なし
   // d  なし-実線-破線    h  なし-破線-実線
   // e  破線-実線-破線    i  実線-破線-実線
+  // [追記] 縦リンクの削除機能をつけたので、削除に応じて、上記以外のパターンも
+  // 発生しうる。が、それでも以下のロジックは変更しなくてよい筈。
   next_position(link_type, right_side_preferred) {
     // 真ん中が空いているか、これから追加したいリンクと同種のリンクの接続先に
     // なっている場合、真ん中につなぐ
     if (this.points[1].status === 'unused' || 
         this.points[1].status === link_type) {
-      this.points[1].status = link_type;  return(this.points[1]);
+      this.points[1].status = link_type;  this.points[1].count++;
+      return(this.points[1]);
     }
     // 真ん中は既に、これから追加したいリンクとは別の種類のリンクの接続先に
     // なっていて、塞がっている。よって、左右どちらかに接続する。
     if (right_side_preferred) {
-      this.points[2].status = link_type;  return(this.points[2]);
+      this.points[2].status = link_type;  this.points[2].count++;
+      return(this.points[2]);
     } else {
-      this.points[0].status = link_type;  return(this.points[0]);
+      this.points[0].status = link_type;  this.points[0].count++;
+      return(this.points[0]);
+    }
+  }
+  //
+  remove_vlink(pos_idx) {
+    this.points[pos_idx].count--;
+    if (this.points[pos_idx].count === 0) { 
+      this.points[pos_idx].status = 'unused';
     }
   }
 }
@@ -185,6 +224,17 @@ function print_current_svg_size() {
   // 算術演算ができなくなる (文字列連結にされてしまう) 模様。
 }
 
+/* [汎用モジュール] 配列から所定の値の要素 (のうち最初のもの) を取り除く。 */
+function remove_val_from_array(arr, val) {
+  const cur_len = arr.length;
+  if (cur_len === 0) { return; }
+  let i, j;
+  for (i = 0; i < cur_len; i++) { if (arr[i] === val) { break; } }
+  if (i === cur_len) { return; } // val は arr の中にない。
+  for (j = i; j+1 < cur_len; j++) { arr[j] = arr[j+1]; }
+  arr.length--;
+}
+
 /* [汎用モジュール] プルダウンリストで選択されている項目の value を返す。 */
 function selected_choice(select_elt) {
   return(select_elt.options[select_elt.selectedIndex].value);
@@ -205,6 +255,14 @@ function add_person_choice(sel_elt, id, displayed_name) {
   const opt = document.createElement('option');
   add_text_node(opt, '[' + id + '] ' + displayed_name);  opt.value = id;
   sel_elt.appendChild(opt);  sel_elt.selectedIndex = sel_elt.options.length - 1;
+}
+/* [汎用モジュール] プルダウンリストから選択肢を削除する */
+function remove_choice(sel_elt, id) {
+  let i;
+  for (i = 0; i < sel_elt.options.length; i++) {
+    if (sel_elt.options[i].value === id) { break; }
+  }
+  sel_elt.removeChild(sel_elt.options[i]);  sel_elt.selectedIndex = 0;
 }
 
 /* [汎用モジュール] 
@@ -496,10 +554,12 @@ function add_h_link() {
     draw_new_h_link(hid, link_start_x, link_end_x, link_y, link_type, p2_id, p1_id);
   }
 
-  // 縦リンクの追加メニューのプルダウンリストに選択肢を追加する
+  // 横リンクの削除メニューと縦リンクの追加メニューのプルダウンリストに
+  // 選択肢を追加する
   const t1 = document.getElementById(p1_id + 't').textContent;
   const t2 = document.getElementById(p2_id + 't').textContent;
   const displayed_str = r1_is_left ? (t1 + 'と' + t2) : (t2 + 'と' + t1);
+  add_person_choice(document.getElementById('hlink_to_remove'), hid, displayed_str);
   add_person_choice(document.getElementById('parents_2'), hid, displayed_str);
 
   if (MODE.func_add_h_link > 0) {
@@ -769,6 +829,41 @@ function draw_h_link(h_link, link_start_x, link_end_x, link_y) {
   h_link.dataset.y = link_y;
 }
 
+/* 「横の関係を削除する」メニュー */
+function remove_h_link() {
+  const hlink_id = selected_choice(document.menu.hlink_to_remove);
+  remove_h_link_0(hlink_id);
+  backup_svg('横の関係を削除');
+}
+function remove_h_link_0(hlink_id) {
+  const hlink_elt = document.getElementById(hlink_id);
+  const lower_links = hlink_elt.dataset.lower_links;
+  if (lower_links !== '') { alert('子供がいるので削除できません'); return; }
+  const lhs_person = hlink_elt.dataset.lhs_person;
+  const rhs_person = hlink_elt.dataset.rhs_person;
+  const lhs_person_dat = document.getElementById(lhs_person + 'g').dataset;
+  const rhs_person_dat = document.getElementById(rhs_person + 'g').dataset;
+  const lhs_mng = P_GRAPH.p_free_pos_mngrs.find(m => (m.pid === lhs_person));
+  const rhs_mng = P_GRAPH.p_free_pos_mngrs.find(m => (m.pid === rhs_person));
+  function log_msg(str) {
+    if (MODE.func_remove_h_link_0 > 0) {
+      console.log('remove_h_link(): ' + str);
+      console.log('  * 左側の人物の右辺の情報:'); lhs_mng.right_side.print();
+      console.log('  * 右側の人物の左辺の情報:'); rhs_mng.left_side.print();
+    }
+  }
+  log_msg(hlink_id + 'の削除前');
+  lhs_person_dat.right_links = lhs_person_dat.right_links.replace(new RegExp('\^\(\.\*)' + hlink_id + ',' + rhs_person + ',\(\.\*\)\$'), '$1$2');
+  rhs_person_dat.left_links = rhs_person_dat.left_links.replace(new RegExp('\^\(\.\*)' + hlink_id + ',' + lhs_person + ',\(\.\*\)\$'), '$1$2');
+  remove_val_from_array(P_GRAPH.h_links, hlink_id);
+  lhs_mng.right_side.remove_hlink(hlink_id);
+  rhs_mng.left_side.remove_hlink(hlink_id);
+  remove_choice(document.getElementById('hlink_to_remove'), hlink_id);
+  remove_choice(document.getElementById('parents_2'), hlink_id);
+  document.getElementById('pedigree').removeChild(hlink_elt);
+  log_msg(hlink_id + 'の削除後');
+}
+
 /* 「縦の関係を追加する」メニューの前半。
 なお、縦リンクの追加の際は、折れ線を利用するので、人物の移動は不要である。 */
 function add_v_link_1() {
@@ -826,8 +921,10 @@ function add_v_link_1() {
   if (MODE.func_add_v_link_1 > 0) {
     console.log('add_v_link_1() ends.');  P_GRAPH.print();
   }
-  backup_svg( document.getElementById(p_id + 't').textContent + 'と' + 
-    document.getElementById(c_id + 't').textContent + 'の間の縦の関係を追加' );
+  const p_txt = document.getElementById(p_id + 't').textContent;
+  const c_txt = document.getElementById(c_id + 't').textContent;
+  add_person_choice(document.getElementById('vlink_to_remove'), vid, p_txt + 'から' + c_txt + 'へ');
+  backup_svg(p_txt + 'と' + c_txt + 'の間の縦の関係を追加' );
 }
 
 /* 「縦の関係を追加する」メニューの後半。
@@ -885,9 +982,12 @@ function add_v_link_2() {
   if (MODE.func_add_v_link_2 > 0) {
     console.log('add_v_link_2() ends.');  P_GRAPH.print();
   }
-  backup_svg( document.getElementById(p1_id + 't').textContent + 'と' + 
-    document.getElementById(p2_id + 't').textContent + 'を結ぶ横線から' + 
-    document.getElementById(c_id + 't').textContent + 'への縦の関係を追加' );
+  const p1_txt = document.getElementById(p1_id + 't').textContent;
+  const p2_txt = document.getElementById(p2_id + 't').textContent;
+  const c_txt = document.getElementById(c_id + 't').textContent;
+  add_person_choice(document.getElementById('vlink_to_remove'), vid, p1_txt + 'と' + p2_txt + 'から' + c_txt + 'へ');
+  backup_svg(p1_txt + 'と' + p2_txt + 'を結ぶ横線から' + c_txt + 
+    'への縦の関係を追加');
 }
 
 /* 「横の関係を追加する」「縦の関係を追加する」メニューのための部品。
@@ -952,6 +1052,44 @@ function draw_v_link(v_link, upper_pt_x, upper_pt_y, lower_pt_x, lower_pt_y) {
   v_link.dataset.from_y = upper_pt_y;
   v_link.dataset.to_x = lower_pt_x;
   v_link.dataset.to_y = lower_pt_y;
+}
+
+/* 「縦の関係を削除する」メニュー */
+function remove_v_link() {
+  const vlink_id = selected_choice(document.menu.vlink_to_remove);
+  remove_v_link_0(vlink_id);
+  backup_svg('縦の関係を削除');
+}
+function remove_v_link_0(vlink_id) {
+  const vlink_elt = document.getElementById(vlink_id);
+  //const vlink_type = vlink_elt.getAttribute('class');
+  const parent1_id = vlink_elt.dataset.parent1;
+  const parent2_id = vlink_elt.dataset.parent2;
+  const child_id = vlink_elt.dataset.child;
+  if (parent2_id === undefined || parent2_id === null || parent2_id === '') {
+    // 一人の親の矩形の下辺から延びている縦リンクの場合
+    const parent1_dat = document.getElementById(parent1_id + 'g').dataset;
+    parent1_dat.lower_links = parent1_dat.lower_links.replace(new RegExp('\^\(\.\*)' + vlink_id + ',\(\.\*\)\$'), '$1$2');
+    const parent1_mng = P_GRAPH.p_free_pos_mngrs.find(m => (m.pid === parent1_id));
+    const parent1_pos_idx = vlink_elt.dataset.parent1_pos_idx;
+    parent1_mng.lower_side.remove_vlink(parent1_pos_idx);
+  } else { // 親同士をつなぐ横リンクから延びている縦リンクの場合
+    P_GRAPH.h_links.map(function(hid) {
+      const hlink_dat = document.getElementById(hid).dataset;
+      if (hlink_dat.lhs_person === parent1_id && 
+          hlink_dat.rhs_person === parent2_id) {
+        hlink_dat.lower_links = hlink_dat.lower_links.replace(new RegExp('\^\(\.\*)' + vlink_id + ',\(\.\*\)\$'), '$1$2');
+      }
+    });
+  }
+  const child_dat = document.getElementById(child_id + 'g').dataset;
+  child_dat.upper_links = child_dat.upper_links.replace(new RegExp('\^\(\.\*)' + vlink_id + ',\(\.\*\)\$'), '$1$2');
+  const child_mng = P_GRAPH.p_free_pos_mngrs.find(m => (m.pid === child_id));
+  const child_pos_idx = vlink_elt.dataset.child_pos_idx;
+  child_mng.upper_side.remove_vlink(child_pos_idx);
+  remove_val_from_array(P_GRAPH.v_links, vlink_id);
+  remove_choice(document.getElementById('vlink_to_remove'), vlink_id);
+  document.getElementById('pedigree').removeChild(vlink_elt);
 }
 
 /* 「人の位置を動かす」メニュー。 */
@@ -1442,8 +1580,9 @@ function read_in() {
 TO DO: 余裕があれば、後でチェック機能を追加する。 */
 function set_p_graph_values() {
   // 現在のデータに基づくセレクタ選択肢とダウンロードリンクをすべて削除する。
-  ['person_to_be_extended', 'partner_1', 'partner_2', 'parent_1', 'child_1',
-   'parents_2', 'child_2', 'target_person', 'svg_backup'].map(parent_id => { 
+  ['person_to_be_extended', 'partner_1', 'partner_2', 'hlink_to_remove',
+   'parent_1', 'child_1', 'parents_2', 'child_2',
+   'target_person', 'svg_backup'].map(parent_id => { 
     const elt = document.getElementById(parent_id);
     while (elt.firstChild) { elt.removeChild(elt.firstChild); }
   });
@@ -1506,10 +1645,12 @@ function set_p_graph_values() {
       occupy_next_pos(lhs_person_id, 'right', path_id);
       let rhs_person_id = cur_path.dataset.rhs_person;
       occupy_next_pos(rhs_person_id, 'left', path_id);
-      // 縦リンクの追加メニューのプルダウンリストに選択肢を追加する
-      add_person_choice( document.getElementById('parents_2'), path_id,
-        svg_elt.getElementById(lhs_person_id + 't').textContent + 'と' +
-        svg_elt.getElementById(rhs_person_id + 't').textContent );
+      // 横リンクの削除メニューと縦リンクの追加メニューのプルダウンリストに
+      // 選択肢を追加する
+      let str = svg_elt.getElementById(lhs_person_id + 't').textContent + 'と' +
+                svg_elt.getElementById(rhs_person_id + 't').textContent;
+      add_person_choice(document.getElementById('hlink_to_remove'), path_id, str);
+      add_person_choice(document.getElementById('parents_2'), path_id, str);
     } else if (m[1] === 'v') {  // 縦リンクを見ている
       //「次の番号」用の変数を更新
       if (P_GRAPH.next_vlink_id <= id_No) { P_GRAPH.next_vlink_id = id_No + 1; }
@@ -1517,12 +1658,22 @@ function set_p_graph_values() {
       let link_type = cur_path.getAttribute('class');
       let parent1_id = cur_path.dataset.parent1;
       let parent2_id = cur_path.dataset.parent2;
+      let child_id = cur_path.dataset.child;
+      let p1_txt = document.getElementById(parent1_id + 't').textContent;
+      let c_txt = document.getElementById(child_id + 't').textContent;
+      let str = '';
       if (parent2_id === undefined || parent2_id === null ||
           parent2_id === '') { // 一人の親から子へと縦リンクでつないでいる場合。
         // 親の下辺の使用状況を設定する。
         set_EndPointsMngr_UL(parent1_id, 'lower', link_type, 
                              parseInt(cur_path.dataset.parent1_pos_idx));
+        str = p1_txt + 'から' + c_txt + 'へ';
+      } else {
+        let p2_txt = document.getElementById(parent2_id + 't').textContent;
+        str = p1_txt + 'と' + p2_txt + 'から' + c_txt + 'へ';
       }
+      // 縦リンクの削除メニューのプルダウンリストに選択肢を追加する。
+      add_person_choice(document.getElementById('vlink_to_remove'), path_id, str);
       // 子の上辺については、リンクのつなぎ方によらず、その使用状況を設定する。
       set_EndPointsMngr_UL(cur_path.dataset.child, 'upper', link_type,
                            parseInt(cur_path.dataset.child_pos_idx));
@@ -1542,8 +1693,10 @@ function set_EndPointsMngr_UL(pid, edge, link_type, pos_idx) {
   if (i < 0) { return(-2); } // エラー
   if (edge === 'upper') {
     P_GRAPH.p_free_pos_mngrs[i].upper_side.points[pos_idx].status = link_type;
+    P_GRAPH.p_free_pos_mngrs[i].upper_side.points[pos_idx].count++;
   } else if (edge === 'lower') {
     P_GRAPH.p_free_pos_mngrs[i].lower_side.points[pos_idx].status = link_type;
+    P_GRAPH.p_free_pos_mngrs[i].lower_side.points[pos_idx].count++;
   } else {
     return(-1); // エラー
   }
