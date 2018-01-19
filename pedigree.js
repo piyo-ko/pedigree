@@ -1251,6 +1251,7 @@ function move_person_horizontally(pid, dx) {
 親) への縦リンクの再描画が必要になる (その子 (または親) 側の点は変わらず、
 移動対象者の方の側の点のみが上 (または下) へ移動する)。 */
 function move_person_vertically(pid, dy) {
+  if (dy === 0) { return; }
   function err_msg(criterion, msg) {
     if (MODE.func_move_person_vertically > criterion) { console.log(msg); }
   }
@@ -1273,14 +1274,14 @@ function move_person_vertically(pid, dy) {
 
     if (0 < dy) { // 下への移動なので下端をチェックする
       if (P_GRAPH.svg_height < y_max + actual_dy) {
-        alert('下の枠からはみ出るので、枠を拡大します。');
+        alert('はみ出し防止のため、下の枠を拡大します。');
         modify_height_0(y_max + actual_dy - P_GRAPH.svg_height);
       }
     } else { // 上への移動なので上端をチェックする
       if (y_min + actual_dy < 0) {
         actual_dy = -y_min;
         alert('上枠からはみ出さないように、移動量を' + actual_dy 
-              + 'pxに減らします。');
+              + 'pxに変更します。');
       }
     }
 
@@ -1290,24 +1291,32 @@ function move_person_vertically(pid, dy) {
     let rhs = gr.dataset.right_links; // 右辺側でのつながり
     err_msg(0, 'rhs=[' + rhs + ']');
     // rhs は、たとえば、'h0,p1,h3,p5,' のような文字列。または空文字列。
-    apply_to_each_hid_pid_pair(rhs, function(cur_hid, cur_pid) {
-      push_if_not_included(target_persons, cur_pid);
-      if (target_h_links.includes(cur_hid)) { return; }
-      target_h_links.push(cur_hid);
-      // この横リンクから下に伸びている縦リンクがあるかもしれない
-      id_str_to_arr(document.getElementById(cur_hid).dataset.lower_links).map(
-        function(v) { push_if_not_included(target_l_links, v); });
-    });
-    // 左辺側についても同様
-    let lhs = gr.dataset.left_links;
+    let lhs = gr.dataset.left_links; // 左辺側でのつながり
     err_msg(0, 'lhs=[' + lhs + ']');
-    apply_to_each_hid_pid_pair(lhs, function(cur_hid, cur_pid) {
+    apply_to_each_hid_pid_pair(rhs + lhs, function(cur_hid, cur_pid) {
       push_if_not_included(target_persons, cur_pid);
       if (target_h_links.includes(cur_hid)) { return; }
       target_h_links.push(cur_hid);
-      id_str_to_arr(document.getElementById(cur_hid).dataset.lower_links).map(
-        function(v) { push_if_not_included(target_l_links, v); });
+      const vids = id_str_to_arr(document.getElementById(cur_hid).dataset.lower_links);
+      if (dy < 0) { // 上への移動なら単に子への縦リンクを追加するだけ
+        vids.map(v => { push_if_not_included(target_l_links, v); });
+      } else { // 下への移動の場合 (dy > 0)、子に近づきすぎる可能性がある
+        vids.map(v => { // まず、子たちと最小間隔を保つように actual_dy を調整
+          const c_rect_id = document.getElementById(v).dataset.child + 'r';
+          const c_top = parseInt(document.getElementById(c_rect_id).getAttribute('y'));
+          const gap = c_top - (y_max + actual_dy);
+          if (gap < CONFIG.min_v_link_len) {
+            actual_dy = c_top - y_max - CONFIG.min_v_link_len;
+            if (actual_dy < 0) { actual_dy = 0; } // 一応エラー避け
+          }
+        });
+        // 調整後もなお下への移動が可能な場合のみ、子たちへのリンクを記録
+        if (actual_dy > 0) {
+          vids.map(v => { push_if_not_included(target_l_links, v); });
+        }
+      }
     });
+    if (actual_dy === 0) { break; }
 
     // 上辺
     let u_side = gr.dataset.upper_links;
@@ -1342,6 +1351,8 @@ function move_person_vertically(pid, dy) {
         }
       }
     });
+    if (actual_dy === 0) { break; }
+    
     // 下辺
     let l_side = gr.dataset.lower_links;
     err_msg(0, 'l_side=[' + l_side + ']');
@@ -1360,9 +1371,16 @@ function move_person_vertically(pid, dy) {
         if (actual_dy < 0) { actual_dy = 0; } // 一応エラー避け
       }
     });
+    if (actual_dy === 0) { break; }
   }
 
-  if (actual_dy === 0) { return; }
+  if (actual_dy === 0) {
+    alert('必要な最小間隔を保てなくなるので移動を中止します');
+    return;
+  }
+  if (actual_dy != dy) {
+    alert('必要な最小間隔を保つために、移動量を' + actual_dy + 'pxに変更します');
+  }
   err_msg(0, '** fixed **: actual_dy=' + actual_dy + '\ntarget_persons=[' + 
     target_persons + ']\ntarget_h_links=[' + target_h_links + 
     ']\ntarget_u_links=[' + target_u_links + ']\ntarget_l_links=[' + 
