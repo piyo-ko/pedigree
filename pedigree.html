@@ -156,6 +156,14 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 </td>
 </tr>
 
+<tr class="menu_move_person">
+<th>子孫も<wbr>まとめて<wbr>下に移動する</th>
+<td>
+<select id="person_to_move_down" name="person_to_move_down"></select> を、その子孫も一緒にまとめて下に <input type="text" name="how_much_moved_down" size="3"> px だけ
+<input type="button" value="動かす" onclick="move_down_person_and_descendants()">。
+</td>
+</tr>
+
 <tr class="menu_shift_all">
 <th>全体を<wbr>ずらす</th>
 <td>

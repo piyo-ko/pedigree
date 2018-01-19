@@ -355,7 +355,7 @@ function add_person() {
   // プルダウンリストへの反映
   const m = document.menu;
   [m.person_to_be_extended, m.partner_1, m.partner_2, m.parent_1, m.child_1, 
-   m.child_2, m.target_person].map(s => { 
+   m.child_2, m.target_person, m.person_to_move_down].map(s => { 
      add_person_choice(s, new_personal_id, new_personal_name);
   });
 
@@ -625,7 +625,10 @@ pid_fixed の方は位置をそのままにして、pid_moved の矩形の位置
 (e) 同様に、例外的な場合として、(c) に該当する親が (※) の人物の場合も、
     「要注意対象」のクラスを設定して警告を出す。
     これについても、本来どうするのが良いのかは後日考える。
+
 なお、「矩形の高さを増やす」メニューでも使える処理なので、そちらでも使う。
+更に、これを流用すれば「子孫もまとめて下に移動する」メニューを容易に作れるので
+作ってみた。
 hid_to_ignore は、たどる必要のない無視すべき横リンクの ID を示す。
 「矩形の高さを増やす」メニューで使う場合は、高さを増やす本人とつながっている
 横リンク。 */
@@ -1411,6 +1414,15 @@ function move_person_vertically(pid, dy) {
   });
 }
 
+/* 「子孫もまとめて下に移動する」メニュー */
+function move_down_person_and_descendants() {
+  const whom = selected_choice(document.menu.person_to_move_down);
+  const amount = parseInt(document.menu.how_much_moved_down.value);
+  if (amount <= 0) { alert('移動量は正の数を指定して下さい'); return; }
+  move_down_collectively('', whom, amount);
+  backup_svg(document.getElementById(whom + 't').textContent + 'を子孫ごとまとめて下へ移動');
+}
+
 /* 「全体をずらす」メニュー。 */
 function shift_all() {
   const amount = parseInt(document.menu.how_much_shifted.value);
@@ -1600,7 +1612,7 @@ function set_p_graph_values() {
   // 現在のデータに基づくセレクタ選択肢とダウンロードリンクをすべて削除する。
   ['person_to_be_extended', 'partner_1', 'partner_2', 'hlink_to_remove',
    'parent_1', 'child_1', 'parents_2', 'child_2',
-   'target_person', 'svg_backup'].map(parent_id => { 
+   'target_person', 'person_to_move_down', 'svg_backup'].map(parent_id => { 
     const elt = document.getElementById(parent_id);
     while (elt.firstChild) { elt.removeChild(elt.firstChild); }
   });
@@ -1638,7 +1650,7 @@ function set_p_graph_values() {
     let txt = document.getElementById(pid + 't').textContent;
     let mn = document.menu;
     [mn.person_to_be_extended, mn.partner_1, mn.partner_2, mn.parent_1, 
-     mn.child_1, mn.child_2, mn.target_person].map(s => {
+     mn.child_1, mn.child_2, mn.target_person, mn.person_to_move_down].map(s => {
       add_person_choice(s, pid, txt);
     });
     // 座標情報の表示用
