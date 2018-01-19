@@ -1736,3 +1736,12 @@ function show_info(pid, pname) {
     document.getElementById(elt_id).textContent = val;
   });
 }
+
+/* 関連機能別にグループ化したメニューを用意し、グループを tr 要素の class で
+示している。グループ単位で入力フォームの表示・非表示を切り換える */
+function show_menu(menu_group) {
+  const trs = document.getElementById('menu_table').getElementsByTagName('tr');
+  for (let i = 0; i < trs.length; i++) {
+    trs[i].style.display = (trs[i].className === menu_group) ? 'table-row' : 'none';
+  }
+}

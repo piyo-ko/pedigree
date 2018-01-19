@@ -31,7 +31,7 @@ code {
 #svg_code {
   height: 5em;
   width: 50em;
-  display: block;
+  display: inline-block;
   overflow: auto;
   padding: 2pt;
 }
@@ -86,13 +86,39 @@ th {
 #svg_backup > li::before {
   content: "🎨";
 }
-p.info {
-  border: 1px solid royalblue;
+p, nav {
   margin-left: 1em;
   margin-right: 1em;
+}
+nav {
+  text-align: right;
+}
+p.info {
+  border: 1px solid royalblue;
   padding: 4pt;
 }
 span.info {
   font-family: "Monaco", "Ricty Discord", "Courier New", monospace;
   background: lightcyan;
+}
+p.btn {
+  padding-left: 1em;
+  padding-right: 1em;
+  line-height: 240%;
+}
+span.btn {
+  white-space: pre;
+  font-family: serif;
+  border-top: deepskyblue solid 4pt;
+  border-right: teal solid 4pt;
+  border-bottom: teal solid 4pt;
+  border-left: deepskyblue solid 4pt;
+  border-radius: 8pt;
+  padding: 2pt;
+  margin-right: 1em;
+  background: powderblue;
+}
+span.btn:hover {
+  background: navy;
+  color: powderblue;
 }

@@ -27,9 +27,20 @@ X 座標の範囲が <span class="info">[<span id="info_x_start"></span>, <span 
 Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span id="info_y_end"></span>]</span> です。
 </p>
 
+<p class="btn" role="menu">
+<span class="btn" role="menuitem" onclick="show_menu('menu_person')">人物の追加・拡大</span>
+<span class="btn" role="menuitem" onclick="show_menu('menu_hlink')">横の関係の追加・削除</span>
+<span class="btn" role="menuitem" onclick="show_menu('menu_vlink')">縦の関係の追加・削除</span>
+<span class="btn" role="menuitem" onclick="show_menu('menu_move_person')">人物の移動</span>
+<span class="btn" role="menuitem" onclick="show_menu('menu_shift_all')">全体の移動</span>
+<span class="btn" role="menuitem" onclick="show_menu('menu_whole_size')">全体の大きさの調整</span>
+<span class="btn" role="menuitem" onclick="show_menu('menu_output')">出力</span>
+<span class="btn" role="menuitem" onclick="show_menu('menu_read')">読み取り</span>
+</p>
+
 <form name="menu">
-<table>
-<tr>
+<table id="menu_table">
+<tr class="menu_person">
 <th>人を<wbr>追加する</th>
 <td>
 名前 <input type="text" name="new_personal_name" size="10"> を入力。
@@ -51,7 +62,7 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 </td>
 </tr>
 
-<tr>
+<tr class="menu_person">
 <th>矩形の高さを<wbr>増やす</th>
 <td>
 <select id="person_to_be_extended" name="person_to_be_extended"></select>
@@ -61,7 +72,7 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 </tr>
 
 
-<tr>
+<tr class="menu_hlink">
 <th>横の関係を<wbr>追加する</th>
 <td>
 <select id="partner_1" name="partner_1"></select> と
@@ -77,7 +88,7 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 </td>
 </tr>
 
-<tr>
+<tr class="menu_hlink">
 <th>横の関係を<wbr>削除する</th>
 <td>
 <select id="hlink_to_remove"></select> の間の関係を
@@ -85,7 +96,7 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 </td>
 </tr>
 
-<tr>
+<tr class="menu_vlink">
 <th>縦の関係を<wbr>追加する</th>
 <td>
 親 (祖先) <select id="parent_1" name="parent_1"></select> と
@@ -115,7 +126,7 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 </tr>
 
 
-<tr>
+<tr class="menu_vlink">
 <th>縦の関係を<wbr>削除する</th>
 <td>
 <select id="vlink_to_remove"></select> の縦の関係を
@@ -123,7 +134,7 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 </td>
 </tr>
 
-<tr>
+<tr class="menu_move_person">
 <th>人の位置を<wbr>動かす</th>
 <td>
 <select id="target_person" name="target_person"></select> を
@@ -145,7 +156,7 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 </td>
 </tr>
 
-<tr>
+<tr class="menu_shift_all">
 <th>全体を<wbr>ずらす</th>
 <td>
 全体を
@@ -167,7 +178,7 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 </td>
 </tr>
 
-<tr>
+<tr class="menu_whole_size">
 <th>全体の<wbr>高さを<wbr>変える</th>
 <td>
 現状の高さは <span id="current_height"></span> px。
@@ -177,7 +188,7 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 </td>
 </tr>
 
-<tr>
+<tr class="menu_whole_size">
 <th>全体の幅を<wbr>変える</th>
 <td>
 現状の幅は <span id="current_width"></span> px。
@@ -187,24 +198,24 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 </td>
 </tr>
 
-<tr>
+<tr class="menu_output">
 <th rowspan="3">SVG コードを<wbr>出力する</th>
 <td>
 現状の図について<input type="button" value="以下の枠内に出力する" onclick="output_svg_src()"><br>
 <code id="svg_code"></code>
 </td>
-<tr>
+<tr class="menu_output">
 <td>
 または、現状の図について SVG 形式のファイルを<input type="button" value="ダウンロードする" onclick="download_svg()">こともできます
 (ファイル名の接頭辞: <input type="text" size="10" name="filename_prefix" value="pedigree" onchange="set_prefix()"/>)。
 なお、ダウンロードした SVG ファイルと同じフォルダに、<a href="pedigree_svg.css" download="pedigree_svg.css">このスタイルシートファイル</a>を置いてください。
 </td>
 </tr>
-<tr>
+<tr class="menu_output">
 <td>作業の各段階での SVG ファイル (ファイル名の接頭辞は上の入力欄のものを使います): <ul id="svg_backup"></ul></td>
 </tr>
 
-<tr>
+<tr class="menu_read">
 <th>作成済みの<wbr>データを<wbr>読み込む</th>
 <td>SVG ファイルを選択して 
 (<input type="file" id="input_svg_file" name="input_svg_file" />)、
@@ -219,7 +230,7 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 <nav>[
 <a href="https://piyo-ko.github.io">ホーム</a> |
 バグなどを<a href="https://twitter.com/share?text=@pi__yo__ko%20" target="_blank">Twitter で連絡する</a> |
-<a href="https://piyo-ko.github.io/tools/svg2png.html">PNG 形式への変換</a> |
+<a href="https://piyo-ko.github.io/tools/svg2png.html">PNG 形式への変換</a> (SVG 形式で一旦データを保存しないと変換できません) |
 <a href="https://github.com/piyo-ko/pedigree">このページに関する説明</a>
 ]</nav>
 </body>
