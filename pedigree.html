@@ -57,7 +57,28 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 
 <input type="radio" name="new_personal_gender" value="masculine" id="new_personal_gender_masculine">
 <label for="new_personal_gender_masculine">男性</label>。
-
+<br>
+配置先は、
+<input type="radio" name="position" value="random" id="position_random" checked>
+<label for="position_random">ランダム</label>、あるいは、
+<select id="position_ref" name="position_ref"></select>
+を基準としてその
+<input type="radio" name="position" value="upper_left" id="position_upper_left">
+<label for="position_upper_left">左上</label>
+<input type="radio" name="position" value="upper_center" id="position_upper_center">
+<label for="position_upper_center">真上</label>
+<input type="radio" name="position" value="upper_right" id="position_upper_right">
+<label for="position_upper_right">右上</label>
+<input type="radio" name="position" value="left" id="position_left">
+<label for="position_left">左</label>
+<input type="radio" name="position" value="right" id="position_right">
+<label for="position_right">右</label>
+<input type="radio" name="position" value="lower_left" id="position_lower_left">
+<label for="position_lower_left">左下</label>
+<input type="radio" name="position" value="lower_center" id="position_lower_center">
+<label for="position_lower_center">真下</label>
+<input type="radio" name="position" value="lower_right" id="position_lower_right">
+<label for="position_lower_right">右下</label>。
 <input type="button" value="この人を追加する" onclick="add_person()">
 </td>
 </tr>

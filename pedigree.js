@@ -311,6 +311,8 @@ function add_person() {
     new_personal_name = new_personal_name.replace(/[(（]/g, '︵').replace(/[)）]/g, '︶');
   }
   const gender = selected_radio_choice(document.menu.new_personal_gender);
+  const position_ref_pid = (document.menu.position_ref.options.length > 0) ? selected_choice(document.menu.position_ref) : 'no_ref';
+  const specified_position = selected_radio_choice(document.menu.position);
 
   // グループ化のための g 要素を作る。
   const g = document.createElementNS(SVG_NS, 'g');
@@ -329,13 +331,42 @@ function add_person() {
   if (box_h > P_GRAPH.svg_height) {modify_height_0(box_h - P_GRAPH.svg_height);}
   if (box_w > P_GRAPH.svg_width) {modify_width_0(box_w - P_GRAPH.svg_width);}
 
-  // 面倒なので、とりあえずランダムな場所に配置する。
-  const x = Math.floor( Math.random(Date.now()) *
+  // 矩形を配置する位置を決める
+  let x = 0, y = 0;
+  if (specified_position === 'rondom' || position_ref_pid === 'no_ref') {
+    x = Math.floor( Math.random(Date.now()) *
                         (P_GRAPH.svg_width - box_w + 1) / CONFIG.grid_size )
             * CONFIG.grid_size;
-  const y = Math.floor( Math.random(Date.now()) * 
+    y = Math.floor( Math.random(Date.now()) * 
                         (P_GRAPH.svg_height - box_h + 1) / CONFIG.grid_size )
             * CONFIG.grid_size;
+  } else {
+    const ref_rect = document.getElementById(position_ref_pid + 'r');
+    const ref_x_start = parseInt(ref_rect.getAttribute('x'));
+    const ref_x_end = ref_x_start + parseInt(ref_rect.getAttribute('width'));
+    const ref_x_mid = Math.floor((ref_x_start + ref_x_end) / 2);
+    if (['upper_left', 'left', 'lower_left'].includes(specified_position)) {
+      x = Math.max(0, ref_x_start - CONFIG.min_h_link_len - box_w);
+    }
+    if (['upper_center', 'lower_center'].includes(specified_position)) {
+      x = Math.max(0, ref_x_mid - Math.floor(box_w/2));
+    }
+    if (['upper_right', 'right', 'lower_right'].includes(specified_position)) {
+      x = Math.min(P_GRAPH.svg_width - box_w, ref_x_end + CONFIG.min_h_link_len);
+    }
+    const ref_y_start = parseInt(ref_rect.getAttribute('y'));
+    const ref_y_end = ref_y_start + parseInt(ref_rect.getAttribute('height'));
+    const ref_y_mid = Math.floor((ref_y_start + ref_y_end) / 2);
+    if (['upper_left', 'upper_center', 'upper_right'].includes(specified_position)) {
+      y = Math.max(0, ref_y_start - CONFIG.min_v_link_len - box_h);
+    }
+    if (['right', 'left'].includes(specified_position)) {
+      y = Math.max(0, ref_y_mid - Math.floor(box_h/2));
+    }
+    if (['lower_left', 'lower_center', 'lower_right'].includes(specified_position)) {
+      y = Math.min(P_GRAPH.svg_height - box_h, ref_y_end + CONFIG.min_v_link_len);
+    }
+  }
 
   // 矩形を作る
   const r = document.createElementNS(SVG_NS, 'rect');
@@ -368,7 +399,7 @@ function add_person() {
   P_GRAPH.p_free_pos_mngrs.push(new RectMngr(new_personal_id, box_h, box_w));
   // プルダウンリストへの反映
   const m = document.menu;
-  [m.person_to_be_extended, m.partner_1, m.partner_2, 
+  [m.position_ref, m.person_to_be_extended, m.partner_1, m.partner_2, 
    m.lhs_person, m.rhs_person, m.parent_1, m.child_1, 
    m.child_2, m.target_person, m.person_to_move_down].map(s => { 
      add_person_choice(s, new_personal_id, new_personal_name);
@@ -1774,8 +1805,8 @@ function set_p_graph_values() {
     // プルダウンリストへの反映
     let txt = document.getElementById(pid + 't').textContent;
     let mn = document.menu;
-    [mn.person_to_be_extended, mn.partner_1, mn.partner_2, mn.lhs_person,
-     mn.rhs_person, mn.parent_1, 
+    [mn.position_ref, mn.person_to_be_extended, mn.partner_1, 
+     mn.partner_2, mn.lhs_person, mn.rhs_person, mn.parent_1, 
      mn.child_1, mn.child_2, mn.target_person, mn.person_to_move_down].map(
       s => { add_person_choice(s, pid, txt); }
     );
