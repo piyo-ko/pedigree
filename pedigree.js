@@ -15,7 +15,7 @@ EndPointsMngr_RL と EndPointsMngr_UL と RectMngr を定義する。*/
 -----------------> 埋まってゆく順 */
 class EndPointsMngr_RL {
   constructor(len) {
-    this.positions = [4, 2, 6, 1, 7, 3, 5];  // この順に埋めていく
+    this.positions = [4, 2, 6, 1, 7, 3, 5];  // デフォルトではこの順に埋めていく
     this.next_position_idx = 0; // positions の添え字 (次に埋めるべき位置に対応)
     this.edge_length = len;     // 辺の長さ
     this.hlink_ids = []; // この辺につながる横リンクの ID の配列
@@ -69,6 +69,20 @@ class EndPointsMngr_RL {
     if (this.next_position_idx === 0) {
       this.positions = [4, 2, 6, 1, 7, 3, 5];
     }
+  }
+  // 優先順の入れ替え。次に選択したい位置 (next_pos_No) をユーザが指定した
+  // ときに使う。
+  change_priority(next_pos_No) {
+    // 指定された位置の優先度に対応するインデックス
+    const next_pos_idx = this.positions.findIndex(p => (p === next_pos_No));
+    if (next_pos_idx === this.next_position_idx) { return; } // 変更なし
+    // 未使用の位置のうち、指定された位置の優先度より高い優先度のものがあれば、
+    // それらの位置の順位を一つずつ繰り下げておく。
+    for (let i = next_pos_idx; i > this.next_position_idx; i--) {
+      this.positions[i] = this.positions[i-1];
+    }
+    // 指定された位置を、次に選択されるべき順位にまで押し上げる。
+    this.positions[this.next_position_idx] = next_pos_No;
   }
 }
 
@@ -354,10 +368,14 @@ function add_person() {
   P_GRAPH.p_free_pos_mngrs.push(new RectMngr(new_personal_id, box_h, box_w));
   // プルダウンリストへの反映
   const m = document.menu;
-  [m.person_to_be_extended, m.partner_1, m.partner_2, m.parent_1, m.child_1, 
+  [m.person_to_be_extended, m.partner_1, m.partner_2, 
+   m.lhs_person, m.rhs_person, m.parent_1, m.child_1, 
    m.child_2, m.target_person, m.person_to_move_down].map(s => { 
      add_person_choice(s, new_personal_id, new_personal_name);
   });
+  // ダミーの人物を明示的に選択しておく
+  m.lhs_person.selectedIndex = 0;
+  m.rhs_person.selectedIndex = 0;
 
   if (MODE.func_add_person > 0) {
     console.log('add_person() ends.');  P_GRAPH.print();
@@ -467,6 +485,9 @@ function add_h_link() {
   const p1_id = selected_choice(document.menu.partner_1);
   const p2_id = selected_choice(document.menu.partner_2);
   const link_type = selected_radio_choice(document.menu.horizontal_link_type);
+  add_h_link_0(p1_id, p2_id, link_type);
+}
+function add_h_link_0(p1_id, p2_id, link_type) {
   if (p1_id === p2_id) { alert('同一人物を指定しないでください'); return; }
   if (already_h_linked(p1_id, p2_id)) {
     alert('もう横線でつないである組み合わせです。'); return;
@@ -561,6 +582,9 @@ function add_h_link() {
   const displayed_str = r1_is_left ? (t1 + 'と' + t2) : (t2 + 'と' + t1);
   add_person_choice(document.getElementById('hlink_to_remove'), hid, displayed_str);
   add_person_choice(document.getElementById('parents_2'), hid, displayed_str);
+  // ダミーの人物を明示的に選択しておく
+  document.getElementById('lhs_person').selectedIndex = 0;
+  document.getElementById('rhs_person').selectedIndex = 0;
 
   if (MODE.func_add_h_link > 0) {
     console.log('add_h_link() ends.');  P_GRAPH.print();
@@ -780,6 +804,90 @@ function move_down_collectively(pid_fixed, pid_moved, amount, hid_to_ignore = ''
   });
 }
 
+/* 「詳細を指定して横の関係を追加する」メニュー用。左側の人物が指定されて
+change イベントが発生すると呼ばれる。
+なお、「詳細を指定して横の関係を追加する」メニューで左側と右側の人物を選択する
+ためのセレクタの selectedIndex は、どちらも、横リンクの追加・削除の際に (更には
+人物の追加の際にも) 0 にリセットされる (具体的には、add_person, add_h_link_0, 
+remove_h_link_0, set_p_graph_values において、そのリセットを行っている)。
+リセットにより、ダミーの選択肢が選ばれた状態となる。すると、「詳細を指定して
+横の関係を追加する」メニューを使うには、人物を選択し直さざるを得なくなるから、
+必ず change イベントが生じて、onchange に指定された関数 (lhs_set_choices と 
+rhs_set_choices) が呼ばれることになる。その結果、(同じメニューを前回使った際に
+指定したままフォームに残っている結果が使われてしまうのではなく) 確実に、最新
+状態を反映した位置の選択肢が再度用意される。つまり、ユーザの選択した位置が、
+最新状態において実際に選択可能な位置であることが保証される。 */
+function lhs_set_choices() {
+  set_pos_choices('lhs_person', 'lhs_person_right_edge', true);
+}
+/* 「詳細を指定して横の関係を追加する」メニュー用。右側の人物が指定されたときに
+呼ばれる。*/
+function rhs_set_choices() {
+  set_pos_choices('rhs_person', 'rhs_person_left_edge', false);
+}
+/* 「詳細を指定して横の関係を追加する」メニュー用。 */
+function set_pos_choices(person_sel_id, edge_sel_id, is_change_on_right_edge) {
+  const pid = selected_choice(document.getElementById(person_sel_id));
+  const pos_selector = document.getElementById(edge_sel_id);
+  while (pos_selector.firstChild) { // 現状の選択肢をすべて削除する (初期化)
+    pos_selector.removeChild(pos_selector.firstChild);
+  }
+  // 選択された人物の、指定された辺 (左辺または右辺) を管理している
+  // オブジェクトを求める
+  const rect_mng = P_GRAPH.p_free_pos_mngrs.find(m => (m.pid === pid));
+  const edge_mng = is_change_on_right_edge ? rect_mng.right_side : rect_mng.left_side;
+  // 辺上で指定可能なのは 7 箇所。各箇所について適切な option 要素を生成する。
+  for (let pos_No = 1; pos_No <= 7; pos_No++) {
+    let opt = document.createElement('option');
+    opt.value = pos_No;
+    pos_selector.appendChild(opt);
+    let idx = edge_mng.positions.findIndex(p => (p === pos_No));
+    if (idx < edge_mng.next_position_idx) { // 使用済みの位置 (表示するだけ)
+      add_text_node(opt, pos_No + '*');  opt.disabled = true; // 選択不可
+    } else { // 未使用の位置
+      add_text_node(opt, pos_No);
+      if (idx === edge_mng.next_position_idx) { // デフォルトで次に選択する位置
+        pos_selector.selectedIndex = pos_No - 1;
+      }
+    }
+  }
+}
+/* 「詳細を指定して横の関係を追加する」メニュー用。 */
+function add_h_link_2() {
+  const lhs_person_id = selected_choice(document.menu.lhs_person);
+  if (lhs_person_id === 'dummy') {
+    alert('左側の人物を指定してください');  return;
+  }
+  const rhs_person_id = selected_choice(document.menu.rhs_person);
+  if (rhs_person_id === 'dummy') {
+    alert('右側の人物を指定してください');  return;
+  }
+  // 左と右の指定が妥当か確認する。
+  const lhs_rect = document.getElementById(lhs_person_id + 'r');
+  const lhs_x_start = parseInt(lhs_rect.getAttribute('x'));
+  const lhs_x_end = lhs_x_start + parseInt(lhs_rect.getAttribute('width'));
+  const rhs_rect = document.getElementById(rhs_person_id + 'r');
+  const rhs_x_start = parseInt(rhs_rect.getAttribute('x'));
+  const rhs_x_end = rhs_x_start + parseInt(rhs_rect.getAttribute('width'));
+  if (lhs_x_end > rhs_x_start) {
+    alert('左右が逆、あるいは、二人の矩形が重なっています');  return;
+  } else if (lhs_x_end + CONFIG.min_h_link_len > rhs_x_start) {
+    alert('矩形の間がくっつきすぎです');  return;
+  }
+  // ここに来るのは横リンクを追加して良い場合のみ。
+  // ユーザによる位置の指定を、人物の矩形の辺を管理するオブジェクトに反映させる。
+  const lhs_mng = P_GRAPH.p_free_pos_mngrs.find(m => (m.pid === lhs_person_id));
+  const lhs_pos = parseInt(selected_choice(document.getElementById('lhs_person_right_edge')));
+  lhs_mng.right_side.change_priority(lhs_pos);
+  const rhs_mng = P_GRAPH.p_free_pos_mngrs.find(m => (m.pid === rhs_person_id));
+  const rhs_pos = parseInt(selected_choice(document.getElementById('rhs_person_left_edge')));
+  rhs_mng.left_side.change_priority(rhs_pos);
+  // あとはリンクの線の種別を読み込んで、通常の「横の関係を追加する」メニューと
+  // 同様の下請け関数を呼び出すだけ。
+  const link_type = selected_radio_choice(document.menu.horizontal_link_type2);
+  add_h_link_0(lhs_person_id, rhs_person_id, link_type);
+}
+
 /* 「横の関係を追加する」メニューのための部品。新規の横リンクを描画する。 */
 function draw_new_h_link(hid, link_start_x, link_end_x, link_y, link_type, pid_left, pid_right) {
   let h_link = document.createElementNS(SVG_NS, 'path');
@@ -848,6 +956,7 @@ function remove_h_link_0(hlink_id) {
   const rhs_person_dat = document.getElementById(rhs_person + 'g').dataset;
   const lhs_mng = P_GRAPH.p_free_pos_mngrs.find(m => (m.pid === lhs_person));
   const rhs_mng = P_GRAPH.p_free_pos_mngrs.find(m => (m.pid === rhs_person));
+
   function log_msg(str) {
     if (MODE.func_remove_h_link_0 > 0) {
       console.log('remove_h_link(): ' + str);
@@ -856,6 +965,7 @@ function remove_h_link_0(hlink_id) {
     }
   }
   log_msg(hlink_id + 'の削除前');
+
   lhs_person_dat.right_links = lhs_person_dat.right_links.replace(new RegExp('\^\(\.\*)' + hlink_id + ',' + rhs_person + ',\(\.\*\)\$'), '$1$2');
   rhs_person_dat.left_links = rhs_person_dat.left_links.replace(new RegExp('\^\(\.\*)' + hlink_id + ',' + lhs_person + ',\(\.\*\)\$'), '$1$2');
   remove_val_from_array(P_GRAPH.h_links, hlink_id);
@@ -864,6 +974,10 @@ function remove_h_link_0(hlink_id) {
   remove_choice(document.getElementById('hlink_to_remove'), hlink_id);
   remove_choice(document.getElementById('parents_2'), hlink_id);
   document.getElementById('pedigree').removeChild(hlink_elt);
+  // ダミーの人物を明示的に選択しておく
+  document.getElementById('lhs_person').selectedIndex = 0;
+  document.getElementById('rhs_person').selectedIndex = 0;
+
   log_msg(hlink_id + 'の削除後');
 }
 
@@ -1610,12 +1724,23 @@ function read_in() {
 TO DO: 余裕があれば、後でチェック機能を追加する。 */
 function set_p_graph_values() {
   // 現在のデータに基づくセレクタ選択肢とダウンロードリンクをすべて削除する。
-  ['person_to_be_extended', 'partner_1', 'partner_2', 'hlink_to_remove',
+  ['person_to_be_extended', 'partner_1', 'partner_2', 'lhs_person', 
+   'rhs_person', 'hlink_to_remove',
    'parent_1', 'child_1', 'parents_2', 'child_2',
    'target_person', 'person_to_move_down', 'svg_backup'].map(parent_id => { 
     const elt = document.getElementById(parent_id);
     while (elt.firstChild) { elt.removeChild(elt.firstChild); }
   });
+  // ただしダミーの選択肢が必要なセレクタがあるので、それらを作り直す。
+  let opt = document.createElement('option');
+  opt.value = 'dummy';
+  add_text_node(opt, '左側の人物');
+  document.getElementById('lhs_person').appendChild(opt);
+  opt = document.createElement('option');
+  opt.value = 'dummy';
+  add_text_node(opt, '右側の人物');
+  document.getElementById('rhs_person').appendChild(opt);
+  
   P_GRAPH.reset_all();
   document.menu.reset();
   print_current_svg_size();  // svg 要素の大きさ (幅と高さ) を表示し直す。
@@ -1649,13 +1774,17 @@ function set_p_graph_values() {
     // プルダウンリストへの反映
     let txt = document.getElementById(pid + 't').textContent;
     let mn = document.menu;
-    [mn.person_to_be_extended, mn.partner_1, mn.partner_2, mn.parent_1, 
-     mn.child_1, mn.child_2, mn.target_person, mn.person_to_move_down].map(s => {
-      add_person_choice(s, pid, txt);
-    });
+    [mn.person_to_be_extended, mn.partner_1, mn.partner_2, mn.lhs_person,
+     mn.rhs_person, mn.parent_1, 
+     mn.child_1, mn.child_2, mn.target_person, mn.person_to_move_down].map(
+      s => { add_person_choice(s, pid, txt); }
+    );
     // 座標情報の表示用
     rect.onmouseover = function() {show_info(pid, txt);};
   }
+  // ダミーの人物を明示的に選択しておく
+  document.getElementById('lhs_person').selectedIndex = 0;
+  document.getElementById('rhs_person').selectedIndex = 0;
 
   // リンクを一つずつ見てゆく
   const path_elts = svg_elt.getElementsByTagName('path'), pN = path_elts.length;
