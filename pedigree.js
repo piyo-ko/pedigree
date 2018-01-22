@@ -1436,19 +1436,23 @@ function move_person_vertically(pid, dy) {
     let lhs = gr.dataset.left_links; // 左辺側でのつながり
     err_msg(0, 'lhs=[' + lhs + ']');
     apply_to_each_hid_pid_pair(rhs + lhs, function(cur_hid, cur_pid) {
-      push_if_not_included(target_persons, cur_pid);
-      if (target_h_links.includes(cur_hid)) { return; }
-      target_h_links.push(cur_hid);
-      const vids = id_str_to_arr(document.getElementById(cur_hid).dataset.lower_links);
+      push_if_not_included(target_persons, cur_pid); // 横リンク先の相手を追加
+      if (target_h_links.includes(cur_hid)) { return; } // 追加済み横リンク
+      target_h_links.push(cur_hid); // 初めて見る横リンクなので追加する
+      const vids = id_str_to_arr(document.getElementById(cur_hid).dataset.lower_links); // 横リンクからぶら下がる縦リンクのID
       if (dy < 0) { // 上への移動なら単に子への縦リンクを追加するだけ
         vids.map(v => { push_if_not_included(target_l_links, v); });
       } else { // 下への移動の場合 (dy > 0)、子に近づきすぎる可能性がある
+        err_msg(0, 'now at Check Point (A)');
+        let hlink_connect_pos_y = parseInt(document.getElementById(cur_hid).dataset.connect_pos_y);
         vids.map(v => { // まず、子たちと最小間隔を保つように actual_dy を調整
           const c_rect_id = document.getElementById(v).dataset.child + 'r';
           const c_top = parseInt(document.getElementById(c_rect_id).getAttribute('y'));
-          const gap = c_top - (y_max + actual_dy);
+          const gap = c_top - (hlink_connect_pos_y + actual_dy);
+          err_msg(0, '  * c_rect_id=' + c_rect_id + ', c_top=' + c_top + ', gap = ' + gap);
           if (gap < CONFIG.min_v_link_len) {
-            actual_dy = c_top - y_max - CONFIG.min_v_link_len;
+            actual_dy = c_top - hlink_connect_pos_y - CONFIG.min_v_link_len;
+            err_msg(0, '  * actual_dy is now ' + actual_dy);
             if (actual_dy < 0) { actual_dy = 0; } // 一応エラー避け
           }
         });
