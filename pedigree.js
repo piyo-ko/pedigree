@@ -276,7 +276,7 @@ function selected_radio_choice(radio_elt) {
 
 /* [汎用モジュール] 
 プルダウンリストに選択肢を追加して、それを選択済み状態にする。 */
-function add_person_choice(sel_elt, id, displayed_name) {
+function add_selector_option(sel_elt, id, displayed_name) {
   const opt = document.createElement('option');
   add_text_node(opt, '[' + id + '] ' + displayed_name);  opt.value = id;
   sel_elt.appendChild(opt);  sel_elt.selectedIndex = sel_elt.options.length - 1;
@@ -413,7 +413,7 @@ function add_person() {
   [m.position_ref, m.person_to_be_extended, m.partner_1, m.partner_2, 
    m.lhs_person, m.rhs_person, m.parent_1, m.child_1, 
    m.child_2, m.target_person, m.person_to_move_down].map(s => { 
-     add_person_choice(s, new_personal_id, new_personal_name);
+     add_selector_option(s, new_personal_id, new_personal_name);
   });
   // ダミーの人物を明示的に選択しておく
   m.lhs_person.selectedIndex = 0;
@@ -612,8 +612,8 @@ function add_h_link_0(p1_id, p2_id, link_type) {
   const t1 = document.getElementById(p1_id + 't').textContent;
   const t2 = document.getElementById(p2_id + 't').textContent;
   const displayed_str = r1_is_left ? (t1 + 'と' + t2) : (t2 + 'と' + t1);
-  add_person_choice(document.getElementById('hlink_to_remove'), hid, displayed_str);
-  add_person_choice(document.getElementById('parents_2'), hid, displayed_str);
+  add_selector_option(document.getElementById('hlink_to_remove'), hid, displayed_str);
+  add_selector_option(document.getElementById('parents_2'), hid, displayed_str);
   // ダミーの人物を明示的に選択しておく
   document.getElementById('lhs_person').selectedIndex = 0;
   document.getElementById('rhs_person').selectedIndex = 0;
@@ -1065,7 +1065,7 @@ function add_v_link_1() {
   }
   const p_txt = document.getElementById(p_id + 't').textContent;
   const c_txt = document.getElementById(c_id + 't').textContent;
-  add_person_choice(document.getElementById('vlink_to_remove'), vid, p_txt + 'から' + c_txt + 'へ');
+  add_selector_option(document.getElementById('vlink_to_remove'), vid, p_txt + 'から' + c_txt + 'へ');
   backup_svg(p_txt + 'と' + c_txt + 'の間の縦の関係を追加' );
 }
 
@@ -1127,7 +1127,7 @@ function add_v_link_2() {
   const p1_txt = document.getElementById(p1_id + 't').textContent;
   const p2_txt = document.getElementById(p2_id + 't').textContent;
   const c_txt = document.getElementById(c_id + 't').textContent;
-  add_person_choice(document.getElementById('vlink_to_remove'), vid, p1_txt + 'と' + p2_txt + 'から' + c_txt + 'へ');
+  add_selector_option(document.getElementById('vlink_to_remove'), vid, p1_txt + 'と' + p2_txt + 'から' + c_txt + 'へ');
   backup_svg(p1_txt + 'と' + p2_txt + 'を結ぶ横線から' + c_txt + 
     'への縦の関係を追加');
 }
@@ -1806,7 +1806,7 @@ function set_p_graph_values() {
     [mn.position_ref, mn.person_to_be_extended, mn.partner_1, 
      mn.partner_2, mn.lhs_person, mn.rhs_person, mn.parent_1, 
      mn.child_1, mn.child_2, mn.target_person, mn.person_to_move_down].map(
-      s => { add_person_choice(s, pid, txt); }
+      s => { add_selector_option(s, pid, txt); }
     );
     // 座標情報の表示用
     rect.onmouseover = function() {show_info(pid, txt);};
@@ -1837,8 +1837,8 @@ function set_p_graph_values() {
       // 選択肢を追加する
       let str = svg_elt.getElementById(lhs_person_id + 't').textContent + 'と' +
                 svg_elt.getElementById(rhs_person_id + 't').textContent;
-      add_person_choice(document.getElementById('hlink_to_remove'), path_id, str);
-      add_person_choice(document.getElementById('parents_2'), path_id, str);
+      add_selector_option(document.getElementById('hlink_to_remove'), path_id, str);
+      add_selector_option(document.getElementById('parents_2'), path_id, str);
     } else if (m[1] === 'v') {  // 縦リンクを見ている
       //「次の番号」用の変数を更新
       if (P_GRAPH.next_vlink_id <= id_No) { P_GRAPH.next_vlink_id = id_No + 1; }
@@ -1861,7 +1861,7 @@ function set_p_graph_values() {
         str = p1_txt + 'と' + p2_txt + 'から' + c_txt + 'へ';
       }
       // 縦リンクの削除メニューのプルダウンリストに選択肢を追加する。
-      add_person_choice(document.getElementById('vlink_to_remove'), path_id, str);
+      add_selector_option(document.getElementById('vlink_to_remove'), path_id, str);
       // 子の上辺については、リンクのつなぎ方によらず、その使用状況を設定する。
       set_EndPointsMngr_UL(cur_path.dataset.child, 'upper', link_type,
                            parseInt(cur_path.dataset.child_pos_idx));
