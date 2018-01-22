@@ -26,21 +26,32 @@ class EndPointsMngr_RL {
       '), and edge_length is ' + this.edge_length);
     console.log('   ( positions is [' + this.positions + '] )');
   }
+  // 辺上に空いている箇所が存在することを保証する。つまり、現状ですべての場所が
+  // 使用済みだったら、分割数を倍増させて、空き場所として使える場所番号の個数を
+  // 増やす。
+  ensure_free_pos() {
+    if (this.next_position_idx === this.positions.length) {
+      const cur_num_of_divisions = this.positions.length + 1;  // 今の分割数
+      const new_num_of_divisions = cur_num_of_divisions * 2;   // 新たな分割数
+      for (let i = 0; i < this.positions.length; i++) { 
+        this.positions[i] *= 2; // 今までの (既存の) 位置番号の値を2倍にする。
+      }
+      this.positions.push(1); // 新たな番号のうちで優先度が第1位 (上の端)
+      this.positions.push(new_num_of_divisions - 1); // 同第2位 (下の端)
+      for (let i = 3; i < new_num_of_divisions - 1; i += 2) { // 残りの新たな番号
+        this.positions.push(i); // 優先度は上から下へ、という順にしてある
+      }
+    }
+  }
   // この辺においてリンクの接続位置として空いている次の位置を、番号ではなくて
   // 実際の長さで表して、返す。また、「次の位置」も更新する。
   next_position(hid) { // 引数は、更新前の「次の位置」につなぐべき横リンクの ID
-    if (this.next_position_idx === this.positions.length) {
-      // すでに全箇所が埋まっているのでエラー
-      alert('そんなに多くの関係は設定できません!');  return(-1);
-    }
+    this.ensure_free_pos();
     const pos = Math.floor( this.edge_length * this.positions[this.next_position_idx] / (this.positions.length + 1) );
     this.next_position_idx++;
     this.hlink_ids.push(hid);
     return(pos);
   }
-  // この辺に、リンクの接続位置として利用可能な位置が残っているかどうかを
-  // 調べる。残っていれば true。
-  is_available() { return(this.next_position_idx < this.positions.length); }
   // 「矩形の高さを増やす」メニューにより辺の長さを増やすときに使う。
   extend_length() { this.edge_length += CONFIG.font_size * 2; }
   which_pos_No(hid) {
@@ -440,8 +451,9 @@ function extend_rect() {
   // さらに厳しくチェック。横リンクと、そこからぶら下がっている縦リンクが
   // ある場合には、矩形の拡大にともなってその横リンクの位置が下がってもなお、
   // その縦リンクが十分な長さを有するのかを調べる。
-  const diff_unit_len = Math.floor(CONFIG.font_size * 2 / 8);
   function check_more(hid_pid_str, edge_mng) {
+    const num_of_divisions = edge_mng.positions.length + 1;
+    const diff_unit_len = Math.floor(CONFIG.font_size * 2 / num_of_divisions);
     apply_to_each_hid_pid_pair(hid_pid_str, function(hid, partner_pid) {
       if (!extendable) {return;}
       const vids = document.getElementById(hid).dataset.lower_links;
@@ -491,6 +503,8 @@ function extend_rect() {
   // 移動させ、横リンクも再描画する。その横リンクからぶら下がっている縦リンクが
   // あれば、それらも再描画する。
   function move_down_together(hid_pid_str, edge_mng) {
+    const num_of_divisions = edge_mng.positions.length + 1;
+    const diff_unit_len = Math.floor(CONFIG.font_size * 2 / num_of_divisions);
     apply_to_each_hid_pid_pair(hid_pid_str, function(hid, partner_pid) {
       const diff = edge_mng.which_pos_No(hid) * diff_unit_len;
       const hlink = document.getElementById(hid);
@@ -548,19 +562,6 @@ function add_h_link_0(p1_id, p2_id, link_type) {
     console.log('1人目: (' + x_start1 + ',' + y_start1 + ') - (' + x_end1 + ',' + y_end1 + ')');
     console.log('2人目: (' + x_start2 + ',' + y_start2 + ') - (' + x_end2 + ',' + y_end2 + ')');
     alert('二人の矩形が重なっているか、矩形の間がくっつきすぎです。'); return;
-  }
-
-  // 横方向のリンクを追加する余地 (辺上の空き場所) があるかどうかをチェックする
-  let can_add_link;
-  if (r1_is_left) { // r1 が左にあるときは、r1 の右辺と r2 の左辺に空きが必要
-    can_add_link = 
-      free_pos_found(p1_id, 'right') && free_pos_found(p2_id, 'left');
-  } else {
-    can_add_link = 
-      free_pos_found(p1_id, 'left') && free_pos_found(p2_id, 'right');
-  }
-  if (! can_add_link) {
-    alert('横方向のリンクが既に多すぎる人を指定したのでエラーです。'); return;
   }
 
   // ここにくるのは、リンクを追加して良い場合。
@@ -631,17 +632,6 @@ function already_h_linked(pid1, pid2) {
     const rhs = document.getElementById(hid).dataset.rhs_person;
     return( (lhs === pid1 && rhs === pid2) || (lhs === pid2 && rhs === pid1) );
   }));
-}
-
-/* 「横の関係を追加する」メニューのための部品。
-pid という ID を持つ人物を表す矩形の縦の辺 (右辺か左辺) に、
-横リンクを追加できる空きがあるかどうかを調べる。 */
-function free_pos_found(pid, edge) {
-  const mng = P_GRAPH.p_free_pos_mngrs.find(m => (m.pid === pid));
-  if (mng === undefined) { return(false); }
-  if (edge === 'right') { return(mng.right_side.is_available()); }
-  if (edge === 'left')  { return(mng.left_side.is_available()); }
-  return(false);
 }
 
 /* 「横の関係を追加する」メニューのための部品。
@@ -867,16 +857,20 @@ function set_pos_choices(person_sel_id, edge_sel_id, is_change_on_right_edge) {
   // オブジェクトを求める
   const rect_mng = P_GRAPH.p_free_pos_mngrs.find(m => (m.pid === pid));
   const edge_mng = is_change_on_right_edge ? rect_mng.right_side : rect_mng.left_side;
-  // 辺上で指定可能なのは 7 箇所。各箇所について適切な option 要素を生成する。
-  for (let pos_No = 1; pos_No <= 7; pos_No++) {
+  edge_mng.ensure_free_pos();  // 空き場所が存在することを先に保証しておく。
+  const num_of_divisions = edge_mng.positions.length + 1;
+  // 辺上で指定可能なのは num_of_divisions 箇所。
+  // 各箇所について適切な option 要素を生成する。
+  for (let pos_No = 1; pos_No < num_of_divisions; pos_No++) {
     let opt = document.createElement('option');
     opt.value = pos_No;
     pos_selector.appendChild(opt);
     let idx = edge_mng.positions.findIndex(p => (p === pos_No));
     if (idx < edge_mng.next_position_idx) { // 使用済みの位置 (表示するだけ)
-      add_text_node(opt, pos_No + '*');  opt.disabled = true; // 選択不可
+      add_text_node(opt, pos_No + '/' + num_of_divisions + ' *');
+      opt.disabled = true; // 選択不可
     } else { // 未使用の位置
-      add_text_node(opt, pos_No);
+      add_text_node(opt, pos_No + '/' + num_of_divisions);
       if (idx === edge_mng.next_position_idx) { // デフォルトで次に選択する位置
         pos_selector.selectedIndex = pos_No - 1;
       }
