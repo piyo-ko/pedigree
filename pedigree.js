@@ -224,7 +224,11 @@ const CONFIG = {
   // 縦方向でリンクする際に左右の位置ずれがあれば、下へ降りて、左右いずれかへ
   // 折れて、また下に降りる形とするが、その際の最初に下に降りる線の長さは、
   // 一定とする (それにより、兄弟姉妹が綺麗に整列されるはず)
-  dist_to_turning_pt: 32
+  dist_to_turning_pt: 32,
+  // 注釈行で使うフォントサイズ
+  note_font_size: 16, 
+  // 人物の矩形と注釈行の間、および、注釈行同士の行間
+  note_margin: 4
 };
 
 /* SVG 用の名前空間 */
@@ -410,7 +414,8 @@ function add_person() {
   P_GRAPH.p_free_pos_mngrs.push(new RectMngr(new_personal_id, box_h, box_w));
   // プルダウンリストへの反映
   const m = document.menu;
-  [m.position_ref, m.person_to_be_extended, m.partner_1, m.partner_2, 
+  [m.position_ref, m.person_to_be_extended, m.annotation_target,
+   m.partner_1, m.partner_2, 
    m.lhs_person, m.rhs_person, m.parent_1, m.child_1, 
    m.child_2, m.target_person, m.person_to_move_down].map(s => { 
      add_selector_option(s, new_personal_id, new_personal_name);
@@ -522,6 +527,68 @@ function extend_rect() {
   move_down_together(g.dataset.left_links, mng.left_side);
 
   backup_svg(txt.textContent + 'の矩形の高さを増やす');
+}
+
+/* 「注釈の行を追加する」メニュー。 */
+function annotate() {
+  const pid = selected_choice(document.menu.annotation_target);
+  const note = document.menu.annotation_txt.value;
+  const note_length = note.length * CONFIG.note_font_size;
+  const rect = document.getElementById(pid + 'r');
+  const rect_x_start = parseInt(rect.getAttribute('x'));
+  const rect_width = parseInt(rect.getAttribute('width'));
+  const rect_x_end = rect_x_start + rect_width;
+  const rect_y_start = parseInt(rect.getAttribute('y'));
+  const rect_height = parseInt(rect.getAttribute('height'));
+  const rect_y_end = rect_y_start + rect_height;
+  const txt_elt = document.getElementById(pid + 't');
+  const writing_mode = txt_elt.getAttribute('writing-mode');
+  const g_elt = document.getElementById(pid + 'g');
+  const new_note_No = g_elt.getElementsByTagName('text').length - 1;
+  const note_elt = document.createElementNS(SVG_NS, 'text');
+
+  let x, y, dx, dy;
+  if (writing_mode === 'tb') { // 縦書き。
+    add_text_node(note_elt, note.replace(/[(（]/g, '︵').replace(/[)）]/g, '︶'));
+    x = rect_x_start - (CONFIG.note_font_size + CONFIG.note_margin) * (new_note_No + 1);
+    if (x < 0) { alert('左からはみ出るので注釈をつけられません'); return; }
+    dx = Math.floor(CONFIG.note_font_size / 2);
+    dy = 0;
+    if (note_length <= rect_height) { // 下揃えにする
+      y = rect_y_end - note_length;
+    } else { // 注釈が長いので上揃えにして下からはみ出させる
+      y = rect_y_start;
+    }
+    // 枠の下端からもはみ出るなら枠を拡大する
+    if (y + note_length > P_GRAPH.svg_height) {
+      modify_height_0(y + note_length - P_GRAPH.svg_height);
+    }
+    note_elt.setAttribute('writing-mode', 'tb');
+  } else { // 横書き
+    add_text_node(note_elt, note);
+    y = rect_y_end + CONFIG.note_margin + (CONFIG.note_font_size + CONFIG.note_margin) * new_note_No;
+    // 枠の下端からはみ出るなら枠を拡大する
+    if (y + CONFIG.note_font_size > P_GRAPH.svg_height) {
+      modify_height_0(y + CONFIG.note_font_size - P_GRAPH.svg_height);
+    }
+    dx = 0;
+    dy = CONFIG.note_margin + Math.floor(CONFIG.note_font_size / 2);
+    if (note_length <= rect_width) { // 右揃えにする
+      x = rect_x_end - note_length;
+    } else { // 注釈が長いので左揃えにして右からはみ出させる
+      x = rect_x_start;
+    }
+    // 枠の右端からもはみ出るなら枠を拡大する
+    if (x + note_length > P_GRAPH.svg_width) {
+      modify_width_0(x + note_length - P_GRAPH.svg_width);
+    }
+  }
+  const att = new Map([['id', pid + 'n' + new_note_No], ['x', x], ['y', y], 
+                       ['dx', dx], ['dy', dy], ['class', 'note']]);
+  att.forEach(function(val, key) { note_elt.setAttribute(key, val); });
+  g_elt.appendChild(note_elt);
+  add_text_node(g_elt, '\n');
+  backup_svg(txt_elt.textContent + 'に注釈を追加');
 }
 
 /* 「横の関係を追加する」メニュー。 */
@@ -1609,8 +1676,9 @@ function shift_all() {
 }
 
 /* [汎用モジュール]
-pid という ID の人物を表す矩形とテキストを、x 方向に dx 動かし、y 方向に 
-dy 動かす。連動なしの単純な操作。他の関数から呼び出すためのもの。 */
+pid という ID の人物を表す矩形とテキスト (と、もしあれば注釈行) を、
+x 方向に dx 動かし、y 方向に dy 動かす。連動なしの単純な操作。
+他の関数から呼び出すためのもの。 */
 function move_rect_and_txt(pid, dx, dy) {
   const rect = document.getElementById(pid + 'r');
   rect.setAttribute('x', parseInt(rect.getAttribute('x')) + dx);
@@ -1618,6 +1686,13 @@ function move_rect_and_txt(pid, dx, dy) {
   const txt = document.getElementById(pid + 't');
   txt.setAttribute('x', parseInt(txt.getAttribute('x')) + dx);
   txt.setAttribute('y', parseInt(txt.getAttribute('y')) + dy);
+  const g = document.getElementById(pid + 'g');
+  const num_of_notes = g.getElementsByTagName('text').length - 1;
+  for (let i = 0; i < num_of_notes; i++) {
+    let note = document.getElementById(pid + 'n' + i);
+    note.setAttribute('x', parseInt(note.getAttribute('x')) + dx);
+    note.setAttribute('y', parseInt(note.getAttribute('y')) + dy);
+  }
 }
 
 /* [汎用モジュール] 線 (縦のリンクまたは横のリンク) を移動させる。
@@ -1803,7 +1878,8 @@ function set_p_graph_values() {
     // プルダウンリストへの反映
     let txt = document.getElementById(pid + 't').textContent;
     let mn = document.menu;
-    [mn.position_ref, mn.person_to_be_extended, mn.partner_1, 
+    [mn.position_ref, mn.person_to_be_extended, mn.annotation_target, 
+     mn.partner_1, 
      mn.partner_2, mn.lhs_person, mn.rhs_person, mn.parent_1, 
      mn.child_1, mn.child_2, mn.target_person, mn.person_to_move_down].map(
       s => { add_selector_option(s, pid, txt); }

@@ -17,6 +17,10 @@ text {
   font-size: 24px;
   font-family: 'ヒラギノ明朝 ProN';
 }
+text.note {
+  font-size: 16px;
+  fill: hsl(240, 90%, 50%);
+}
 path {
   fill: none;
   stroke-width: 2;
