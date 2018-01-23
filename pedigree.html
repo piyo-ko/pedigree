@@ -211,6 +211,24 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 </tr>
 
 <tr class="menu_move_person">
+<th>人の位置を<wbr>揃える</th>
+<td>
+<select id="ref_person" name="ref_person"></select> を基準にして、
+<select id="alignment_type" name="alignment_type">
+<option value="h_align_left">左揃え</option>
+<option value="h_align_center" selected>左右中央揃え</option>
+<option value="h_align_right">右揃え</option>
+<option value="v_align_top">上揃え</option>
+<option value="v_align_middle">上下中央揃え</option>
+<option value="v_align_bottom">下揃え</option>
+</select>
+になるように、
+<select id="person_to_align" name="person_to_align"></select> を
+<input type="button" value="動かす" onclick="align_person()">。
+</td>
+</tr>
+
+<tr class="menu_move_person">
 <th>子孫も<wbr>まとめて<wbr>下に移動する</th>
 <td>
 <select id="person_to_move_down" name="person_to_move_down"></select> を、その子孫も一緒にまとめて下に <input type="text" name="how_much_moved_down" size="3"> px だけ

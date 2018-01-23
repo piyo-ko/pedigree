@@ -13,6 +13,7 @@ const MODE = {
   func_remove_v_link_0: 0,
   func_move_person_horizontally: 0,
   func_move_person_vertically: 0,
+  func_align_person: 0,
   func_set_p_graph_values: 0
 };
 

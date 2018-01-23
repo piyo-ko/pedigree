@@ -314,6 +314,24 @@ function apply_to_each_hid_pid_pair(hid_pid_list_str, func) {
 /* [汎用モジュール] SVG 要素または HTML 要素に文字列 t のテキストノードを追加 */
 function add_text_node(elt, t) { elt.appendChild(document.createTextNode(t)); }
 
+/* [汎用モジュール] pid というIDの人物を表す矩形の幾何的情報を表す
+オブジェクトを取得する。 */
+function get_rect_info(pid) {
+  const rect = document.getElementById(pid + 'r');
+  const x_left = parseInt(rect.getAttribute('x'));
+  const x_width = parseInt(rect.getAttribute('width'));
+  const x_center = x_left + Math.floor(x_width / 2);
+  const x_right = x_left + x_width;
+  const y_top = parseInt(rect.getAttribute('y'));
+  const y_height = parseInt(rect.getAttribute('height'));
+  const y_middle = y_top + Math.floor(y_height / 2);
+  const y_bottom = y_top + y_height;
+  const info = {x_left: x_left, x_width: x_width, x_center: x_center, 
+                x_right: x_right, y_top: y_top, y_height: y_height,
+                y_middle: y_middle, y_bottom: y_bottom};
+  return(info);
+}
+
 /* 「人を追加する」メニュー。 */
 function add_person() {
   const new_personal_id = 'p' + P_GRAPH.next_person_id++; // IDを生成
@@ -417,7 +435,8 @@ function add_person() {
   [m.position_ref, m.person_to_be_extended, m.annotation_target,
    m.partner_1, m.partner_2, 
    m.lhs_person, m.rhs_person, m.parent_1, m.child_1, 
-   m.child_2, m.target_person, m.person_to_move_down].map(s => { 
+   m.child_2, m.target_person, m.ref_person, m.person_to_align, 
+   m.person_to_move_down].map(s => { 
      add_selector_option(s, new_personal_id, new_personal_name);
   });
   // ダミーの人物を明示的に選択しておく
@@ -1624,6 +1643,43 @@ function move_person_vertically(pid, dy) {
   });
 }
 
+/* 「人の位置を揃える」メニュー。 */
+function align_person() {
+  const ref_person = selected_choice(document.menu.ref_person);
+  const alignment_type = selected_choice(document.menu.alignment_type);
+  const person_to_align = selected_choice(document.menu.person_to_align);
+  const ref_rect = get_rect_info(ref_person);
+  const target_rect = get_rect_info(person_to_align);
+  if (MODE.func_align_person > 0) {
+    console.log('align_person:\n  ref_person:' + JSON.stringify(ref_rect) + '\n  person_to_align:' + JSON.stringify(target_rect));
+  }
+  let d;
+  switch (alignment_type) {
+    case 'h_align_left': 
+      d = ref_rect.x_left - target_rect.x_left;
+      move_person_horizontally(person_to_align, d); break;
+    case 'h_align_center':
+      d = ref_rect.x_center - target_rect.x_center;
+      move_person_horizontally(person_to_align, d); break;
+    case 'h_align_right': 
+      d = ref_rect.x_right - target_rect.x_right;
+      move_person_horizontally(person_to_align, d); break;
+    case 'v_align_top': 
+      d = ref_rect.y_top - target_rect.y_top;
+      move_person_vertically(person_to_align, d); break;
+    case 'v_align_middle':
+      d = ref_rect.y_middle - target_rect.y_middle;
+      move_person_vertically(person_to_align, d); break;
+    case 'v_align_bottom':
+      d = ref_rect.y_bottom - target_rect.y_bottom;
+      move_person_vertically(person_to_align, d); break;
+    default: alert('不明な位置揃え方法が指定されました'); return;
+  }
+  backup_svg(document.getElementById(ref_person + 't').textContent + 
+    'を基準にして' + 
+    document.getElementById(person_to_align + 't').textContent + 'を移動');
+}
+
 /* 「子孫もまとめて下に移動する」メニュー */
 function move_down_person_and_descendants() {
   const whom = selected_choice(document.menu.person_to_move_down);
@@ -1879,9 +1935,9 @@ function set_p_graph_values() {
     let txt = document.getElementById(pid + 't').textContent;
     let mn = document.menu;
     [mn.position_ref, mn.person_to_be_extended, mn.annotation_target, 
-     mn.partner_1, 
-     mn.partner_2, mn.lhs_person, mn.rhs_person, mn.parent_1, 
-     mn.child_1, mn.child_2, mn.target_person, mn.person_to_move_down].map(
+     mn.partner_1, mn.partner_2, mn.lhs_person, mn.rhs_person, mn.parent_1, 
+     mn.child_1, mn.child_2, mn.target_person, mn.ref_person, 
+     mn.person_to_align, mn.person_to_move_down].map(
       s => { add_selector_option(s, pid, txt); }
     );
     // 座標情報の表示用
