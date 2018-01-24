@@ -1263,7 +1263,7 @@ function draw_v_link(v_link, upper_pt_x, upper_pt_y, lower_pt_x, lower_pt_y) {
   // d 属性の値 (文字列) を生成する
   let d_str = 'M ' + upper_pt_x + ',' + (upper_pt_y + 1).toString();
   if (upper_pt_x === lower_pt_x) { // 縦の直線
-    d_str += ' l 0,' + (lower_pt_y - upper_pt_y - 1).toString();
+    d_str += ' l 0,' + (lower_pt_y - upper_pt_y - 2).toString();
   } else { // 折れ曲がる形
     // 決まった長さの分だけ、まず下へ降りる
     d_str += ' l 0,' + CONFIG.dist_to_turning_pt;
@@ -1427,7 +1427,9 @@ function move_person_horizontally(pid, dx) {
     // このリンクの元々の右端 (これは変更なし)。
     const end_x = parseInt(h_link.dataset.end_x);
     // このリンクの左端はこの人物の右端 (x_max) であり、ここが動く。
-    draw_h_link(h_link, x_max, end_x, parseInt(h_link.dataset.y));
+    // 線幅の調整のため、+1 との操作が必要 (end_x は横リンクの属性から読んだ
+    // ものだから調整不要)。
+    draw_h_link(h_link, x_max + 1, end_x, parseInt(h_link.dataset.y));
     // この横リンクから下へ縦リンクがのびている場合は、横リンクの中点を
     // 計算し直して、その中点から縦リンクを再描画せねばならない。
     const mid_x = Math.floor( (x_max + end_x)/2 );
@@ -1443,7 +1445,7 @@ function move_person_horizontally(pid, dx) {
     // このリンクの元々の左端 (これは変更なし)。
     const start_x = parseInt(h_link.dataset.start_x);
     // このリンクの右端はこの人物の左端 (x_min) であり、ここが動く。
-    draw_h_link(h_link, start_x, x_min, parseInt(h_link.dataset.y));
+    draw_h_link(h_link, start_x, x_min - 1, parseInt(h_link.dataset.y));
     // この横リンクから下へ縦リンクがのびている場合は、横リンクの中点を
     // 計算し直して、その中点から縦リンクを再描画せねばならない。
     const mid_x = Math.floor( (start_x + x_min)/2 );
