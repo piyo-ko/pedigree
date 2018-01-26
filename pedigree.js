@@ -608,6 +608,7 @@ function annotate() {
   g_elt.appendChild(note_elt);
   add_text_node(g_elt, '\n');
   backup_svg(txt_elt.textContent + 'に注釈を追加');
+  document.menu.annotation_txt.value = ''; // 最後に注釈入力欄をクリアする
 }
 
 /* 「横の関係を追加する」メニュー。 */
