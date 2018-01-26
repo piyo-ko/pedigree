@@ -436,7 +436,7 @@ function add_person() {
    m.partner_1, m.partner_2, 
    m.lhs_person, m.rhs_person, m.parent_1, m.child_1, 
    m.child_2, m.target_person, m.ref_person, m.person_to_align, 
-   m.person_to_move_down].map(s => { 
+   m.person_to_move_right, m.person_to_move_down].map(s => { 
      add_selector_option(s, new_personal_id, new_personal_name);
   });
   // ダミーの人物を明示的に選択しておく
@@ -1691,6 +1691,86 @@ function move_down_person_and_descendants() {
   backup_svg(document.getElementById(whom + 't').textContent + 'を子孫ごとまとめて下へ移動');
 }
 
+/* 「まとめて右に移動する」メニュー。同じ横リンクの再描画を 2 回行うなど、
+効率は悪いが、簡単に記述することを優先してある。 */
+function move_right_collectively() {
+  const base_pid = selected_choice(document.menu.person_to_move_right);
+  const amount = parseInt(document.menu.how_much_moved_right.value);
+  if (amount <= 0) { alert('正数を指定してください'); return; }
+  const half_amount = Math.floor(amount / 2);
+  let target_persons = [base_pid];
+
+  // target_persons.length がループ内で変化することに注意。
+  for (let i = 0; i < target_persons.length; i++) {
+    let cur_person = target_persons[i];
+    let right_end = get_rect_info(cur_person).x_right;
+    // 移動するとはみ出る場合は枠を拡大する。
+    if (right_end + amount > P_GRAPH.svg_width) {
+      modify_width_0(right_end + amount - P_GRAPH.svg_width);
+    }
+    // 今注目している人物をとりあえず右へ移動する。
+    move_rect_and_txt(cur_person, amount, 0);
+
+    let gr = document.getElementById(cur_person + 'g');
+
+    // 右側につながっている人物についての処理
+    apply_to_each_hid_pid_pair(gr.dataset.right_links, function(hid, pid) {
+      // 右辺からの横リンクでつながっている人物を処理対象に加える
+      push_if_not_included(target_persons, pid);
+      // その横リンクの再描画 (とりあえず左端を移動させる)
+      const hlink = document.getElementById(hid);
+      draw_h_link(hlink, parseInt(hlink.dataset.start_x) + amount, 
+                  parseInt(hlink.dataset.end_x), parseInt(hlink.dataset.y));
+      // その横リンクからぶら下がる縦リンクを調べる
+      const vids = hlink.dataset.lower_links;
+      id_str_to_arr(vids).map(function(vid) {
+        // 縦リンクの上端を half_amount だけ右へ移動させる。
+        const v = document.getElementById(vid);
+        draw_v_link(v, parseInt(v.dataset.from_x) + half_amount,
+                    parseInt(v.dataset.from_y),
+                    parseInt(v.dataset.to_x), parseInt(v.dataset.to_y));
+        push_if_not_included(target_persons, v.dataset.child);
+      });
+    });
+
+    apply_to_each_hid_pid_pair(gr.dataset.left_links, function(hid, pid) {
+      // 左辺につながっている横リンクの再描画 (右端を移動させる)。
+      const hlink = document.getElementById(hid);
+      draw_h_link(hlink, parseInt(hlink.dataset.start_x), 
+                  parseInt(hlink.dataset.end_x) + amount, 
+                  parseInt(hlink.dataset.y));
+      // その横リンクからぶら下がる縦リンクの上端を half_amount だけ
+      // 右へ移動させる。
+      const vids = hlink.dataset.lower_links;
+      id_str_to_arr(vids).map(function(vid) {
+        const v = document.getElementById(vid);
+        draw_v_link(v, parseInt(v.dataset.from_x) + half_amount,
+                    parseInt(v.dataset.from_y),
+                    parseInt(v.dataset.to_x), parseInt(v.dataset.to_y));
+      });
+    });
+
+    // 上辺につながっている縦リンクの再描画 (下端を移動させる)。
+    id_str_to_arr(gr.dataset.upper_links).map(function(vid) {
+      const v = document.getElementById(vid);
+      draw_v_link(v, parseInt(v.dataset.from_x), parseInt(v.dataset.from_y),
+                  parseInt(v.dataset.to_x) + amount, parseInt(v.dataset.to_y));
+    });
+
+    // 下辺につながっている縦リンクの再描画 (上端を移動させる)。
+    id_str_to_arr(gr.dataset.lower_links).map(function(vid) {
+      const v = document.getElementById(vid);
+      draw_v_link(v, parseInt(v.dataset.from_x) + amount, 
+                  parseInt(v.dataset.from_y),
+                  parseInt(v.dataset.to_x), parseInt(v.dataset.to_y));
+      // 縦リンクで接続された相手 (子) を、処理対象に加える。
+      push_if_not_included(target_persons, v.dataset.child);
+    });
+  }
+
+  backup_svg(document.getElementById(base_pid + 't').textContent + 'から右・下をたどった先をまとめて右に移動する');
+}
+
 /* 「全体をずらす」メニュー。 */
 function shift_all() {
   const amount = parseInt(document.menu.how_much_shifted.value);
@@ -1939,7 +2019,7 @@ function set_p_graph_values() {
     [mn.position_ref, mn.person_to_be_extended, mn.annotation_target, 
      mn.partner_1, mn.partner_2, mn.lhs_person, mn.rhs_person, mn.parent_1, 
      mn.child_1, mn.child_2, mn.target_person, mn.ref_person, 
-     mn.person_to_align, mn.person_to_move_down].map(
+     mn.person_to_align, mn.person_to_move_right, mn.person_to_move_down].map(
       s => { add_selector_option(s, pid, txt); }
     );
     // 座標情報の表示用
