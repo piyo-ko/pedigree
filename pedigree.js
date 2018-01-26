@@ -1950,11 +1950,11 @@ function set_prefix() {
 function read_in() {
   const reader = new FileReader();
   reader.onload = function (e) {
+    backup_svg('初期状態');
     // 読み込んだテキストの内容を、divタグ (IDは 'display_test') の中身
     // として書き出す。
     document.getElementById('tree_canvas_div').innerHTML = e.target.result;
     set_p_graph_values(); // SVGの各要素を読み取って、変数の設定を行う。
-    backup_svg('初期状態');
     backup_svg('作成済みのデータを読み込む'); // バックアップ用リンクも一応作る
   }
   // テキストファイルとして読み込む。
