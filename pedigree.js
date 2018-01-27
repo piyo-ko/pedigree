@@ -345,6 +345,11 @@ function get_rect_info(pid) {
   return(info);
 }
 
+/* pid という ID の人物の名前の文字列を求める */
+function name_str(pid) {
+  return(document.getElementById(pid + 't').textContent);
+}
+
 /* 「詳細を指定して横の関係を追加する」メニューの使用前に、ダミーの人物が
 明示的に選択されていることを保証するために、他のメニューの使用後 (手作業での
 人物の追加と、既存の SVG データの読み取りの結果としての人物の追加の後) に
@@ -712,8 +717,7 @@ function add_h_link_0(p1_id, p2_id, link_type) {
 
   // 横リンクの削除メニューと縦リンクの追加メニューのプルダウンリストに
   // 選択肢を追加する
-  const t1 = document.getElementById(p1_id + 't').textContent;
-  const t2 = document.getElementById(p2_id + 't').textContent;
+  const t1 = name_str(p1_id), t2 = name_str(p2_id);
   const displayed_str = r1_is_left ? (t1 + 'と' + t2) : (t2 + 'と' + t1);
   add_selector_option(document.getElementById('hlink_to_remove'), hid, displayed_str);
   add_selector_option(document.getElementById('parents_2'), hid, displayed_str);
@@ -1166,8 +1170,7 @@ function add_v_link_1() {
   if (MODE.func_add_v_link_1 > 0) {
     console.log('add_v_link_1() ends.');  P_GRAPH.print();
   }
-  const p_txt = document.getElementById(p_id + 't').textContent;
-  const c_txt = document.getElementById(c_id + 't').textContent;
+  const p_txt = name_str(p_id), c_txt = name_str(c_id);
   add_selector_option(document.getElementById('vlink_to_remove'), vid, p_txt + 'から' + c_txt + 'へ');
   backup_svg(p_txt + 'と' + c_txt + 'の間の縦の関係を追加' );
 }
@@ -1227,9 +1230,7 @@ function add_v_link_2() {
   if (MODE.func_add_v_link_2 > 0) {
     console.log('add_v_link_2() ends.');  P_GRAPH.print();
   }
-  const p1_txt = document.getElementById(p1_id + 't').textContent;
-  const p2_txt = document.getElementById(p2_id + 't').textContent;
-  const c_txt = document.getElementById(c_id + 't').textContent;
+  const p1_txt = name_str(p1_id), p2_txt = name_str(p2_id), c_txt = name_str(c_id);
   add_selector_option(document.getElementById('vlink_to_remove'), vid, p1_txt + 'と' + p2_txt + 'から' + c_txt + 'へ');
   backup_svg(p1_txt + 'と' + p2_txt + 'を結ぶ横線から' + c_txt + 
     'への縦の関係を追加');
@@ -1350,7 +1351,7 @@ function move_person() {
     case 'right': move_person_horizontally(whom, amount); break;
     default:      alert('error in move_person()'); return;
   }
-  backup_svg(document.getElementById(whom + 't').textContent + 'を移動');
+  backup_svg(name_str(whom) + 'を移動');
 }
 
 /* 右または左への移動。
@@ -1694,9 +1695,8 @@ function align_person() {
       move_person_vertically(person_to_align, d); break;
     default: alert('不明な位置揃え方法が指定されました'); return;
   }
-  backup_svg(document.getElementById(ref_person + 't').textContent + 
-    'を基準にして' + 
-    document.getElementById(person_to_align + 't').textContent + 'を移動');
+  backup_svg(name_str(ref_person) + 'を基準にして' + 
+    name_str(person_to_align) + 'を移動');
 }
 
 /* 「子孫もまとめて下に移動する」メニュー */
@@ -1705,7 +1705,7 @@ function move_down_person_and_descendants() {
   const amount = parseInt(document.menu.how_much_moved_down.value);
   if (amount <= 0) { alert('移動量は正の数を指定して下さい'); return; }
   move_down_collectively('', whom, amount);
-  backup_svg(document.getElementById(whom + 't').textContent + 'を子孫ごとまとめて下へ移動');
+  backup_svg(name_str(whom) + 'を子孫ごとまとめて下へ移動');
 }
 
 /* 「まとめて右に移動する」メニュー。同じ横リンクの再描画を 2 回行うなど、
@@ -1785,7 +1785,7 @@ function move_right_collectively() {
     });
   }
 
-  backup_svg(document.getElementById(base_pid + 't').textContent + 'から右・下をたどった先をまとめて右に移動する');
+  backup_svg(name_str(base_pid) + 'から右・下をたどった先をまとめて右に移動する');
 }
 
 /* 「全体をずらす」メニュー。 */
@@ -2031,7 +2031,7 @@ function set_p_graph_values() {
     // 後でリンクを見たときに行う。
 
     // プルダウンリストへの反映
-    let txt = document.getElementById(pid + 't').textContent;
+    let txt = name_str(pid);
     PERSON_SELECTORS.map( s => { add_selector_option(s, pid, txt); } );
     // 座標情報の表示用
     rect.onmouseover = function() {show_info(pid, txt);};
@@ -2058,8 +2058,7 @@ function set_p_graph_values() {
       occupy_next_pos(rhs_person_id, 'left', path_id);
       // 横リンクの削除メニューと縦リンクの追加メニューのプルダウンリストに
       // 選択肢を追加する
-      let str = svg_elt.getElementById(lhs_person_id + 't').textContent + 'と' +
-                svg_elt.getElementById(rhs_person_id + 't').textContent;
+      let str = name_str(lhs_person_id) + 'と' + name_str(rhs_person_id);
       add_selector_option(document.getElementById('hlink_to_remove'), path_id, str);
       add_selector_option(document.getElementById('parents_2'), path_id, str);
     } else if (m[1] === 'v') {  // 縦リンクを見ている
@@ -2070,9 +2069,7 @@ function set_p_graph_values() {
       let parent1_id = cur_path.dataset.parent1;
       let parent2_id = cur_path.dataset.parent2;
       let child_id = cur_path.dataset.child;
-      let p1_txt = document.getElementById(parent1_id + 't').textContent;
-      let c_txt = document.getElementById(child_id + 't').textContent;
-      let str = '';
+      let p1_txt = name_str(parent1_id), c_txt = name_str(child_id), str = '';
       if (parent2_id === undefined || parent2_id === null ||
           parent2_id === '') { // 一人の親から子へと縦リンクでつないでいる場合。
         // 親の下辺の使用状況を設定する。
@@ -2080,8 +2077,7 @@ function set_p_graph_values() {
                              parseInt(cur_path.dataset.parent1_pos_idx));
         str = p1_txt + 'から' + c_txt + 'へ';
       } else {
-        let p2_txt = document.getElementById(parent2_id + 't').textContent;
-        str = p1_txt + 'と' + p2_txt + 'から' + c_txt + 'へ';
+        str = p1_txt + 'と' + name_str(parent2_id) + 'から' + c_txt + 'へ';
       }
       // 縦リンクの削除メニューのプルダウンリストに選択肢を追加する。
       add_selector_option(document.getElementById('vlink_to_remove'), path_id, str);
