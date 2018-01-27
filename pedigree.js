@@ -234,10 +234,23 @@ const CONFIG = {
 /* SVG 用の名前空間 */
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
+/* 人物を選択するためのセレクタの一覧を定数として定義しておく。
+実際の値の設定は、window.top.onload の中で行う。 */
+const PERSON_SELECTORS = new Array();
+
 /* ページのロード (リロードも含む) の際に行う初期化。 */
 window.top.onload = function () {
-  P_GRAPH.reset_all();  document.menu.reset();
+  const m = document.menu;
+  P_GRAPH.reset_all();  m.reset();
   print_current_svg_size();  backup_svg('初期状態');
+  // ページをロードしてからでないと、フォーム要素は参照できない (エラーになる)
+  // ので、ここで PERSON_SELECTORSを設定する。
+  PERSON_SELECTORS.push(m.position_ref, m.person_to_be_extended, 
+    m.annotation_target, 
+    m.partner_1, m.partner_2, m.lhs_person, m.rhs_person, 
+    m.parent_1, m.child_1, m.child_2, 
+    m.target_person, m.ref_person, m.person_to_align, 
+    m.person_to_move_right, m.person_to_move_down);
 };
 
 /* 現状の svg 要素の大きさを読み込んで、画面に表示し、かつ、
@@ -330,6 +343,15 @@ function get_rect_info(pid) {
                 x_right: x_right, y_top: y_top, y_height: y_height,
                 y_middle: y_middle, y_bottom: y_bottom};
   return(info);
+}
+
+/* 「詳細を指定して横の関係を追加する」メニューの使用前に、ダミーの人物が
+明示的に選択されていることを保証するために、他のメニューの使用後 (手作業での
+人物の追加と、既存の SVG データの読み取りの結果としての人物の追加の後) に
+呼び出す。 */
+function select_dummy_options() {
+  document.menu.lhs_person.selectedIndex = 0;
+  document.menu.rhs_person.selectedIndex = 0;
 }
 
 /* 「人を追加する」メニュー。 */
@@ -431,17 +453,11 @@ function add_person() {
   P_GRAPH.persons.push(new_personal_id);
   P_GRAPH.p_free_pos_mngrs.push(new RectMngr(new_personal_id, box_h, box_w));
   // プルダウンリストへの反映
-  const m = document.menu;
-  [m.position_ref, m.person_to_be_extended, m.annotation_target,
-   m.partner_1, m.partner_2, 
-   m.lhs_person, m.rhs_person, m.parent_1, m.child_1, 
-   m.child_2, m.target_person, m.ref_person, m.person_to_align, 
-   m.person_to_move_right, m.person_to_move_down].map(s => { 
-     add_selector_option(s, new_personal_id, new_personal_name);
+  PERSON_SELECTORS.map(s => { 
+    add_selector_option(s, new_personal_id, new_personal_name);
   });
-  // ダミーの人物を明示的に選択しておく
-  m.lhs_person.selectedIndex = 0;
-  m.rhs_person.selectedIndex = 0;
+
+  select_dummy_options(); // ダミーの人物を明示的に選択しておく
 
   if (MODE.func_add_person > 0) {
     console.log('add_person() ends.');  P_GRAPH.print();
@@ -2016,19 +2032,11 @@ function set_p_graph_values() {
 
     // プルダウンリストへの反映
     let txt = document.getElementById(pid + 't').textContent;
-    let mn = document.menu;
-    [mn.position_ref, mn.person_to_be_extended, mn.annotation_target, 
-     mn.partner_1, mn.partner_2, mn.lhs_person, mn.rhs_person, mn.parent_1, 
-     mn.child_1, mn.child_2, mn.target_person, mn.ref_person, 
-     mn.person_to_align, mn.person_to_move_right, mn.person_to_move_down].map(
-      s => { add_selector_option(s, pid, txt); }
-    );
+    PERSON_SELECTORS.map( s => { add_selector_option(s, pid, txt); } );
     // 座標情報の表示用
     rect.onmouseover = function() {show_info(pid, txt);};
   }
-  // ダミーの人物を明示的に選択しておく
-  document.getElementById('lhs_person').selectedIndex = 0;
-  document.getElementById('rhs_person').selectedIndex = 0;
+  select_dummy_options(); // ダミーの人物を明示的に選択しておく
 
   // リンクを一つずつ見てゆく
   const path_elts = svg_elt.getElementsByTagName('path'), pN = path_elts.length;
