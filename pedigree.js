@@ -29,10 +29,13 @@ class EndPointsMngr_RL {
   // 辺上に空いている箇所が存在することを保証する。つまり、現状ですべての場所が
   // 使用済みだったら、分割数を倍増させて、空き場所として使える場所番号の個数を
   // 増やす。
+  // ただし、辺の長さに応じて分割数には上限を設ける。
   ensure_free_pos() {
     if (this.next_position_idx === this.positions.length) {
       const cur_num_of_divisions = this.positions.length + 1;  // 今の分割数
       const new_num_of_divisions = cur_num_of_divisions * 2;   // 新たな分割数
+      const unit_len = Math.floor(this.edge_length / new_num_of_divisions);
+      if (unit_len < 4) { return(false); } // これ以上細かい分割は不許可。
       for (let i = 0; i < this.positions.length; i++) { 
         this.positions[i] *= 2; // 今までの (既存の) 位置番号の値を2倍にする。
       }
@@ -42,11 +45,16 @@ class EndPointsMngr_RL {
         this.positions.push(i); // 優先度は上から下へ、という順にしてある
       }
     }
+    return(true);
   }
   // この辺においてリンクの接続位置として空いている次の位置を、番号ではなくて
   // 実際の長さで表して、返す。また、「次の位置」も更新する。
   next_position(hid) { // 引数は、更新前の「次の位置」につなぐべき横リンクの ID
-    this.ensure_free_pos();
+    const free_pos_exists = this.ensure_free_pos();
+    if (!free_pos_exists) {
+      alert('この長さの辺にこれ以上多くの横リンクをつなぐことはできません');
+      return(-1);
+    }
     const pos = Math.floor( this.edge_length * this.positions[this.next_position_idx] / (this.positions.length + 1) );
     this.next_position_idx++;
     this.hlink_ids.push(hid);
@@ -94,6 +102,57 @@ class EndPointsMngr_RL {
     }
     // 指定された位置を、次に選択されるべき順位にまで押し上げる。
     this.positions[this.next_position_idx] = next_pos_No;
+  }
+  // 既存の SVG ファイルを読み込むと、横リンクの y 座標は分かるが、人物の矩形の
+  // 辺上の位置番号は分からない。そこで、辺の上端を基準とした相対 y 座標から
+  // 位置番号を求められるようにする。
+  find_posNo(rel_y) {
+    let found_pos_No = -1; // 初期化
+    let num_div, unit_len;
+    // 分割数の上限は、辺の長さをその分割数で割った商が 4 以上の範囲、と定める
+    // (横リンク同士が近すぎるのは駄目、ということ)。その上限の分割数までの範囲で
+    // 位置番号を求める。
+    for (num_div = this.positions.length + 1, 
+         unit_len = Math.floor(this.edge_length / num_div);
+         unit_len >= 4;
+         num_div *= 2, unit_len = Math.floor(this.edge_length / num_div) ) {
+      let assumed_pos_No = rel_y / unit_len;
+      // 1 以上 (現状の分割数 - 1) 以下の整数が得られたなら、それが求める位置番号
+      if (Number.isInteger(assumed_pos_No)) {
+        if (1 <= assumed_pos_No && assumed_pos_No <= num_div - 1) {
+          found_pos_No = assumed_pos_No;
+        }
+        break;
+      }
+    }
+    if (found_pos_No === -1) { // あり得ないはず。不測のエラーである。
+      return({found: false, num_of_divisions: this.positions.length + 1,
+              pos_No: -1 } );
+    } else { 
+      return({found: true, num_of_divisions: num_div, pos_No: found_pos_No});
+    }
+  }
+  // 分割数 (num_div) と、その分割数における位置番号 (posNo) を指定して、そこに
+  // hid という ID の横リンクをつなぎたい。既存の SVG ファイルからの読み込みの
+  // 際に使うメソッド。
+  set_hlink_at(posNo, num_div, hid) {
+    // 現在の分割数 (cur_num_div) が、指定された分割数 (num_div) 未満の場合、
+    // 分割数を倍倍に増やして、指定された分割数にする。その際、すでに使われている
+    // 位置の位置番号を倍にする (ensure_free_pos() と同様の処理)。
+    for (let cur_num_div = this.positions.length + 1;
+         cur_num_div < num_div; cur_num_div *= 2) {
+      for (let i = 0; i < this.positions.length; i++) {
+        this.positions[i] *= 2;
+      }
+      this.positions.push(1);
+      this.positions.push(cur_num_div * 2 - 1);
+      for (let i = 3; i < cur_num_div * 2 - 1; i += 2) {
+        this.positions.push(i);
+      }
+    }
+    this.change_priority(posNo); // 指定の位置番号の優先順を上げる
+    this.next_position_idx++;
+    this.hlink_ids.push(hid);
   }
 }
 
@@ -672,6 +731,19 @@ function add_h_link_0(p1_id, p2_id, link_type) {
     alert('二人の矩形が重なっているか、矩形の間がくっつきすぎです。'); return;
   }
 
+  // 横方向のリンクを追加する余地 (辺上の空き場所) があるかどうかをチェックする
+  let can_add_link;
+  if (r1_is_left) { // r1 が左にあるときは、r1 の右辺と r2 の左辺に空きが必要
+    can_add_link = 
+      free_pos_found(p1_id, 'right') && free_pos_found(p2_id, 'left');
+  } else {
+    can_add_link = 
+      free_pos_found(p1_id, 'left') && free_pos_found(p2_id, 'right');
+  }
+  if (! can_add_link) {
+    alert('横方向のリンクが既に多すぎる人を指定したのでエラーです。'); return;
+  }
+
   // ここにくるのは、リンクを追加して良い場合。
   const hid = 'h' + P_GRAPH.next_hlink_id++; // 横リンクのための ID を生成
   let r1_dy, r2_dy, link_start_x, link_end_x, link_y;
@@ -740,7 +812,16 @@ function already_h_linked(pid1, pid2) {
     return( (lhs === pid1 && rhs === pid2) || (lhs === pid2 && rhs === pid1) );
   }));
 }
-
+/* 「横の関係を追加する」メニューのための部品。
+pid という ID を持つ人物を表す矩形の縦の辺 (右辺か左辺) に、
+横リンクを追加できる空きがあるかどうかを調べる。 */
+function free_pos_found(pid, edge) {
+  const mng = P_GRAPH.p_free_pos_mngrs.find(m => (m.pid === pid));
+  if (mng === undefined) { return(false); }
+  if (edge === 'right') { return(mng.right_side.ensure_free_pos()); }
+  if (edge === 'left')  { return(mng.left_side.ensure_free_pos()); }
+  return(false);
+}
 /* 「横の関係を追加する」メニューのための部品。
 free_pos_found() で空きを確認した後に使うこと。
 pid という ID を持つ人物を表す矩形の縦の辺 (右辺か左辺) における、
@@ -2053,9 +2134,20 @@ function set_p_graph_values() {
       if (P_GRAPH.next_hlink_id <= id_No) { P_GRAPH.next_hlink_id = id_No + 1; }
       P_GRAPH.h_links.push(path_id);
       let lhs_person_id = cur_path.dataset.lhs_person;
-      occupy_next_pos(lhs_person_id, 'right', path_id);
       let rhs_person_id = cur_path.dataset.rhs_person;
-      occupy_next_pos(rhs_person_id, 'left', path_id);
+      let pos_info_lhs = get_posNo(lhs_person_id, path_id, true);
+      let pos_info_rhs = get_posNo(rhs_person_id, path_id, false);
+      if (pos_info_lhs.found && pos_info_rhs.found) {
+        let lhs_rect_mng = P_GRAPH.p_free_pos_mngrs.find(m => (m.pid === lhs_person_id));
+        lhs_rect_mng.right_side.set_hlink_at(pos_info_lhs.pos_No, pos_info_lhs.num_of_divisions, path_id);
+        let rhs_rect_mng = P_GRAPH.p_free_pos_mngrs.find(m => (m.pid === rhs_person_id));
+        rhs_rect_mng.left_side.set_hlink_at(pos_info_rhs.pos_No, pos_info_rhs.num_of_divisions, path_id);
+      } else {
+        alert('横リンク (' + path_id + ') の位置に異常があるので読み込みを中止します');
+        console.log('pos_info_lhs:\n' + JSON.stringify(pos_info_lhs));
+        console.log('pos_info_rhs:\n' + JSON.stringify(pos_info_rhs));
+        return;
+      }
       // 横リンクの削除メニューと縦リンクの追加メニューのプルダウンリストに
       // 選択肢を追加する
       let str = name_str(lhs_person_id) + 'と' + name_str(rhs_person_id);
@@ -2089,7 +2181,22 @@ function set_p_graph_values() {
       // 訳ではないため)。
     }
   }
-  if (MODE.func_set_p_graph_values > 0) {  // 最後に印字して確認
+
+  if (MODE.func_set_p_graph_values > 0) {
+    P_GRAPH.h_links.map(hid => {
+      let str = '[' + hid + ']:';
+      const lhs_id = document.getElementById(hid).dataset.lhs_person;
+      const pos_info_lhs = get_posNo(lhs_id, hid, true);
+      str += ' [' + lhs_id + '] ' + name_str(lhs_id) + ' (';
+      str += pos_info_lhs.pos_No + '/' + pos_info_lhs.num_of_divisions + ') --';
+      const rhs_id = document.getElementById(hid).dataset.rhs_person;
+      const pos_info_rhs = get_posNo(rhs_id, hid, false);
+      str += ' [' + rhs_id + '] ' + name_str(rhs_id) + ' (';
+      str += pos_info_rhs.pos_No + '/' + pos_info_rhs.num_of_divisions + ')';
+      console.log(str);
+    });
+  }
+  if (MODE.func_set_p_graph_values > 1) {  // 最後に印字して確認
     console.log('set_p_graph_values():');  P_GRAPH.print();
   }
 }
@@ -2107,6 +2214,16 @@ function set_EndPointsMngr_UL(pid, edge, link_type, pos_idx) {
   } else {
     return(-1); // エラー
   }
+}
+
+/* set_p_graph_values() の中から呼び出すためのもの。 */
+function get_posNo(pid, hid, is_lhs_person) {
+  const rect_mng = P_GRAPH.p_free_pos_mngrs.find(m => (m.pid === pid));
+  // 左側の人物だったらその右辺に、右側の人物だったらその左辺に、リンクしている
+  const mng = is_lhs_person ? rect_mng.right_side : rect_mng.left_side;
+  const rect_info = get_rect_info(pid);
+  const hlink_y = parseInt(document.getElementById(hid).dataset.y);
+  return(mng.find_posNo(hlink_y - rect_info.y_top));
 }
 
 /* ID が pid で名前が pname の人物の矩形に対するマウスオーバ・イベントが発生
