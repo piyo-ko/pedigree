@@ -409,6 +409,14 @@ function name_str(pid) {
   return(document.getElementById(pid + 't').textContent);
 }
 
+/* 縦書き専用の別の文字がある文字 (今は括弧のみを想定) を置換した文字列を
+求める。
+Firefox だとこのような置換は不要だが、Safari だと縦書きの writing-mode への
+対応ができていないので、文字の置換が必要。 */
+function tb_mode_str(orig_str) {
+  return( orig_str.replace(/[(（]/g, '︵').replace(/[)）]/g, '︶') );
+}
+
 /* 「詳細を指定して横の関係を追加する」メニューの使用前に、ダミーの人物が
 明示的に選択されていることを保証するために、他のメニューの使用後 (手作業での
 人物の追加と、既存の SVG データの読み取りの結果としての人物の追加の後) に
@@ -427,7 +435,7 @@ function add_person() {
   let verticalize = false; // デフォルト値
   if (document.menu.verticalize.checked) {
     verticalize = true;
-    new_personal_name = new_personal_name.replace(/[(（]/g, '︵').replace(/[)）]/g, '︶');
+    new_personal_name = tb_mode_str(new_personal_name);
   }
   const gender = selected_radio_choice(document.menu.new_personal_gender);
   const position_ref_pid = (document.menu.position_ref.options.length > 0) ? selected_choice(document.menu.position_ref) : 'no_ref';
@@ -648,7 +656,7 @@ function annotate() {
 
   let x, y, dx, dy;
   if (writing_mode === 'tb') { // 縦書き。
-    add_text_node(note_elt, note.replace(/[(（]/g, '︵').replace(/[)）]/g, '︶'));
+    add_text_node(note_elt, tb_mode_str(note));
     x = rect_x_start - (CONFIG.note_font_size + CONFIG.note_margin) * (new_note_No + 1);
     if (x < 0) { alert('左からはみ出るので注釈をつけられません'); return; }
     dx = Math.floor(CONFIG.note_font_size / 2);
