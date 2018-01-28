@@ -1188,8 +1188,12 @@ function remove_h_link_0(hlink_id) {
   }
   log_msg(hlink_id + 'の削除前');
 
-  lhs_person_dat.right_links = lhs_person_dat.right_links.replace(new RegExp('\^\(\.\*)' + hlink_id + ',' + rhs_person + ',\(\.\*\)\$'), '$1$2');
-  rhs_person_dat.left_links = rhs_person_dat.left_links.replace(new RegExp('\^\(\.\*)' + hlink_id + ',' + lhs_person + ',\(\.\*\)\$'), '$1$2');
+  lhs_person_dat.right_links = lhs_person_dat.right_links.replace(
+    new RegExp('\^\(\.\*\)' + hlink_id + ',' + rhs_person + ',\(\.\*\)\$'), 
+    '$1$2');
+  rhs_person_dat.left_links = rhs_person_dat.left_links.replace(
+    new RegExp('\^\(\.\*\)' + hlink_id + ',' + lhs_person + ',\(\.\*\)\$'), 
+    '$1$2');
   remove_val_from_array(P_GRAPH.h_links, hlink_id);
   lhs_mng.right_side.remove_hlink(hlink_id);
   rhs_mng.left_side.remove_hlink(hlink_id);
@@ -1405,7 +1409,8 @@ function remove_v_link_0(vlink_id) {
   if (parent2_id === undefined || parent2_id === null || parent2_id === '') {
     // 一人の親の矩形の下辺から延びている縦リンクの場合
     const parent1_dat = document.getElementById(parent1_id + 'g').dataset;
-    parent1_dat.lower_links = parent1_dat.lower_links.replace(new RegExp('\^\(\.\*)' + vlink_id + ',\(\.\*\)\$'), '$1$2');
+    parent1_dat.lower_links = parent1_dat.lower_links.replace(
+      new RegExp('\^\(\.\*\)' + vlink_id + ',\(\.\*\)\$'), '$1$2');
     const parent1_mng = P_GRAPH.p_free_pos_mngrs.find(m => (m.pid === parent1_id));
     const parent1_pos_idx = vlink_elt.dataset.parent1_pos_idx;
     parent1_mng.lower_side.remove_vlink(parent1_pos_idx);
@@ -1414,12 +1419,14 @@ function remove_v_link_0(vlink_id) {
       const hlink_dat = document.getElementById(hid).dataset;
       if (hlink_dat.lhs_person === parent1_id && 
           hlink_dat.rhs_person === parent2_id) {
-        hlink_dat.lower_links = hlink_dat.lower_links.replace(new RegExp('\^\(\.\*)' + vlink_id + ',\(\.\*\)\$'), '$1$2');
+        hlink_dat.lower_links = hlink_dat.lower_links.replace(
+          new RegExp('\^\(\.\*\)' + vlink_id + ',\(\.\*\)\$'), '$1$2');
       }
     });
   }
   const child_dat = document.getElementById(child_id + 'g').dataset;
-  child_dat.upper_links = child_dat.upper_links.replace(new RegExp('\^\(\.\*)' + vlink_id + ',\(\.\*\)\$'), '$1$2');
+  child_dat.upper_links = child_dat.upper_links.replace(
+    new RegExp('\^\(\.\*\)' + vlink_id + ',\(\.\*\)\$'), '$1$2');
   const child_mng = P_GRAPH.p_free_pos_mngrs.find(m => (m.pid === child_id));
   const child_pos_idx = vlink_elt.dataset.child_pos_idx;
   child_mng.upper_side.remove_vlink(child_pos_idx);
