@@ -2048,7 +2048,6 @@ function set_prefix() {
 function read_in() {
   const reader = new FileReader();
   reader.onload = function (e) {
-    backup_svg('初期状態');
     // 読み込んだテキストの内容を、divタグ (IDは 'display_test') の中身
     // として書き出す。
     document.getElementById('tree_canvas_div').innerHTML = e.target.result;
@@ -2063,14 +2062,14 @@ function read_in() {
 形式は正しいものと仮定して (チェックは省略して) 変数を設定する。
 TO DO: 余裕があれば、後でチェック機能を追加する。 */
 function set_p_graph_values() {
-  // 現在のデータに基づくセレクタ選択肢とダウンロードリンクをすべて削除する。
-  ['person_to_be_extended', 'partner_1', 'partner_2', 'lhs_person', 
-   'rhs_person', 'hlink_to_remove',
-   'parent_1', 'child_1', 'parents_2', 'child_2',
-   'target_person', 'person_to_move_down', 'svg_backup'].map(parent_id => { 
-    const elt = document.getElementById(parent_id);
+  // 現在のデータに基づくセレクタ選択肢をすべて削除する。
+  let sel = PERSON_SELECTORS.concat(document.menu.hlink_to_remove,
+    document.menu.parents_2, document.menu.vlink_to_remove,
+    document.getElementById('svg_backup'));
+  sel.map(elt => { 
     while (elt.firstChild) { elt.removeChild(elt.firstChild); }
   });
+
   // ただしダミーの選択肢が必要なセレクタがあるので、それらを作り直す。
   let opt = document.createElement('option');
   opt.value = 'dummy';
