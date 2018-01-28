@@ -640,6 +640,7 @@ function extend_rect() {
 function annotate() {
   const pid = selected_choice(document.menu.annotation_target);
   const note = document.menu.annotation_txt.value;
+  if (note === '') { alert('注釈を入力してください'); return; }
   const note_length = note.length * CONFIG.note_font_size;
   const rect = document.getElementById(pid + 'r');
   const rect_x_start = parseInt(rect.getAttribute('x'));
