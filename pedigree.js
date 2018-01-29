@@ -623,10 +623,7 @@ function extend_rect() {
       move_down_collectively(pid, partner_pid, diff, hid);
       move_link(hid, 0, diff, true);
       id_str_to_arr(hlink.dataset.lower_links).map(function(vid) {
-        const vlink = document.getElementById(vid);
-        draw_v_link(vlink, parseInt(vlink.dataset.from_x), 
-          parseInt(vlink.dataset.from_y) + diff, 
-          parseInt(vlink.dataset.to_x), parseInt(vlink.dataset.to_y));
+        redraw_v_link(vid, 0, diff, 0, 0);
       });
     });
   }
@@ -1004,9 +1001,7 @@ function move_down_collectively(pid_fixed, pid_moved, amount, hid_to_ignore = ''
   vlinks_to_move_down.map(vid => { move_link(vid, 0, amount, false); });
   vlinks_to_extend.map(vid => {
     if (vlinks_to_move_down.includes(vid)) { return; }
-    const vlink = document.getElementById(vid), dat = vlink.dataset;
-    draw_v_link(vlink, parseInt(dat.from_x), parseInt(dat.from_y),
-      parseInt(dat.to_x), parseInt(dat.to_y) + amount );
+    redraw_v_link(vid, 0, 0, 0, amount);
   });
   exceptional_hlinks.map(hlink_info => {
     const hlink = document.getElementById(hlink_info.hlink_id);
@@ -1014,11 +1009,10 @@ function move_down_collectively(pid_fixed, pid_moved, amount, hid_to_ignore = ''
     hlink.setAttribute('class', hlink.getAttribute('class') + ' exceptional');
   });
   exceptional_vlinks.map(vlink_info => {
-    const vlink = document.getElementById(vlink_info.vlink_id), dat = vlink.dataset;
+    const vlink = document.getElementById(vlink_info.vlink_id);
     // TO DO: どうやって再描画するか。一応 vlinks_to_extend と同様にしておく。
     vlink.setAttribute('class', vlink.getAttribute('class') + ' exceptional');
-    draw_v_link(vlink, parseInt(dat.from_x), parseInt(dat.from_y),
-      parseInt(dat.to_x), parseInt(dat.to_y) + amount );
+    redraw_v_link(vlink_info.vlink_id, 0, 0, 0, amount);
   });
 }
 
@@ -1393,6 +1387,13 @@ function draw_v_link(v_link, upper_pt_x, upper_pt_y, lower_pt_x, lower_pt_y) {
   v_link.dataset.to_x = lower_pt_x;
   v_link.dataset.to_y = lower_pt_y;
 }
+/* 再描画のときのよくある呼び出しパタンを関数にした。 */
+function redraw_v_link(vid, upper_pt_dx, upper_pt_dy, lower_pt_dx, lower_pt_dy) {
+  const vlink = document.getElementById(vid), dat = vlink.dataset;
+  draw_v_link(vlink, 
+    parseInt(dat.from_x) + upper_pt_dx, parseInt(dat.from_y) + upper_pt_dy, 
+    parseInt(dat.to_x) + lower_pt_dx, parseInt(dat.to_y) + lower_pt_dy);
+}
 
 /* 「縦の関係を削除する」メニュー */
 function remove_v_link() {
@@ -1573,14 +1574,10 @@ function move_person_horizontally(pid, dx) {
 
   // 左右の移動方向によらず、上下のリンク相手を調べる
   id_str_to_arr(dataset.upper_links).map(function (vid) {
-    const v_link = document.getElementById(vid), dat = v_link.dataset;
-    draw_v_link(v_link, parseInt(dat.from_x), parseInt(dat.from_y), 
-      parseInt(dat.to_x) + actual_dx, parseInt(dat.to_y));
+    redraw_v_link(vid, 0, 0, actual_dx, 0);
   });
   id_str_to_arr(dataset.lower_links).map(function (vid) {
-    const v_link = document.getElementById(vid), dat = v_link.dataset;
-    draw_v_link(v_link, parseInt(dat.from_x) + actual_dx, parseInt(dat.from_y), 
-      parseInt(dat.to_x), parseInt(dat.to_y));
+    redraw_v_link(vid, actual_dx, 0, 0, 0);
   });
 }
 
@@ -1743,21 +1740,13 @@ function move_person_vertically(pid, dy) {
                 parseInt(h.dataset.y) + actual_dy);
   });
 
-  target_u_links.map(vid => {
-    const v = document.getElementById(vid);
-    // 上辺に接続しているリンクなので、そのリンクの上端は動かない。
-    // リンクの下端 (上辺上の点) のみが動く。
-    draw_v_link(v, parseInt(v.dataset.from_x), parseInt(v.dataset.from_y), 
-      parseInt(v.dataset.to_x), parseInt(v.dataset.to_y) + actual_dy);
-  });
-  target_l_links.map(vid => {
-    const v = document.getElementById(vid);
-    // 下辺に接続しているリンクなので、そのリンクの下端は動かない。
-    // リンクの上端 (下辺上の点) のみが動く。
-    draw_v_link(v, 
-      parseInt(v.dataset.from_x),  parseInt(v.dataset.from_y) + actual_dy, 
-      parseInt(v.dataset.to_x), parseInt(v.dataset.to_y));
-  });
+  // 上辺に接続しているリンクなので、そのリンクの上端は動かない。
+  // リンクの下端 (上辺上の点) のみが動く。
+  target_u_links.map(vid => { redraw_v_link(vid, 0, 0, 0, actual_dy); });
+
+  // 下辺に接続しているリンクなので、そのリンクの下端は動かない。
+  // リンクの上端 (下辺上の点) のみが動く。
+  target_l_links.map(vid => { redraw_v_link(vid, 0, actual_dy, 0, 0); });
 }
 
 /* 「人の位置を揃える」メニュー。 */
@@ -1839,10 +1828,8 @@ function move_right_collectively() {
       const vids = hlink.dataset.lower_links;
       id_str_to_arr(vids).map(function(vid) {
         // 縦リンクの上端を half_amount だけ右へ移動させる。
+        redraw_v_link(vid, half_amount, 0, 0, 0);
         const v = document.getElementById(vid);
-        draw_v_link(v, parseInt(v.dataset.from_x) + half_amount,
-                    parseInt(v.dataset.from_y),
-                    parseInt(v.dataset.to_x), parseInt(v.dataset.to_y));
         push_if_not_included(target_persons, v.dataset.child);
       });
     });
@@ -1855,30 +1842,22 @@ function move_right_collectively() {
                   parseInt(hlink.dataset.y));
       // その横リンクからぶら下がる縦リンクの上端を half_amount だけ
       // 右へ移動させる。
-      const vids = hlink.dataset.lower_links;
-      id_str_to_arr(vids).map(function(vid) {
-        const v = document.getElementById(vid);
-        draw_v_link(v, parseInt(v.dataset.from_x) + half_amount,
-                    parseInt(v.dataset.from_y),
-                    parseInt(v.dataset.to_x), parseInt(v.dataset.to_y));
+      id_str_to_arr(hlink.dataset.lower_links).map(function(vid) {
+        redraw_v_link(vid, half_amount, 0, 0, 0);
       });
     });
 
     // 上辺につながっている縦リンクの再描画 (下端を移動させる)。
     id_str_to_arr(gr.dataset.upper_links).map(function(vid) {
-      const v = document.getElementById(vid);
-      draw_v_link(v, parseInt(v.dataset.from_x), parseInt(v.dataset.from_y),
-                  parseInt(v.dataset.to_x) + amount, parseInt(v.dataset.to_y));
+      redraw_v_link(vid, 0, 0, amount, 0);
     });
 
     // 下辺につながっている縦リンクの再描画 (上端を移動させる)。
     id_str_to_arr(gr.dataset.lower_links).map(function(vid) {
-      const v = document.getElementById(vid);
-      draw_v_link(v, parseInt(v.dataset.from_x) + amount, 
-                  parseInt(v.dataset.from_y),
-                  parseInt(v.dataset.to_x), parseInt(v.dataset.to_y));
+      redraw_v_link(vid, amount, 0, 0, 0);
       // 縦リンクで接続された相手 (子) を、処理対象に加える。
-      push_if_not_included(target_persons, v.dataset.child);
+      const c = document.getElementById(vid).dataset.child;
+      push_if_not_included(target_persons, c);
     });
   }
 
