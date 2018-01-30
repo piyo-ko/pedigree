@@ -112,18 +112,17 @@ class EndPointsMngr_RL {
     // 分割数の上限は、辺の長さをその分割数で割った商が 4 以上の範囲、と定める
     // (横リンク同士が近すぎるのは駄目、ということ)。その上限の分割数までの範囲で
     // 位置番号を求める。
+    // ただし、next_position(hid) で位置を求めた際の端数切り捨ての影響を考慮する
+    // 必要がある。綺麗な式では表せないので、冗長だが原始的に全探索する。
     for (num_div = this.positions.length + 1, 
          unit_len = Math.floor(this.edge_length / num_div);
          unit_len >= 4;
          num_div *= 2, unit_len = Math.floor(this.edge_length / num_div) ) {
-      let assumed_pos_No = rel_y / unit_len;
-      // 1 以上 (現状の分割数 - 1) 以下の整数が得られたなら、それが求める位置番号
-      if (Number.isInteger(assumed_pos_No)) {
-        if (1 <= assumed_pos_No && assumed_pos_No <= num_div - 1) {
-          found_pos_No = assumed_pos_No;
-        }
-        break;
+      for (let p = 1; p < num_div; p++) { // あり得る位置番号を順に試してみる
+        let tmp_pos = Math.floor( this.edge_length * p / num_div );
+        if (tmp_pos === rel_y) { found_pos_No = p; break; }
       }
+      if (-1 < found_pos_No) { break; }
     }
     if (found_pos_No === -1) { // あり得ないはず。不測のエラーである。
       return({found: false, num_of_divisions: this.positions.length + 1,
