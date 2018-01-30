@@ -44,10 +44,14 @@ a:hover {
   font-weight: bold;
 }
 
-#tree_canvas_div, #display_test {
+#tree_canvas_div {
   display: block;
   text-align: center;
-  margin: 1em;
+  margin-left: 1vw;
+  margin-right: 1vw;
+  max-height: 80vh;
+  max-width: 98vw;
+  overflow: auto;
 }
 svg {
   border: solid 1px royalblue;
