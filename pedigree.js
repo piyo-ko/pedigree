@@ -476,7 +476,7 @@ function add_person() {
 
   // 矩形を配置する位置を決める
   let x = 0, y = 0;
-  if (specified_position === 'rondom' || position_ref_pid === 'no_ref') {
+  if (specified_position === 'random' || position_ref_pid === 'no_ref') {
     x = Math.floor( Math.random(Date.now()) *
                         (P_GRAPH.svg_width - box_w + 1) / CONFIG.grid_size )
             * CONFIG.grid_size;
