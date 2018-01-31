@@ -153,6 +153,15 @@ class EndPointsMngr_RL {
     this.next_position_idx++;
     this.hlink_ids.push(hid);
   }
+  // 注釈をつける際に、横リンクと重ならないようにするために、最も下の横リンクの
+  // 位置を調べる。
+  lowermost_occupied_pos() {
+    let posNo = 0;
+    for (let i = 0; i < this.next_position_idx; i++) {
+      if (posNo < this.positions[i]) { posNo = this.positions[i]; }
+    }
+    return(Math.floor(this.edge_length * posNo /(this.positions.length + 1)));
+  }
 }
 
 /* 人を表す矩形の上辺・下辺 (横の辺) に接続するリンクを管理する。
@@ -209,6 +218,14 @@ class EndPointsMngr_UL {
     if (this.points[pos_idx].count === 0) { 
       this.points[pos_idx].status = 'unused';
     }
+  }
+  // 注釈をつける際に、縦リンクと重ならないようにするために、最も右の縦リンクの
+  // 位置を調べる。
+  rightmost_occupied_pos() {
+    for (let i = 2; i >= 0 ; i--) { // 右から見てゆく
+      if (this.points[i].status !== 'unused') { return(this.points[i].dx); }
+    }
+    return(0);
   }
 }
 
@@ -620,6 +637,9 @@ function extend_rect() {
   move_down_together(g.dataset.right_links, mng.right_side);
   move_down_together(g.dataset.left_links, mng.left_side);
 
+  // 左辺にある (かもしれない) 縦書き注釈の位置を決め直す。
+  relocate_tb_notes(pid);
+
   backup_svg(txt.textContent + 'の矩形の高さを増やす');
 }
 
@@ -629,7 +649,6 @@ function annotate() {
   const note = document.menu.annotation_txt.value;
   if (note === '') { alert('注釈を入力してください'); return; }
   const note_length = note.length * CONFIG.note_font_size;
-  const rect = document.getElementById(pid + 'r');
   const rect_info = get_rect_info(pid);
   const txt_elt = document.getElementById(pid + 't');
   const writing_mode = txt_elt.getAttribute('writing-mode');
@@ -644,11 +663,7 @@ function annotate() {
     if (x < 0) { alert('左からはみ出るので注釈をつけられません'); return; }
     dx = Math.floor(CONFIG.note_font_size / 2);
     dy = 0;
-    if (note_length <= rect_info.y_height) { // 下揃えにする
-      y = rect_info.y_bottom - note_length;
-    } else { // 注釈が長いので上揃えにして下からはみ出させる
-      y = rect_info.y_top;
-    }
+    y = y_of_tb_note(pid, note_length);
     // 枠の下端からもはみ出るなら枠を拡大する
     if (y + note_length > P_GRAPH.svg_height) {
       modify_height_0(y + note_length - P_GRAPH.svg_height);
@@ -663,11 +678,7 @@ function annotate() {
     }
     dx = 0;
     dy = CONFIG.note_margin + Math.floor(CONFIG.note_font_size / 2);
-    if (note_length <= rect_info.x_width) { // 右揃えにする
-      x = rect_info.x_right - note_length;
-    } else { // 注釈が長いので左揃えにして右からはみ出させる
-      x = rect_info.x_left;
-    }
+    x = x_of_lr_note(pid, note_length);
     // 枠の右端からもはみ出るなら枠を拡大する
     if (x + note_length > P_GRAPH.svg_width) {
       modify_width_0(x + note_length - P_GRAPH.svg_width);
@@ -680,6 +691,73 @@ function annotate() {
   add_text_node(g_elt, '\n');
   backup_svg(txt_elt.textContent + 'に注釈を追加');
   document.menu.annotation_txt.value = ''; // 最後に注釈入力欄をクリアする
+}
+
+/* 縦書きの注釈 (矩形の左側につける) の y 位置を求める。
+ pid は人物の ID。note_len は文字数ではなくて px 単位の値。*/
+function y_of_tb_note(pid, note_len) {
+  const txt_elt = document.getElementById(pid + 't');
+  const writing_mode = txt_elt.getAttribute('writing-mode');
+  if (writing_mode !== 'tb') { alert('これは縦書き専用です'); return(false); }
+
+  const rect_info = get_rect_info(pid);
+  const mng = P_GRAPH.p_free_pos_mngrs.find(m => (m.pid === pid));
+  const lowermost_occupied_pos = mng.left_side.lowermost_occupied_pos();
+  // 一番下の横リンクより下の、空いている部分の長さ (マージンも考慮しておく)
+  const available_len = rect_info.y_height - lowermost_occupied_pos - CONFIG.note_margin;
+  if (note_len <= available_len) { // 空きより注釈が短いので、下揃えにする。
+    return(rect_info.y_bottom - note_len);
+  } else { // 注釈が長いので下からはみ出させることにする。
+    // 注釈の開始位置 (上端) は、一番下の横リンクの位置よりマージンの分だけ下。
+    return(rect_info.y_top + lowermost_occupied_pos + CONFIG.note_margin);
+  }
+}
+/* 横書きの注釈 (矩形の下側につける) の x 位置を求める。
+ pid は人物の ID。note_len は文字数ではなくて px 単位の値。*/
+function x_of_lr_note(pid, note_len) {
+  const txt_elt = document.getElementById(pid + 't');
+  const writing_mode = txt_elt.getAttribute('writing-mode');
+  if (writing_mode === 'tb') { alert('これは横書き専用です'); return(false); }
+
+  const rect_info = get_rect_info(pid);
+  const mng = P_GRAPH.p_free_pos_mngrs.find(m => (m.pid === pid));
+  const rightmost_occupied_pos = mng.lower_side.rightmost_occupied_pos();
+  // 一番右の縦リンクより右の、空いている部分の長さ (マージンも考慮しておく)
+  const available_len = rect_info.x_width - rightmost_occupied_pos - CONFIG.note_margin;
+  if (note_len <= available_len) { // 空きより注釈が短いので、右揃えにする。
+    return(rect_info.x_right - note_len);
+  } else { // 注釈が長いので右からはみ出させることにする。
+    // 注釈の開始位置 (左端) は、一番右の縦リンクの位置よりマージンの分だけ右。
+    return(rect_info.x_left + rightmost_occupied_pos + CONFIG.note_margin);
+  }
+}
+/* 縦書きの注釈の位置を決めなおす。横リンクの追加・削除・矩形の長さの拡大などに
+ともなって呼び出す。 */
+function relocate_tb_notes(pid) {
+  const txt_elt = document.getElementById(pid + 't');
+  const writing_mode = txt_elt.getAttribute('writing-mode');
+  if (writing_mode !== 'tb') { return; } // 横書きのときは何もしない
+
+  const g_elt = document.getElementById(pid + 'g');
+  const txt_elts = g_elt.getElementsByTagName('text');
+  for (let i = 1; i < txt_elts.length; i++) {
+    let note_len = txt_elts[i].textContent.length * CONFIG.note_font_size;
+    txt_elts[i].setAttribute('y', y_of_tb_note(pid, note_len));
+  }
+}
+/* 横書きの注釈の位置を決めなおす。縦リンクの追加・削除・矩形の幅の拡大などに
+ともなって呼び出す。 */
+function relocate_lr_notes(pid) {
+  const txt_elt = document.getElementById(pid + 't');
+  const writing_mode = txt_elt.getAttribute('writing-mode');
+  if (writing_mode === 'tb') { return; } // 縦書きのときは何もしない
+
+  const g_elt = document.getElementById(pid + 'g');
+  const txt_elts = g_elt.getElementsByTagName('text');
+  for (let i = 1; i < txt_elts.length; i++) {
+    let note_len = txt_elts[i].textContent.length * CONFIG.note_font_size;
+    txt_elts[i].setAttribute('x', x_of_lr_note(pid, note_len));
+  }
 }
 
 /* 「横の関係を追加する」メニュー。 */
@@ -773,7 +851,15 @@ function add_h_link_0(p1_id, p2_id, link_type) {
   const displayed_str = r1_is_left ? (t1 + 'と' + t2) : (t2 + 'と' + t1);
   add_selector_option(document.getElementById('hlink_to_remove'), hid, displayed_str);
   add_selector_option(document.getElementById('parents_2'), hid, displayed_str);
+
   select_dummy_options(); // ダミーの人物を明示的に選択しておく
+
+  // 右側にある矩形の左辺にある (かもしれない) 縦書き注釈の位置を決め直す。
+  if (r1_is_left) { 
+    relocate_tb_notes(p2_id);
+  } else {
+    relocate_tb_notes(p1_id);
+  }
 
   if (MODE.func_add_h_link > 0) {
     console.log('add_h_link() ends.');  P_GRAPH.print();
@@ -1164,7 +1250,12 @@ function remove_h_link_0(hlink_id) {
   remove_choice(document.getElementById('hlink_to_remove'), hlink_id);
   remove_choice(document.getElementById('parents_2'), hlink_id);
   document.getElementById('pedigree').removeChild(hlink_elt);
+
   select_dummy_options(); // ダミーの人物を明示的に選択しておく
+
+  // 右側にある矩形の左辺にある (かもしれない) 縦書き注釈の位置を決め直す。
+  relocate_tb_notes(rhs_person);
+
   log_msg(hlink_id + 'の削除後');
 }
 
@@ -1215,6 +1306,10 @@ function add_v_link_1() {
   if (MODE.func_add_v_link_1 > 0) {
     console.log('add_v_link_1() ends.');  P_GRAPH.print();
   }
+
+  // 親の下辺の下にある (かもしれない) 横書き注釈の位置を決め直す。
+  relocate_lr_notes(p_id);
+
   const p_txt = name_str(p_id), c_txt = name_str(c_id);
   add_selector_option(document.getElementById('vlink_to_remove'), vid, p_txt + 'から' + c_txt + 'へ');
   backup_svg(p_txt + 'と' + c_txt + 'の間の縦の関係を追加' );
@@ -1369,6 +1464,8 @@ function remove_v_link_0(vlink_id) {
     const parent1_mng = P_GRAPH.p_free_pos_mngrs.find(m => (m.pid === parent1_id));
     const parent1_pos_idx = vlink_elt.dataset.parent1_pos_idx;
     parent1_mng.lower_side.remove_vlink(parent1_pos_idx);
+    // 親の下辺の下にある (かもしれない) 横書き注釈の位置を決め直す。
+    relocate_lr_notes(parent1_id);
   } else { // 親同士をつなぐ横リンクから延びている縦リンクの場合
     P_GRAPH.h_links.map(function(hid) {
       const hlink_dat = document.getElementById(hid).dataset;
