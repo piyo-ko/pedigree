@@ -60,8 +60,8 @@ class EndPointsMngr_RL {
     this.hlink_ids.push(hid);
     return(pos);
   }
-  // 「矩形の高さを増やす」メニューにより辺の長さを増やすときに使う。
-  extend_length() { this.edge_length += CONFIG.font_size * 2; }
+  // 「矩形の高さを増やす」メニューなどにより辺の長さを増やすときに使う。
+  change_length(new_len) { this.edge_length = new_len; }
   which_pos_No(hid) {
     const pos_No = this.positions[this.hlink_ids.findIndex(h => (h === hid))];
     return(pos_No);
@@ -548,97 +548,120 @@ function add_person() {
   document.menu.new_personal_name.value = ''; // 最後に名前の入力欄をクリアする
 }
 
+/* 上辺は固定して下辺を下にずらすことで、矩形の高さを増やす。
+中のテキストの配置はいじらない。 */
+function increase_height(pid, new_height) {
+  const cur_rect_info = get_rect_info(pid);  // 現状の値をまず退避してから、
+  // 矩形の高さを更新する。
+  document.getElementById(pid + 'r').setAttribute('height', new_height);
+
+  // 右辺・左辺の管理用オブジェクトを更新する。
+  const mng = P_GRAPH.p_free_pos_mngrs.find(m => (m.pid === pid));
+  mng.right_side.change_length(new_height);
+  mng.left_side.change_length(new_height);
+
+  // 下辺から子への縦リンクを再描画する。
+  const diff_height = new_height - cur_rect_info.y_height;
+  const new_rect_bottom = cur_rect_info.y_top + new_height;
+  const g = document.getElementById(pid + 'g');
+  id_str_to_arr(g.dataset.lower_links).map(vid => {
+    // 縦リンクの上端が下がることは確定しているので、そのように再描画する。
+    redraw_v_link(vid, 0, diff_height, 0, 0);
+    // 子の位置によっては縦リンクの下端も移動するかもしれない。
+    const child_id = document.getElementById(vid).dataset.child;
+    const dist = get_rect_info(child_id).y_top - new_rect_bottom;
+    if (dist < CONFIG.min_v_link_len) {
+      // 子までの距離を保てなくなるので、子とその子孫を下へ移動する。
+      const diff_y = CONFIG.min_v_link_len - dist;  // 移動量
+      move_down_collectively('', child_id, diff_y);
+      // なお、この move_down_collectively の実行結果として、自分から子までの
+      // 縦リンクの下端も移動するので、下端を動かすために redraw_v_link する
+      // 必要はない。
+    }
+  });
+  // 右辺・左辺とその先の子孫たちを適宜下に移動させる。
+  move_down_in_rect_height_change(g.dataset.right_links, mng.right_side, true, diff_height);
+  move_down_in_rect_height_change(g.dataset.left_links, mng.left_side, true, diff_height);
+
+  // 左辺にある (かもしれない) 縦書き注釈の位置を決め直す。
+  relocate_tb_notes(pid);
+}
+
+/* 矩形の高さを変えたいときに呼び出される関数。
+右辺・左辺でつながっている相手 (とさらにその先の関係者たち) を下に移動させ、
+横リンクも再描画する。その横リンクからぶら下がっている縦リンクがあれば、
+それらも再描画するが、その際、縦リンクの下端までの距離が十分にあるかを調べ、
+不十分なら、その縦リンク下端の子とその子孫を下に移動させる。 */
+function move_down_in_rect_height_change(hid_pid_str, edge_mng, rect_is_to_be_extended, diff_height) {
+  // 右辺と左辺で分割数が違う場合があるので、edge_mng を引数にとる。
+  const num_of_divisions = edge_mng.positions.length + 1;
+  apply_to_each_hid_pid_pair(hid_pid_str, function(hid, partner_pid) {
+    // 上辺を固定して下に矩形を拡大する場合、分割数 d のうちで位置番号 i の
+    // 横リンクの下がり幅は (矩形の高さが h1 から h2 に変化するものとして)、
+    // h2 * i/d - h1 * i/d = (h2 - h1) * i/d
+    // である。一方、下辺を固定して上辺を下に動かすことで矩形を縮小する場合、
+    // top1 + h1 = top2 + h2 より top1 - top2 = h2 - h1 (= diff_height)
+    // なので、分割数 d のうちで位置番号 i の横リンクの下がり幅は
+    // (top2 + h2 * i/d) - (top1 + h1 * i/d)
+    // = (top2 - top1) + (h2 - h1) * i/d
+    // = (h2 - h1) * (-1 + i/d)
+    // = - (h2 - h1) * ((d - i)/d)
+    const diff_y_for_hlink = rect_is_to_be_extended ?
+      Math.floor(diff_height * edge_mng.which_pos_No(hid) / num_of_divisions) :
+      Math.floor(-diff_height * (num_of_divisions - edge_mng.which_pos_No(hid)) / num_of_divisions);
+    // 右辺・左辺でつながっている相手 (とさらにその先の関係者たち) を下に移動
+    move_down_collectively('', partner_pid, diff_y_for_hlink, hid);
+    // 横リンクも再描画
+    move_link(hid, 0, diff_y_for_hlink, true);
+    // 以下は、その横リンクからぶら下がっている縦リンクについての処理
+    const hlink = document.getElementById(hid);
+    const new_connect_pos_y = parseInt(hlink.dataset.connect_pos_y);
+    id_str_to_arr(hlink.dataset.lower_links).map(function(vid) {
+      // 縦リンクの上端が下がることは確定しているので、そのように再描画する。
+      redraw_v_link(vid, 0, diff_y_for_hlink, 0, 0);
+      // 子の位置によっては縦リンクの下端も移動するかもしれない。
+      const child_id = document.getElementById(vid).dataset.child;
+      const dist = get_rect_info(child_id).y_top - new_connect_pos_y;
+      if (dist < CONFIG.min_v_link_len) {
+        // 子までの距離を保てなくなるので、子とその子孫を下へ移動する。
+        const diff_y_for_child = CONFIG.min_v_link_len - dist;  // 移動量
+        move_down_collectively('', child_id, diff_y_for_child);
+        // なお、この move_down_collectively の実行結果として、横リンクから
+        // 子までの縦リンクの下端も移動するので、下端を動かすために
+        // redraw_v_link する必要はない。
+      }
+    });
+  });
+}
+
 /* 「矩形の高さを増やす」メニュー。増やす量は、縦書きでも横書きでも、一定値
 (CONFIG.font_size * 2) とする。 */
 function extend_rect() {
   const pid = selected_choice(document.menu.person_to_be_extended);
-  const g = document.getElementById(pid + 'g');
-  const lower_links = g.dataset.lower_links;
-  const lower_links_arr = id_str_to_arr(lower_links);
-  const rect = document.getElementById(pid + 'r');
+  // 変更前に現状の値を退避しておく。
   const rect_info = get_rect_info(pid);
-  // 下辺から誰かにつながっている場合に、その誰かの矩形までの距離として現状で確保
-  // されているべき (拡張を行うために必要な) 最小値。
-  const min_gap = CONFIG.font_size * 2 + CONFIG.min_v_link_len;
-  // 下辺から誰にもつながっていなければ拡張可能。一人以上の子につながっている
-  // 場合は、min_gap の距離を確保できていない子が一人でもいれば、拡張不可。
-  let extendable = (lower_links === '') ? true : 
-    !(lower_links_arr.some(vid => {
-      const cid = document.getElementById(vid).dataset.child;
-      return(get_rect_info(cid).y_top - rect_info.y_bottom < min_gap);
-    }));
-  // さらに厳しくチェック。横リンクと、そこからぶら下がっている縦リンクが
-  // ある場合には、矩形の拡大にともなってその横リンクの位置が下がってもなお、
-  // その縦リンクが十分な長さを有するのかを調べる。
-  function check_more(hid_pid_str, edge_mng) {
-    const num_of_divisions = edge_mng.positions.length + 1;
-    const diff_unit_len = Math.floor(CONFIG.font_size * 2 / num_of_divisions);
-    apply_to_each_hid_pid_pair(hid_pid_str, function(hid, partner_pid) {
-      if (!extendable) {return;}
-      const vids = document.getElementById(hid).dataset.lower_links;
-      if (vids === '') {return;}
-      const diff = edge_mng.which_pos_No(hid) * diff_unit_len;
-      extendable = !(id_str_to_arr(vids).some(function(vid) {
-        const vlink = document.getElementById(vid);
-        const from_y = parseInt(vlink.dataset.from_y);
-        const to_y = parseInt(vlink.dataset.to_y);
-        return(to_y - (from_y + diff) < min_gap);
-      }));
-    });
-  }
-  const mng = P_GRAPH.p_free_pos_mngrs.find(m => (m.pid === pid));
-  check_more(g.dataset.right_links, mng.right_side);
-  check_more(g.dataset.left_links, mng.left_side);
 
-  if (!extendable) { alert('リンク先の子が近すぎます'); return; }
+  // 本人の矩形の高さを増やす。適宜、下辺のリンク先や、左右のリンク先と
+  // その子孫を下に移動する。
+  const new_height = rect_info.y_height + CONFIG.font_size * 2;
+  increase_height(pid, new_height);
 
-  // ここに来るのは高さを増やしても良い場合のみ。
-  // 本人の矩形の高さを増やし、名前の文字の配置も調整する。
-  rect.setAttribute('height', rect_info.y_height + CONFIG.font_size * 2);
+  // 名前の文字の配置も調整する。
   const txt = document.getElementById(pid + 't');
   const writing_mode = txt.getAttribute('writing-mode');
   const cur_dy = parseInt(txt.getAttribute('dy'));
   if (writing_mode === 'tb') { // 縦書き
+    // 上下余白を半文字ずつ増やし、名前の長さを1文字分増やす (よって合計で
+    // 2 文字分だけ高さが増える)。
     txt.setAttribute('dy', cur_dy + Math.floor(CONFIG.font_size / 2));
     let cur_textLength = parseInt(txt.getAttribute('textLength'));
     if (isNaN(cur_textLength)) { // 古い版では textLength 指定をしていないので
       cur_textLength = CONFIG.font_size * txt.textContent.length;
     }
     txt.setAttribute('textLength', cur_textLength + CONFIG.font_size);
-  } else { // 横書き
+  } else { // 横書き (上下に 1 行ずつ空行を追加したような見かけになる)
     txt.setAttribute('dy', cur_dy + CONFIG.font_size);
   }
-  // 右辺・左辺の管理用オブジェクトを更新する。
-  mng.right_side.extend_length();
-  mng.left_side.extend_length();
-  // 下辺から子への縦リンクを再描画する。
-  const new_rect_y_end = rect_info.y_bottom + CONFIG.font_size * 2;
-  lower_links_arr.map(vid => {
-    const vlink = document.getElementById(vid);
-    draw_v_link(vlink, parseInt(vlink.dataset.from_x), new_rect_y_end,
-      parseInt(vlink.dataset.to_x), parseInt(vlink.dataset.to_y));
-  });
-  // 右辺・左辺でつながっている相手 (とさらにその先の関係者たち) を下に
-  // 移動させ、横リンクも再描画する。その横リンクからぶら下がっている縦リンクが
-  // あれば、それらも再描画する。
-  function move_down_together(hid_pid_str, edge_mng) {
-    const num_of_divisions = edge_mng.positions.length + 1;
-    const diff_unit_len = Math.floor(CONFIG.font_size * 2 / num_of_divisions);
-    apply_to_each_hid_pid_pair(hid_pid_str, function(hid, partner_pid) {
-      const diff = edge_mng.which_pos_No(hid) * diff_unit_len;
-      const hlink = document.getElementById(hid);
-      move_down_collectively(pid, partner_pid, diff, hid);
-      move_link(hid, 0, diff, true);
-      id_str_to_arr(hlink.dataset.lower_links).map(function(vid) {
-        redraw_v_link(vid, 0, diff, 0, 0);
-      });
-    });
-  }
-  move_down_together(g.dataset.right_links, mng.right_side);
-  move_down_together(g.dataset.left_links, mng.left_side);
-
-  // 左辺にある (かもしれない) 縦書き注釈の位置を決め直す。
-  relocate_tb_notes(pid);
 
   backup_svg(txt.textContent + 'の矩形の高さを増やす');
 }
