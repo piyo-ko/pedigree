@@ -84,6 +84,18 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 </tr>
 
 <tr class="menu_person">
+<th>名前を<wbr>修正する</th>
+<td>
+<select id="person_to_rename" name="person_to_rename"></select> の名前を
+<input type="text" name="renamed_as" size="10"> に
+<input type="button" value="変更する" onclick="rename_person()">。
+<br>
+<input type="checkbox" id="shrink_rect_if_name_shortened" name="shrink_rect_if_name_shortened">
+<label for="shrink_rect_if_name_shortened">名前が短くなる場合には、それに合わせて矩形も縮小する。</label>
+</td>
+</tr>
+
+<tr class="menu_person">
 <th>矩形の高さを<wbr>増やす</th>
 <td>
 <select id="person_to_be_extended" name="person_to_be_extended"></select>

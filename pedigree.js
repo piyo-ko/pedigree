@@ -35,7 +35,9 @@ class EndPointsMngr_RL {
       const cur_num_of_divisions = this.positions.length + 1;  // 今の分割数
       const new_num_of_divisions = cur_num_of_divisions * 2;   // 新たな分割数
       const unit_len = Math.floor(this.edge_length / new_num_of_divisions);
-      if (unit_len < 4) { return(false); } // これ以上細かい分割は不許可。
+      if (unit_len < CONFIG.min_interval_between_h_links) { 
+        return(false); // これ以上細かい分割は不許可。
+      }
       for (let i = 0; i < this.positions.length; i++) { 
         this.positions[i] *= 2; // 今までの (既存の) 位置番号の値を2倍にする。
       }
@@ -109,14 +111,15 @@ class EndPointsMngr_RL {
   find_posNo(rel_y) {
     let found_pos_No = -1; // 初期化
     let num_div, unit_len;
-    // 分割数の上限は、辺の長さをその分割数で割った商が 4 以上の範囲、と定める
+    // 分割数の上限は、辺の長さをその分割数で割った商が 
+    // CONFIG.min_interval_between_h_links 以上の範囲、と定める
     // (横リンク同士が近すぎるのは駄目、ということ)。その上限の分割数までの範囲で
     // 位置番号を求める。
     // ただし、next_position(hid) で位置を求めた際の端数切り捨ての影響を考慮する
     // 必要がある。綺麗な式では表せないので、冗長だが原始的に全探索する。
     for (num_div = this.positions.length + 1, 
          unit_len = Math.floor(this.edge_length / num_div);
-         unit_len >= 4;
+         unit_len >= CONFIG.min_interval_between_h_links;
          num_div *= 2, unit_len = Math.floor(this.edge_length / num_div) ) {
       for (let p = 1; p < num_div; p++) { // あり得る位置番号を順に試してみる
         let tmp_pos = Math.floor( this.edge_length * p / num_div );
@@ -227,6 +230,12 @@ class EndPointsMngr_UL {
     }
     return(0);
   }
+  // 人物の名前の修正にともなって矩形の幅を変えることがある。
+  change_length(new_len) {
+    for (let i = 0; i < 3; i++) {
+      this.points[i].dx = Math.floor(new_len * (i+1)/4);
+    }
+  }
 }
 
 /* この矩形につながるリンクを管理するクラス。 */
@@ -303,7 +312,9 @@ const CONFIG = {
   // 注釈行で使うフォントサイズ
   note_font_size: 16, 
   // 人物の矩形と注釈行の間、および、注釈行同士の行間
-  note_margin: 4
+  note_margin: 4,
+  // 横リンク同士の間隔の最小値
+  min_interval_between_h_links: 4
 };
 
 /* SVG 用の名前空間 */
@@ -321,7 +332,7 @@ window.top.onload = function () {
   // ページをロードしてからでないと、フォーム要素は参照できない (エラーになる)
   // ので、ここで PERSON_SELECTORSを設定する。
   PERSON_SELECTORS.push(m.position_ref, m.person_to_be_extended, 
-    m.annotation_target, 
+    m.person_to_rename, m.annotation_target, 
     m.partner_1, m.partner_2, m.lhs_person, m.rhs_person, 
     m.parent_1, m.child_1, m.child_2, 
     m.target_person, m.ref_person, m.person_to_align, 
@@ -587,6 +598,34 @@ function increase_height(pid, new_height) {
   relocate_tb_notes(pid);
 }
 
+/* 下辺は固定して上辺を下にずらすことで、矩形の高さを減らす。
+中のテキストの配置はいじらない。 */
+function decrease_height(pid, new_height) {
+  const cur_rect_info = get_rect_info(pid);  // 現状の値をまず退避してから、
+  // 矩形の高さを更新する。
+  document.getElementById(pid + 'r').setAttribute('height', new_height);
+
+  // 右辺・左辺の管理用オブジェクトを更新する。
+  const mng = P_GRAPH.p_free_pos_mngrs.find(m => (m.pid === pid));
+  mng.right_side.change_length(new_height);
+  mng.left_side.change_length(new_height);
+
+  // 上辺から (一人の親または横リンクへ) の縦リンクを再描画する。
+  const upper_links = document.getElementById(pid + 'g').dataset.upper_links;
+  const diff_height = new_height - cur_rect_info.y_height; // 負数になるはず
+  id_str_to_arr(upper_links).map(vid => {
+    // 縦リンクの上端は変わらない。下端のみ下へ移動する。
+    redraw_v_link(vid, 0, 0, 0, diff_height);
+  });
+
+  // 右辺・左辺とその先の子孫たちを適宜下に移動させる。
+  move_down_in_rect_height_change(g.dataset.right_links, mng.right_side, false, diff_height);
+  move_down_in_rect_height_change(g.dataset.left_links, mng.left_side, false, diff_height);
+
+  // 左辺にある (かもしれない) 縦書き注釈の位置を決め直す。
+  relocate_tb_notes(pid);
+}
+
 /* 矩形の高さを変えたいときに呼び出される関数。
 右辺・左辺でつながっている相手 (とさらにその先の関係者たち) を下に移動させ、
 横リンクも再描画する。その横リンクからぶら下がっている縦リンクがあれば、
@@ -632,6 +671,202 @@ function move_down_in_rect_height_change(hid_pid_str, edge_mng, rect_is_to_be_ex
       }
     });
   });
+}
+/* 「名前を修正する」メニュー。 */
+function rename_person() {
+  const pid = selected_choice(document.menu.person_to_rename);
+  let new_name = document.menu.renamed_as.value;
+  if (new_name === '') { alert('修正後の名前を入力してください'); return; }
+  const shrink_rect_if_name_shortened
+    = document.menu.shrink_rect_if_name_shortened.checked;
+
+  // 値をもう読み取ったので、ここで入力欄をクリアしておいても差し支えない。
+  document.menu.renamed_as.value = '';
+  document.menu.shrink_rect_if_name_shortened.checked = false;
+
+  // 今の名前の (表示上の) 長さ (単位: px) を求める
+  const txt = document.getElementById(pid + 't');
+  let cur_textLength = txt.getAttribute('textLength');
+  if (cur_textLength === undefined || cur_textLength === null || cur_textLength === '') {
+    cur_textLength = CONFIG.font_size * txt.textContent.length;
+  } else {
+    cur_textLength = parseInt(cur_textLength);
+  }
+
+  // 修正後の名前の文字列を決定する
+  const writing_mode = txt.getAttribute('writing-mode');
+  if (writing_mode === 'tb') { new_name = tb_mode_str(new_name); }
+
+  // 修正後の名前の (表示上最低限必要な) 長さ (単位: px) を求める
+  const new_textLength = new_name.length * CONFIG.font_size;
+
+  if (new_textLength === cur_textLength) {
+    // 今の表示上の長さに、ちょうどぴったり新しい名前が収まるので、
+    // 矩形の大きさは変えないことにする。
+    // なお、過去に「矩形を拡大する」を使った結果、dy が増えている可能性がある。
+    // 横書きなら特に影響はない。縦書きの場合、dy を初期値に戻す (矩形の高さを
+    // それに合わせて減らす) ことも考えられるが、とりあえず、そうしないでおく。
+    // 名前とその (表示上の) 長さの更新だけ行う。
+    txt.setAttribute('textLength', new_textLength);
+    txt.textContent = new_name;
+  } else if (new_textLength < cur_textLength) {
+    // 今の表示上の長さに満たない長さに、名前が収まるようになる。
+    if (shrink_rect_if_name_shortened) { // それに合わせて矩形を縮小したい場合
+      if (writing_mode === 'tb') { // 縦書き
+        // 縦の辺 (右辺または左辺) の分割数によっては、縮小しすぎると、
+        // 横リンク同士がくっついてしまうので、縮小しすぎはまずい。
+        const mng = P_GRAPH.p_free_pos_mngrs.find(m => (m.pid === pid));
+        const max_num_div = Math.max(mng.left_side.positions.length + 1, 
+                                     mng.right_side.positions.length + 1);
+        const new_rect_height = 
+          Math.max(new_textLength + CONFIG.v_text_dy * 2, 
+                   CONFIG.min_interval_between_h_links * max_num_div);
+        // 過去に「矩形を拡大する」を使った結果、dy が増えている可能性がある
+        // ので、初期値に戻す。
+        txt.setAttribute('dy', CONFIG.v_text_dy);
+        decrease_height(pid, new_rect_height);
+        txt.setAttribute('textLength', new_textLength);
+        txt.textContent = new_name;
+      } else { // 横書き
+        let res = decrease_width(pid, new_textLength + CONFIG.h_text_dx * 2);
+        if (res) {
+          txt.setAttribute('textLength', new_textLength);
+          txt.textContent = new_name;
+        } else { // 常に true のはずだが一応。
+          alert('エラーです。ごめんなさい。');  return;
+        }
+      }
+    } else { // 名前は短くなるが矩形の大きさはそのままにしたい場合
+      // 余白のバランスを保つため、textLength は今の値のままにしておく。
+      txt.textContent = new_name;  // 名前だけ更新する。
+    }
+  } else { // 今の表示上の長さには収まらないほど、名前が長くなる。
+    if (writing_mode === 'tb') { // 縦書き
+      // 過去に「矩形を拡大する」を使った結果、dy が増えている可能性がある。
+      // dy の値によっては、dy を変えるだけで新しい名前が収まるかもしれない。
+      const min_new_rect_height = new_textLength + CONFIG.v_text_dy * 2;
+      const cur_rect_height = get_rect_info(pid).y_height;
+      if (cur_rect_height < min_new_rect_height) {
+        // 矩形自体が小さすぎるので、仮に dy を減らしても新たな名前は収まり
+        // きらない。高さを増やすしかない。
+        increase_height(pid, min_new_rect_height);
+        txt.setAttribute('dy', CONFIG.v_text_dy);  // dy を初期値に戻す
+        txt.setAttribute('textLength', new_textLength);
+        txt.textContent = new_name;
+      } else { // 矩形自体は必要最小限以上の高さがある。
+        // dy を調整すれば、今の矩形のままで新たな名前に十分な高さが確保できる。
+        const new_dy = Math.floor( (cur_rect_height - new_textLength)/2 );
+        txt.setAttribute('dy', new_dy);
+        txt.setAttribute('textLength', new_textLength);
+        txt.textContent = new_name;
+        // 矩形の大きさはそのまま。
+      }
+    } else { // 横書き。幅を拡大するしかない。
+      let res = increase_width(pid, new_textLength + CONFIG.h_text_dx * 2);
+      if (res) {
+        txt.setAttribute('textLength', new_textLength);
+        txt.textContent = new_name;
+      } else { // 右辺からリンクしている相手が近すぎる場合
+        alert('矩形の幅を拡大できないので、長い名前に変更できませんでした。');
+        return;
+      }
+    }
+  }
+  // ここにくるのは、エラー発生で return したりせず、無事に諸々の処理ができた
+  // とき。人物を選択するためのセレクタの表示名を変更する必要がある。
+  PERSON_SELECTORS.map(sel => { 
+    for (let i = 0; i < sel.options.length; i++) {
+      if (sel.options[i].value === pid) {
+        sel.options[i].removeChild(sel.options[i].firstChild);
+        add_text_node(sel.options[i], '[' + pid + '] ' + new_name);
+        return;
+      }
+    }
+  });
+  backup_svg(new_name + 'に改名');  // ダウンロードリンクを作る。
+}
+
+/* 左辺は固定して右辺を右にずらすことで、矩形の幅を増やす。 */
+function increase_width(pid, new_width) {
+  return(change_width(pid, new_width, true));
+}
+/* 左辺は固定して右辺を左にずらすことで、矩形の幅を減らす。 */
+function decrease_width(pid, new_width) {
+  return(change_width(pid, new_width, false));
+}
+
+/* 矩形の左辺を固定したまま右辺の位置を変えることで、幅を変更する。 */
+function change_width(pid, new_width, width_is_to_be_increased) {
+  const g = document.getElementById(pid + 'g');
+  const cur_rect_info = get_rect_info(pid);
+
+  // 念のためにエラー避けしたい場合は 
+  // (width_is_to_be_increased || rect_info.x_width < new_width)
+  // という条件を使うようにしてもよいが、そこまで心配しなくても良いと思う。
+  if (width_is_to_be_increased) {
+    // 指定どおり幅を増やした場合に、右辺で横リンクでつながる相手の矩形の左辺の
+    // 位置として許容可能な、最も左側の位置 (最も近い位置) を求める。これより
+    // 近くに誰かがつながっていたら、矩形の幅は増やせない。
+    const nearest_allowable_x = cur_rect_info.x_left + 
+                                new_width + CONFIG.min_h_link_len;
+    let extendable = true, err_msg = '';  // 初期化
+    apply_to_each_hid_pid_pair(g.dataset.right_links, function(hid, partner) {
+      if (get_rect_info(partner).x_left < nearest_allowable_x) {
+        extendable = false;
+        err_msg += '\n(' + name_str(partner) + 'が近すぎます)';
+      }
+    });
+    if (!extendable) {
+      alert('右側につながっている人物が近すぎるので矩形の幅を拡大できません。右側の人物をもっと離してください。' + err_msg);
+      return(false);
+    }
+  }
+
+  // ここに来るのは幅を変更 (拡大または縮小) してよい場合のみ。
+  // まず、自分自身の矩形の幅を更新する。
+  document.getElementById(pid + 'r').setAttribute('width', new_width);
+  const mng = P_GRAPH.p_free_pos_mngrs.find(m => (m.pid === pid));
+  mng.upper_side.change_length(new_width);
+  mng.lower_side.change_length(new_width);
+  // 枠からはみ出る場合は枠を拡大する。
+  const x_right = get_rect_info(pid).x_right; // 拡大後の右端
+  if (P_GRAPH.svg_width < x_right) {
+    modify_width_0(x_right - P_GRAPH.svg_width);
+  }
+  // 自身の右リンクと、その右リンクにぶら下がっている縦リンクを再描画する。
+  // 右リンクの左端。+1 して線幅の半分を調整する。
+  const start_x = cur_rect_info.x_left + new_width + 1;
+  apply_to_each_hid_pid_pair(g.dataset.right_links, function(hid, partner) {
+    const hlink = document.getElementById(hid);
+    const end_x = parseInt(hlink.dataset.end_x); // リンクの右端
+    const y = parseInt(hlink.dataset.y);
+    draw_h_link(hlink, start_x, end_x, y);
+    const mid_x = Math.floor((start_x + end_x) / 2);
+    const diff_x = mid_x - parseInt(hlink.dataset.connect_pos_x);
+    id_str_to_arr(hlink.dataset.lower_links).map(function(vid) {
+      redraw_v_link(vid, diff_x, 0, 0, 0);
+    });
+  });
+  // 自身の上辺につながる縦リンクを再描画する。
+  // 上端の位置は変わらず、下端の x 座標のみ変わる。
+  id_str_to_arr(g.dataset.upper_links).map(function (vid) {
+    const pos_idx = parseInt(document.getElementById(vid).dataset.child_pos_idx);
+    const cur_pos = Math.floor(cur_rect_info.x_width * (pos_idx + 1)/4);
+    const diff_x = mng.upper_side.points[pos_idx].dx - cur_pos;
+    redraw_v_link(vid, 0, 0, diff_x, 0);
+  });
+  // 自身の下辺につながる縦リンクを再描画する。
+  // 上端の x 座標のみ変わり、下端の位置は変わらない。
+  id_str_to_arr(g.dataset.lower_links).map(function (vid) {
+    const pos_idx = parseInt(document.getElementById(vid).dataset.parent1_pos_idx);
+    const cur_pos = Math.floor(cur_rect_info.x_width * (pos_idx + 1)/4);
+    const diff_x = mng.lower_side.points[pos_idx].dx - cur_pos;
+    redraw_v_link(vid, diff_x, 0, 0, 0);
+  });
+  // 下辺の下にある (かもしれない) 横書き注釈の位置を決め直す。
+  relocate_lr_notes(pid);
+
+  return(true);
 }
 
 /* 「矩形の高さを増やす」メニュー。増やす量は、縦書きでも横書きでも、一定値
