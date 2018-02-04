@@ -320,9 +320,11 @@ const CONFIG = {
 /* SVG 用の名前空間 */
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
-/* 人物を選択するためのセレクタの一覧を定数として定義しておく。
+/* 人物・横リンク・縦リンクを選択するためのセレクタの一覧を定数として定義しておく。
 実際の値の設定は、window.top.onload の中で行う。 */
 const PERSON_SELECTORS = new Array();
+const HLINK_SELECTORS = new Array();
+const VLINK_SELECTORS = new Array();
 
 /* ページのロード (リロードも含む) の際に行う初期化。 */
 window.top.onload = function () {
@@ -337,6 +339,8 @@ window.top.onload = function () {
     m.parent_1, m.child_1, m.child_2, 
     m.target_person, m.ref_person, m.person_to_align, 
     m.person_to_move_right, m.person_to_move_down);
+  HLINK_SELECTORS.push(m.hlink_to_remove, m.parents_2);
+  VLINK_SELECTORS.push(m.vlink_to_remove);
 };
 
 /* 現状の svg 要素の大きさを読み込んで、画面に表示し、かつ、
@@ -391,6 +395,17 @@ function remove_choice(sel_elt, id) {
     if (sel_elt.options[i].value === id) { break; }
   }
   sel_elt.removeChild(sel_elt.options[i]);  sel_elt.selectedIndex = 0;
+}
+/* [汎用モジュール] プルダウンリストの選択肢の表示名を変更する */
+function rename_choice(sel_elt, id, new_str) {
+  for (let i = 0; i < sel_elt.options.length; i++) {
+    if (sel_elt.options[i].value === id) {
+      const opt = sel_elt.options[i];
+      opt.removeChild(opt.firstChild); // テキストノードを削除
+      add_text_node(opt, '[' + id + '] ' + new_str);
+      return;
+    }
+  }
 }
 
 /* [汎用モジュール] 
@@ -774,15 +789,44 @@ function rename_person() {
   }
   // ここにくるのは、エラー発生で return したりせず、無事に諸々の処理ができた
   // とき。人物を選択するためのセレクタの表示名を変更する必要がある。
-  PERSON_SELECTORS.map(sel => { 
-    for (let i = 0; i < sel.options.length; i++) {
-      if (sel.options[i].value === pid) {
-        sel.options[i].removeChild(sel.options[i].firstChild);
-        add_text_node(sel.options[i], '[' + pid + '] ' + new_name);
-        return;
-      }
-    }
+  PERSON_SELECTORS.map(sel => { rename_choice(sel, pid, new_name); });
+  // さらに、左右上下のリンクに関しても、セレクタの表示名を変更する必要がある。
+  const g_dat = document.getElementById(pid + 'g').dataset;
+  function rename_hlink_choice(on_rhs) {
+    const hid_pid_pairs = on_rhs ? g_dat.right_links : g_dat.left_links;
+    apply_to_each_hid_pid_pair(hid_pid_pairs, function(hid, partner) {
+      const parents_str = on_rhs ? new_name + 'と' + name_str(partner) : 
+                                   name_str(partner) + 'と' + new_name;
+      HLINK_SELECTORS.map(sel => { rename_choice(sel, hid, parents_str); });
+      const vids = id_str_to_arr(document.getElementById(hid).dataset.lower_links);
+      vids.map(function (vid) { // 横リンクにぶら下がっている縦リンクのそれぞれ
+        const child_str = name_str(document.getElementById(vid).dataset.child);
+        VLINK_SELECTORS.map(sel => { 
+          rename_choice(sel, vid, parents_str + 'から' + child_str + 'へ');
+        });
+      });
+    });
+  }
+  // 自分と右側の人との間の横リンクを選択するための表示名も変更
+  rename_hlink_choice(true);
+  // 自分と左側の人との間の横リンクを選択するための表示名も変更
+  rename_hlink_choice(false);
+  // 自分と親との間の縦リンクを選択するための表示名も変更
+  id_str_to_arr(g_dat.upper_links).map(function(vid) {
+    const v_elt_dat = document.getElementById(vid).dataset;
+    const parent1 = v_elt_dat.parent1, parent2 = v_elt_dat.parent2;
+    const str = (parent2 === undefined || parent2 === null || parent2 === '') ?
+      name_str(parent1) + 'から' + new_name + 'へ' :
+      name_str(parent1) + 'と' + name_str(parent2) + 'から' + new_name + 'へ';
+    VLINK_SELECTORS.map(sel => { rename_choice(sel, vid, str); });
   });
+  // 自分と子との間の縦リンクを選択するための表示名も変更
+  id_str_to_arr(g_dat.lower_links).map(function(vid) {
+    const child = document.getElementById(vid).dataset.child;
+    const str = new_name + 'から' + name_str(child) + 'へ';
+    VLINK_SELECTORS.map(sel => { rename_choice(sel, vid, str); });
+  });
+
   backup_svg(new_name + 'に改名');  // ダウンロードリンクを作る。
 }
 
@@ -1107,9 +1151,7 @@ function add_h_link_0(p1_id, p2_id, link_type) {
   // 選択肢を追加する
   const t1 = name_str(p1_id), t2 = name_str(p2_id);
   const displayed_str = r1_is_left ? (t1 + 'と' + t2) : (t2 + 'と' + t1);
-  add_selector_option(document.getElementById('hlink_to_remove'), hid, displayed_str);
-  add_selector_option(document.getElementById('parents_2'), hid, displayed_str);
-
+  HLINK_SELECTORS.map(sel => { add_selector_option(sel, hid, displayed_str); });
   select_dummy_options(); // ダミーの人物を明示的に選択しておく
 
   // 右側にある矩形の左辺にある (かもしれない) 縦書き注釈の位置を決め直す。
@@ -1505,8 +1547,7 @@ function remove_h_link_0(hlink_id) {
   remove_val_from_array(P_GRAPH.h_links, hlink_id);
   lhs_mng.right_side.remove_hlink(hlink_id);
   rhs_mng.left_side.remove_hlink(hlink_id);
-  remove_choice(document.getElementById('hlink_to_remove'), hlink_id);
-  remove_choice(document.getElementById('parents_2'), hlink_id);
+  HLINK_SELECTORS.map(sel => { remove_choice(sel, hlink_id); });
   document.getElementById('pedigree').removeChild(hlink_elt);
 
   select_dummy_options(); // ダミーの人物を明示的に選択しておく
@@ -1569,7 +1610,9 @@ function add_v_link_1() {
   relocate_lr_notes(p_id);
 
   const p_txt = name_str(p_id), c_txt = name_str(c_id);
-  add_selector_option(document.getElementById('vlink_to_remove'), vid, p_txt + 'から' + c_txt + 'へ');
+  VLINK_SELECTORS.map(sel => { 
+    add_selector_option(sel, vid, p_txt + 'から' + c_txt + 'へ');
+  });
   backup_svg(p_txt + 'と' + c_txt + 'の間の縦の関係を追加' );
 }
 
@@ -1626,7 +1669,9 @@ function add_v_link_2() {
     console.log('add_v_link_2() ends.');  P_GRAPH.print();
   }
   const p1_txt = name_str(p1_id), p2_txt = name_str(p2_id), c_txt = name_str(c_id);
-  add_selector_option(document.getElementById('vlink_to_remove'), vid, p1_txt + 'と' + p2_txt + 'から' + c_txt + 'へ');
+  VLINK_SELECTORS.map(sel => {
+    add_selector_option(sel, vid, p1_txt + 'と' + p2_txt + 'から' + c_txt + 'へ');
+  });
   backup_svg(p1_txt + 'と' + p2_txt + 'を結ぶ横線から' + c_txt + 
     'への縦の関係を追加');
 }
@@ -1741,7 +1786,7 @@ function remove_v_link_0(vlink_id) {
   const child_pos_idx = vlink_elt.dataset.child_pos_idx;
   child_mng.upper_side.remove_vlink(child_pos_idx);
   remove_val_from_array(P_GRAPH.v_links, vlink_id);
-  remove_choice(document.getElementById('vlink_to_remove'), vlink_id);
+  VLINK_SELECTORS.map(sel => { remove_choice(sel, vlink_id); });
   document.getElementById('pedigree').removeChild(vlink_elt);
 }
 
@@ -2350,8 +2395,7 @@ function read_in() {
 TO DO: 余裕があれば、後でチェック機能を追加する。 */
 function set_p_graph_values() {
   // 現在のデータに基づくセレクタ選択肢をすべて削除する。
-  let sel = PERSON_SELECTORS.concat(document.menu.hlink_to_remove,
-    document.menu.parents_2, document.menu.vlink_to_remove,
+  let sel = PERSON_SELECTORS.concat(HLINK_SELECTORS, VLINK_SELECTORS,
     document.getElementById('svg_backup'));
   sel.map(elt => { 
     while (elt.firstChild) { elt.removeChild(elt.firstChild); }
@@ -2437,8 +2481,7 @@ function set_p_graph_values() {
       // 横リンクの削除メニューと縦リンクの追加メニューのプルダウンリストに
       // 選択肢を追加する
       let str = name_str(lhs_person_id) + 'と' + name_str(rhs_person_id);
-      add_selector_option(document.getElementById('hlink_to_remove'), path_id, str);
-      add_selector_option(document.getElementById('parents_2'), path_id, str);
+      HLINK_SELECTORS.map(sel => { add_selector_option(sel, path_id, str); });
     } else if (m[1] === 'v') {  // 縦リンクを見ている
       //「次の番号」用の変数を更新
       if (P_GRAPH.next_vlink_id <= id_No) { P_GRAPH.next_vlink_id = id_No + 1; }
@@ -2458,7 +2501,7 @@ function set_p_graph_values() {
         str = p1_txt + 'と' + name_str(parent2_id) + 'から' + c_txt + 'へ';
       }
       // 縦リンクの削除メニューのプルダウンリストに選択肢を追加する。
-      add_selector_option(document.getElementById('vlink_to_remove'), path_id, str);
+      VLINK_SELECTORS.map(sel => { add_selector_option(sel, path_id, str); });
       // 子の上辺については、リンクのつなぎ方によらず、その使用状況を設定する。
       set_EndPointsMngr_UL(cur_path.dataset.child, 'upper', link_type,
                            parseInt(cur_path.dataset.child_pos_idx));
