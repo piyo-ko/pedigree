@@ -301,19 +301,25 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 </tr>
 
 <tr class="menu_output">
-<th rowspan="3">SVG コードを<wbr>出力する</th>
+<th>SVG コードを<wbr>見る</th>
 <td>
 現状の図について<input type="button" value="以下の枠内に出力する" onclick="output_svg_src()"><br>
 <code id="svg_code"></code>
 </td>
+</tr>
+
 <tr class="menu_output">
+<th>現状の<wbr>ファイルを<wbr>ダウンロードする</th>
 <td>
-または、現状の図について SVG 形式のファイルを<input type="button" value="ダウンロードする" onclick="download_svg()">こともできます
+現状の図について SVG 形式のファイルを<input type="button" value="ダウンロードする" onclick="download_svg()">
 (ファイル名の接頭辞: <input type="text" size="10" name="filename_prefix" value="pedigree" onchange="set_prefix()"/>)。
+<br>
 なお、ダウンロードした SVG ファイルと同じフォルダに、<a href="pedigree_svg.css" download="pedigree_svg.css">このスタイルシートファイル</a>を置いてください。
 </td>
 </tr>
+
 <tr class="menu_output">
+<th>作業の各段階の<wbr>ファイルを<wbr>ダウンロードする</th>
 <td>作業の各段階での SVG ファイル (ファイル名の接頭辞は上の入力欄のものを使います): <ul id="svg_backup"></ul></td>
 </tr>
 
