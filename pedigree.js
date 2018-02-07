@@ -578,7 +578,7 @@ function add_person() {
 中のテキストの配置はいじらない。 */
 function increase_height(pid, new_height) {
   const cur_rect_info = get_rect_info(pid);  // 現状の値をまず退避してから、
-  // 矩形の高さを更新する。
+  // 矩形の高さを更新する。上辺は固定なので y 属性は変える必要がない。
   document.getElementById(pid + 'r').setAttribute('height', new_height);
 
   // 右辺・左辺の管理用オブジェクトを更新する。
@@ -617,8 +617,10 @@ function increase_height(pid, new_height) {
 中のテキストの配置はいじらない。 */
 function decrease_height(pid, new_height) {
   const cur_rect_info = get_rect_info(pid);  // 現状の値をまず退避してから、
-  // 矩形の高さを更新する。
-  document.getElementById(pid + 'r').setAttribute('height', new_height);
+  // 矩形の高さと上辺の位置を更新する。
+  const rect = document.getElementById(pid + 'r');
+  rect.setAttribute('height', new_height);
+  rect.setAttribute('y', cur_rect_info.y_bottom - new_height);
 
   // 右辺・左辺の管理用オブジェクトを更新する。
   const mng = P_GRAPH.p_free_pos_mngrs.find(m => (m.pid === pid));
@@ -626,11 +628,13 @@ function decrease_height(pid, new_height) {
   mng.left_side.change_length(new_height);
 
   // 上辺から (一人の親または横リンクへ) の縦リンクを再描画する。
-  const upper_links = document.getElementById(pid + 'g').dataset.upper_links;
+  const g = document.getElementById(pid + 'g');
+  const upper_links = g.dataset.upper_links;
   const diff_height = new_height - cur_rect_info.y_height; // 負数になるはず
   id_str_to_arr(upper_links).map(vid => {
     // 縦リンクの上端は変わらない。下端のみ下へ移動する。
-    redraw_v_link(vid, 0, 0, 0, diff_height);
+    // diff_height < 0 なので、意図通りリンクの下端を下に移動するために符号を反転。
+    redraw_v_link(vid, 0, 0, 0, -diff_height);
   });
 
   // 右辺・左辺とその先の子孫たちを適宜下に移動させる。
@@ -715,6 +719,10 @@ function rename_person() {
   // 修正後の名前の (表示上最低限必要な) 長さ (単位: px) を求める
   const new_textLength = new_name.length * CONFIG.font_size;
 
+
+  if (MODE.func_rename_person > 0) {
+    console.log('cur_textLength=' + cur_textLength + ', new_name=' + new_name + ', new_textLength=' + new_textLength + ', shrink_rect_if_name_shortened=' + shrink_rect_if_name_shortened);
+  }
   if (new_textLength === cur_textLength) {
     // 今の表示上の長さに、ちょうどぴったり新しい名前が収まるので、
     // 矩形の大きさは変えないことにする。
@@ -724,10 +732,14 @@ function rename_person() {
     // 名前とその (表示上の) 長さの更新だけ行う。
     txt.setAttribute('textLength', new_textLength);
     txt.textContent = new_name;
+    if (MODE.func_rename_person > 0) { console.log('* length unchanged'); }
   } else if (new_textLength < cur_textLength) {
+    if (MODE.func_rename_person > 0) { console.log('* sufficient length'); }
     // 今の表示上の長さに満たない長さに、名前が収まるようになる。
     if (shrink_rect_if_name_shortened) { // それに合わせて矩形を縮小したい場合
+      if (MODE.func_rename_person > 0) { console.log('* shirink'); }
       if (writing_mode === 'tb') { // 縦書き
+        if (MODE.func_rename_person > 0) { console.log('* tb mode'); }
         // 縦の辺 (右辺または左辺) の分割数によっては、縮小しすぎると、
         // 横リンク同士がくっついてしまうので、縮小しすぎはまずい。
         const mng = P_GRAPH.p_free_pos_mngrs.find(m => (m.pid === pid));
@@ -736,13 +748,23 @@ function rename_person() {
         const new_rect_height = 
           Math.max(new_textLength + CONFIG.v_text_dy * 2, 
                    CONFIG.min_interval_between_h_links * max_num_div);
+/*
         // 過去に「矩形を拡大する」を使った結果、dy が増えている可能性がある
         // ので、初期値に戻す。
         txt.setAttribute('dy', CONFIG.v_text_dy);
+*/
         decrease_height(pid, new_rect_height);
+        const new_dy = Math.floor((new_rect_height - new_textLength)/2);
+        txt.setAttribute('dy', new_dy);
+        // text 要素の上辺の位置を、更新後の矩形の上辺の位置に合わせて下げる。
+        txt.setAttribute('y', get_rect_info(pid).y_top);
         txt.setAttribute('textLength', new_textLength);
         txt.textContent = new_name;
+        if (MODE.func_rename_person > 0) {
+          console.log('new_rect_height=' + new_rect_height + ', new_dy=' + new_dy);
+        }
       } else { // 横書き
+        if (MODE.func_rename_person > 0) { console.log('* lr mode'); }
         let res = decrease_width(pid, new_textLength + CONFIG.h_text_dx * 2);
         if (res) {
           txt.setAttribute('textLength', new_textLength);
@@ -752,10 +774,12 @@ function rename_person() {
         }
       }
     } else { // 名前は短くなるが矩形の大きさはそのままにしたい場合
+      if (MODE.func_rename_person > 0) { console.log('* not shirink'); }
       // 余白のバランスを保つため、textLength は今の値のままにしておく。
       txt.textContent = new_name;  // 名前だけ更新する。
     }
   } else { // 今の表示上の長さには収まらないほど、名前が長くなる。
+    if (MODE.func_rename_person > 0) { console.log('* insufficient length'); }
     if (writing_mode === 'tb') { // 縦書き
       // 過去に「矩形を拡大する」を使った結果、dy が増えている可能性がある。
       // dy の値によっては、dy を変えるだけで新しい名前が収まるかもしれない。
