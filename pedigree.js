@@ -337,7 +337,7 @@ window.top.onload = function () {
     m.person_to_rename, m.annotation_target, 
     m.partner_1, m.partner_2, m.lhs_person, m.rhs_person, 
     m.parent_1, m.child_1, m.child_2, 
-    m.target_person, m.ref_person, m.person_to_align, 
+    m.target_person, m.ref_person, m.person_to_align, m.person_to_center,
     m.person_to_move_right, m.person_to_move_down);
   HLINK_SELECTORS.push(m.hlink_to_remove, m.parents_2);
   VLINK_SELECTORS.push(m.vlink_to_remove);
@@ -2148,6 +2148,54 @@ function align_person() {
   }
   backup_svg(name_str(ref_person) + 'を基準にして' + 
     name_str(person_to_align) + 'を移動');
+}
+
+/* 「親または子を基準にして人を動かす」メニューで、親からの縦線がまっすぐになるように、人を動かす。 */
+function center_person_wrt_upper_link() {
+  const pid = selected_choice(document.menu.person_to_center);
+  const upper_links = document.getElementById(pid + 'g').dataset.upper_links;
+  if (upper_links === '') {
+    alert(name_str(pid) + '(' + pid + ') には親がいないので、このメニューは使えません。');
+    return;
+  }
+  const vids = id_str_to_arr(upper_links);
+  const first_vlink_dat = document.getElementById(vids[0]).dataset;
+  if (vids.length !== 1) {
+    const p1 = first_vlink_dat.parent1, p2 = first_vlink_dat.parent2;
+    let msg = name_str(pid) + '(' + pid + ') の上辺には複数本の線がつながっています。\nこのうち' + name_str(p1) + '(' + p1 + ') ';
+    if (p2 === undefined || p2 === null || p2 === '') {
+      msg += 'への';
+    } else {
+      msg += 'と' + name_str(p2) + '(' + p2 + ') への'
+    }
+    msg += '線を基準にして良ければ、「OK」を選んでください。';
+    const res = confirm(msg);
+    if (! res) { return; }
+  }
+  const new_center_x = parseInt(first_vlink_dat.from_x);
+  const cur_center_x = get_rect_info(pid).x_center;
+  move_person_horizontally(pid, new_center_x - cur_center_x);
+  backup_svg('親からの縦線がまっすぐになるように' + name_str(pid) + 'を移動');
+}
+
+/* 「親または子を基準にして人を動かす」メニューで、下辺につながっている子 (たち) の中央へ人を動かす。 */
+function center_person_wrt_lower_links() {
+  const pid = selected_choice(document.menu.person_to_center);
+  const lower_links = document.getElementById(pid + 'g').dataset.lower_links;
+  if (lower_links === '') {
+    alert(name_str(pid) + '(' + pid + ') の下辺に直接つながっている子はいないので、このメニューは使えません。');
+    return;
+  }
+  let min_x = P_GRAPH.svg_width, max_x = 0; // 初期化
+  id_str_to_arr(lower_links).map(vid => {
+    const to_x = parseInt(document.getElementById(vid).dataset.to_x);
+    if (to_x < min_x) { min_x = to_x; }
+    if (to_x > max_x) { max_x = to_x; }
+  });
+  const new_center_x = Math.floor((min_x + max_x) / 2);
+  const cur_center_x = get_rect_info(pid).x_center;
+  move_person_horizontally(pid, new_center_x - cur_center_x);
+  backup_svg(name_str(pid) + 'を下辺の子 (たち) の中央へ移動');
 }
 
 /* 「子孫もまとめて下に移動する」メニュー */

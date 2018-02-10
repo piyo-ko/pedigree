@@ -240,6 +240,16 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 </td>
 </tr>
 
+
+<tr class="menu_move_person">
+<th>親または子を<wbr>基準にして<wbr>人を動かす</th>
+<td>
+<select id="person_to_center" name="person_to_center"></select> を、
+親からの縦線がまっすぐになるように<input type="button" value="動かす" onclick="center_person_wrt_upper_link()">か、あるいは、
+下辺につながっている子 (たち) の中央へ<input type="button" value="動かす" onclick="center_person_wrt_lower_links()">。
+</td>
+</tr>
+
 <tr class="menu_move_person">
 <th>子孫も<wbr>まとめて<wbr>下に移動する</th>
 <td>
