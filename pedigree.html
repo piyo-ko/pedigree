@@ -115,6 +115,35 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 </td>
 </tr>
 
+<tr class="menu_person">
+<th>番号の<wbr>バッジを<wbr>つける</th>
+<td>
+<select id="person_to_add_badge" name="person_to_add_badge"></select>
+の
+<input type="radio" name="badge_pos" id="badge_pos_upper_left" value="upper_left">
+<label for="badge_pos_upper_left">左上</label>
+<input type="radio" name="badge_pos" id="badge_pos_upper_right" value="upper_right" checked>
+<label for="badge_pos_upper_right">右上</label>
+<input type="radio" name="badge_pos" id="badge_pos_lower_left" value="lower_left">
+<label for="badge_pos_lower_left">左下</label>
+<input type="radio" name="badge_pos" id="badge_pos_lower_right" value="lower_right">
+<label for="badge_pos_lower_right">右下</label>
+に、
+<select name="badge_color" id="badge_color">
+<option value="black">黒</option>
+<option value="dimgray">灰</option>
+<option value="darkblue" selected>紺</option>
+<option value="crimson">紅</option>
+<option value="saddlebrown">茶</option>
+<option value="purple">紫</option>
+<option value="darkgreen">緑</option>
+</select>
+を背景色として、
+番号<input type="text" name="badge_num" id="badge_num" size="3"> (0 以上 999 以下) の
+<input type="button" value="バッジをつける" onclick="add_num_badge()">。
+</td>
+</tr>
+
 <tr class="menu_hlink">
 <th>横の関係を<wbr>追加する</th>
 <td>

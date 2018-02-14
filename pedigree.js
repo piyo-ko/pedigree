@@ -314,7 +314,19 @@ const CONFIG = {
   // 人物の矩形と注釈行の間、および、注釈行同士の行間
   note_margin: 4,
   // 横リンク同士の間隔の最小値
-  min_interval_between_h_links: 4
+  min_interval_between_h_links: 4,
+  // バッジの数字用のフォントサイズ
+  badge_font_size: 16,
+  // バッジの数字は、高さがフォントサイズに等しく、幅はその半分だ、と見なして
+  // 表示する。また、3 桁までを許可する。よって、高さは 16、幅は 8 * 3 = 24 の
+  // 範囲に収まる。上下に等しく 4 ずつ余白を設けると、4 + 16 + 4 = 24 となって
+  // 一辺が 24 の正方形ができ、これが数字の表示領域となる。この正方形を包含する
+  // 最小の円の直径は、 24 * sqrt(2) = 33.94… である。それより大きい直径 34 の
+  // 円を使うことにする。つまり半径は 17 である。
+  badge_radius: 17,
+  // 人名の矩形の頂点そのものをバッジの円の中心にすると、人名の文字にバッジが
+  // かぶさってしまうので、バッジを少し外側へずらす。そのずらす量。
+  badge_offset: 6
 };
 
 /* SVG 用の名前空間 */
@@ -334,7 +346,7 @@ window.top.onload = function () {
   // ページをロードしてからでないと、フォーム要素は参照できない (エラーになる)
   // ので、ここで PERSON_SELECTORSを設定する。
   PERSON_SELECTORS.push(m.position_ref, m.person_to_be_extended, 
-    m.person_to_rename, m.annotation_target, 
+    m.person_to_rename, m.annotation_target, m.person_to_add_badge,
     m.partner_1, m.partner_2, m.lhs_person, m.rhs_person, 
     m.parent_1, m.child_1, m.child_2, 
     m.target_person, m.ref_person, m.person_to_align, m.person_to_center,
@@ -550,7 +562,7 @@ function add_person() {
       ['textLength', CONFIG.font_size * L], 
       ['dx', CONFIG.h_text_dx], ['dy', CONFIG.h_text_dy]]) );
   t_attr.forEach(function(val, key) { t.setAttribute(key, val); });
-  g.appendChild(t);  add_text_node(g, '\n  ');
+  g.appendChild(t);  add_text_node(g, '\n');
   // data-* 属性の設定。左右上下にくっついているリンクについての情報である。
   g.dataset.right_links = g.dataset.left_links = 
     g.dataset.upper_links = g.dataset.lower_links = '';
@@ -979,7 +991,12 @@ function annotate() {
   const txt_elt = document.getElementById(pid + 't');
   const writing_mode = txt_elt.getAttribute('writing-mode');
   const g_elt = document.getElementById(pid + 'g');
-  const new_note_No = g_elt.getElementsByTagName('text').length - 1;
+  let new_note_No = 0, cur_elt = g_elt.firstChild;
+  while (cur_elt !== null) {
+    let cur_note_num = get_note_num(cur_elt, pid);
+    if (new_note_No <= cur_note_num) { new_note_No = cur_note_num + 1; }
+    cur_elt = cur_elt.nextSibling;
+  }
   const note_elt = document.createElementNS(SVG_NS, 'text');
 
   let x, y, dx, dy;
@@ -1013,6 +1030,7 @@ function annotate() {
   const att = new Map([['id', pid + 'n' + new_note_No], ['x', x], ['y', y], 
                        ['dx', dx], ['dy', dy], ['class', 'note']]);
   att.forEach(function(val, key) { note_elt.setAttribute(key, val); });
+  add_text_node(g_elt, '  ');
   g_elt.appendChild(note_elt);
   add_text_node(g_elt, '\n');
   backup_svg(txt_elt.textContent + 'に注釈を追加');
@@ -1057,6 +1075,19 @@ function x_of_lr_note(pid, note_len) {
     return(rect_info.x_left + rightmost_occupied_pos + CONFIG.note_margin);
   }
 }
+
+/* txt_elt は text 要素。これが、pid という ID の人物に対する注釈用の text 要素
+であれば、その注釈番号を返し、それ以外の場合は -1 (注釈の番号としては利用しない
+値) を返す。 */
+function get_note_num(txt_elt, pid) {
+  const id_str = txt_elt.id;
+  if (id_str === undefined || id_str === null || id_str === '') { return(-1); }
+  const note_id_pattern = new RegExp('\^' + pid + 'n\(\\d\+\)\$');
+  const matches = id_str.match(note_id_pattern);
+  if (matches === null || matches.length !== 2) { return(-1); }
+  return(parseInt(matches[1]));
+}
+
 /* 縦書きの注釈の位置を決めなおす。横リンクの追加・削除・矩形の長さの拡大などに
 ともなって呼び出す。 */
 function relocate_tb_notes(pid) {
@@ -1067,6 +1098,7 @@ function relocate_tb_notes(pid) {
   const g_elt = document.getElementById(pid + 'g');
   const txt_elts = g_elt.getElementsByTagName('text');
   for (let i = 1; i < txt_elts.length; i++) {
+    if (get_note_num(txt_elts[i], pid) === -1) { continue; } // 注釈以外の要素
     let note_len = txt_elts[i].textContent.length * CONFIG.note_font_size;
     txt_elts[i].setAttribute('y', y_of_tb_note(pid, note_len));
   }
@@ -1081,9 +1113,66 @@ function relocate_lr_notes(pid) {
   const g_elt = document.getElementById(pid + 'g');
   const txt_elts = g_elt.getElementsByTagName('text');
   for (let i = 1; i < txt_elts.length; i++) {
+    if (get_note_num(txt_elts[i], pid) === -1) { continue; } // 注釈以外の要素
     let note_len = txt_elts[i].textContent.length * CONFIG.note_font_size;
     txt_elts[i].setAttribute('x', x_of_lr_note(pid, note_len));
   }
+}
+
+/* 「番号のバッジをつける」メニュー。 */
+function add_num_badge() {
+  const badge_num = parseInt(document.menu.badge_num.value);
+  if (! (0 <= badge_num && badge_num <= 999)) {
+    alert('0 から 999 までの数を指定してください'); return;
+  }
+  document.menu.badge_num.value = ''; // 値を読み終わったらクリアしておく
+  const badge_pos = selected_radio_choice(document.menu.badge_pos);
+  const badge_color = selected_choice(document.menu.badge_color);
+  const pid = selected_choice(document.menu.person_to_add_badge);
+
+  // バッジ (円) の中心座標を求める
+  const rect_info = get_rect_info(pid);
+  const center_x = (['upper_left', 'lower_left'].includes(badge_pos)) ?
+                   rect_info.x_left - CONFIG.badge_offset :
+                   rect_info.x_right + CONFIG.badge_offset;
+  const center_y = (['upper_left', 'upper_right'].includes(badge_pos)) ?
+                   rect_info.y_top - CONFIG.badge_offset :
+                   rect_info.y_bottom + CONFIG.badge_offset;
+
+  // circle 要素を作る
+  const circle = document.createElementNS(SVG_NS, 'circle');
+  const circle_attr = new Map([['id', pid + 'b_' + badge_pos],
+    ['cx', center_x], ['cy', center_y], ['r', CONFIG.badge_radius],
+    ['fill', badge_color]]);
+  circle_attr.forEach(function(val, key) { circle.setAttribute(key, val); });
+  // circle 要素を追加する
+  const g = document.getElementById(pid + 'g');
+  add_text_node(g, '  ');  g.appendChild(circle);  add_text_node(g, '\n');
+
+  // text 要素を作る
+  const txt = document.createElementNS(SVG_NS, 'text');
+  add_text_node(txt, badge_num);
+  // 桁数
+  const num_of_digits = (badge_num < 10) ? 1 : ((badge_num < 100) ? 2 : 3);
+  // 各桁の幅は高さの半分とし、高さはフォントサイズと等しいと見なす。
+  const digit_width = Math.floor(CONFIG.badge_font_size / 2);
+  const digit_half_height = digit_width;
+  // 数字の表示領域 (余白も含む) は、一辺の長さが 3 桁分の幅と等しい正方形と
+  // する。その一辺の半分の長さを求めておく。
+  const half_size_of_suqare_for_digits = Math.floor(digit_width * 3 / 2);
+  // 数字が占める幅 (実際の桁数に応じた幅)
+  const txt_len = num_of_digits * digit_width;
+  // 上記正方形の左右に等しく設けられる余白の幅 (3 桁の場合は余白は 0)
+  const dx = Math.floor((3 - num_of_digits) * digit_width / 2);
+  const txt_attr = new Map([['id', pid + 'bn_' + badge_pos],
+    ['x', center_x - half_size_of_suqare_for_digits], 
+    ['y', center_y + digit_half_height],
+    ['textLength', txt_len], ['dx', dx], ['dy', 0], ['class', 'num_badge']]);
+  txt_attr.forEach(function(val, key) { txt.setAttribute(key, val); });
+  // text 要素を追加する
+  add_text_node(g, '  ');  g.appendChild(txt);  add_text_node(g, '\n');
+
+  backup_svg(name_str(pid) + 'にバッジをつける');
 }
 
 /* 「横の関係を追加する」メニュー。 */
@@ -2316,22 +2405,22 @@ function shift_all() {
 }
 
 /* [汎用モジュール]
-pid という ID の人物を表す矩形とテキスト (と、もしあれば注釈行) を、
+pid という ID の人物を表す矩形とテキスト (と、もしあれば注釈行やバッジ) を、
 x 方向に dx 動かし、y 方向に dy 動かす。連動なしの単純な操作。
 他の関数から呼び出すためのもの。 */
 function move_rect_and_txt(pid, dx, dy) {
-  const rect = document.getElementById(pid + 'r');
-  rect.setAttribute('x', parseInt(rect.getAttribute('x')) + dx);
-  rect.setAttribute('y', parseInt(rect.getAttribute('y')) + dy);
-  const txt = document.getElementById(pid + 't');
-  txt.setAttribute('x', parseInt(txt.getAttribute('x')) + dx);
-  txt.setAttribute('y', parseInt(txt.getAttribute('y')) + dy);
-  const g = document.getElementById(pid + 'g');
-  const num_of_notes = g.getElementsByTagName('text').length - 1;
-  for (let i = 0; i < num_of_notes; i++) {
-    let note = document.getElementById(pid + 'n' + i);
-    note.setAttribute('x', parseInt(note.getAttribute('x')) + dx);
-    note.setAttribute('y', parseInt(note.getAttribute('y')) + dy);
+  let cur_elt = document.getElementById(pid + 'g').firstChild;
+  while (cur_elt !== null) {
+    let elt_name = cur_elt.nodeName;
+    if (elt_name === 'text' || elt_name === 'rect') {
+      cur_elt.setAttribute('x', parseInt(cur_elt.getAttribute('x')) + dx);
+      cur_elt.setAttribute('y', parseInt(cur_elt.getAttribute('y')) + dy);
+    } else if (elt_name == 'circle') {
+      cur_elt.setAttribute('cx', parseInt(cur_elt.getAttribute('cx')) + dx);
+      cur_elt.setAttribute('cy', parseInt(cur_elt.getAttribute('cy')) + dy);
+      
+    }
+    cur_elt = cur_elt.nextSibling;
   }
 }
 
