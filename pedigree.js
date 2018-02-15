@@ -279,6 +279,9 @@ var P_GRAPH = P_GRAPH || {
       '\n  p_free_pos_mngrs: [');
     this.p_free_pos_mngrs.map(mng => { mng.print(); });
     console.log(']\n  step_No: ' + this.step_No + '\n');
+  },
+  find_mng: function(pid) {
+    return(this.p_free_pos_mngrs.find(m => (m.pid === pid)));
   }
 };
 
@@ -594,7 +597,7 @@ function increase_height(pid, new_height) {
   document.getElementById(pid + 'r').setAttribute('height', new_height);
 
   // 右辺・左辺の管理用オブジェクトを更新する。
-  const mng = P_GRAPH.p_free_pos_mngrs.find(m => (m.pid === pid));
+  const mng = P_GRAPH.find_mng(pid);
   mng.right_side.change_length(new_height);
   mng.left_side.change_length(new_height);
 
@@ -635,7 +638,7 @@ function decrease_height(pid, new_height) {
   rect.setAttribute('y', cur_rect_info.y_bottom - new_height);
 
   // 右辺・左辺の管理用オブジェクトを更新する。
-  const mng = P_GRAPH.p_free_pos_mngrs.find(m => (m.pid === pid));
+  const mng = P_GRAPH.find_mng(pid);
   mng.right_side.change_length(new_height);
   mng.left_side.change_length(new_height);
 
@@ -754,7 +757,7 @@ function rename_person() {
         if (MODE.func_rename_person > 0) { console.log('* tb mode'); }
         // 縦の辺 (右辺または左辺) の分割数によっては、縮小しすぎると、
         // 横リンク同士がくっついてしまうので、縮小しすぎはまずい。
-        const mng = P_GRAPH.p_free_pos_mngrs.find(m => (m.pid === pid));
+        const mng = P_GRAPH.find_mng(pid);
         const max_num_div = Math.max(mng.left_side.positions.length + 1, 
                                      mng.right_side.positions.length + 1);
         const new_rect_height = 
@@ -905,7 +908,7 @@ function change_width(pid, new_width, width_is_to_be_increased) {
   // ここに来るのは幅を変更 (拡大または縮小) してよい場合のみ。
   // まず、自分自身の矩形の幅を更新する。
   document.getElementById(pid + 'r').setAttribute('width', new_width);
-  const mng = P_GRAPH.p_free_pos_mngrs.find(m => (m.pid === pid));
+  const mng = P_GRAPH.find_mng(pid);
   mng.upper_side.change_length(new_width);
   mng.lower_side.change_length(new_width);
   // 枠からはみ出る場合は枠を拡大する。
@@ -1045,7 +1048,7 @@ function y_of_tb_note(pid, note_len) {
   if (writing_mode !== 'tb') { alert('これは縦書き専用です'); return(false); }
 
   const rect_info = get_rect_info(pid);
-  const mng = P_GRAPH.p_free_pos_mngrs.find(m => (m.pid === pid));
+  const mng = P_GRAPH.find_mng(pid);
   const lowermost_occupied_pos = mng.left_side.lowermost_occupied_pos();
   // 一番下の横リンクより下の、空いている部分の長さ (マージンも考慮しておく)
   const available_len = rect_info.y_height - lowermost_occupied_pos - CONFIG.note_margin;
@@ -1064,7 +1067,7 @@ function x_of_lr_note(pid, note_len) {
   if (writing_mode === 'tb') { alert('これは横書き専用です'); return(false); }
 
   const rect_info = get_rect_info(pid);
-  const mng = P_GRAPH.p_free_pos_mngrs.find(m => (m.pid === pid));
+  const mng = P_GRAPH.find_mng(pid);
   const rightmost_occupied_pos = mng.lower_side.rightmost_occupied_pos();
   // 一番右の縦リンクより右の、空いている部分の長さ (マージンも考慮しておく)
   const available_len = rect_info.x_width - rightmost_occupied_pos - CONFIG.note_margin;
@@ -1293,7 +1296,7 @@ function already_h_linked(pid1, pid2) {
 pid という ID を持つ人物を表す矩形の縦の辺 (右辺か左辺) に、
 横リンクを追加できる空きがあるかどうかを調べる。 */
 function free_pos_found(pid, edge) {
-  const mng = P_GRAPH.p_free_pos_mngrs.find(m => (m.pid === pid));
+  const mng = P_GRAPH.find_mng(pid);
   if (mng === undefined) { return(false); }
   if (edge === 'right') { return(mng.right_side.ensure_free_pos()); }
   if (edge === 'left')  { return(mng.left_side.ensure_free_pos()); }
@@ -1515,7 +1518,7 @@ function set_pos_choices(person_sel_id, edge_sel_id, is_change_on_right_edge) {
   }
   // 選択された人物の、指定された辺 (左辺または右辺) を管理している
   // オブジェクトを求める
-  const rect_mng = P_GRAPH.p_free_pos_mngrs.find(m => (m.pid === pid));
+  const rect_mng = P_GRAPH.find_mng(pid);
   const edge_mng = is_change_on_right_edge ? rect_mng.right_side : rect_mng.left_side;
   edge_mng.ensure_free_pos();  // 空き場所が存在することを先に保証しておく。
   const num_of_divisions = edge_mng.positions.length + 1;
@@ -1561,10 +1564,10 @@ function add_h_link_2() {
   }
   // ここに来るのは横リンクを追加して良い場合のみ。
   // ユーザによる位置の指定を、人物の矩形の辺を管理するオブジェクトに反映させる。
-  const lhs_mng = P_GRAPH.p_free_pos_mngrs.find(m => (m.pid === lhs_person_id));
+  const lhs_mng = P_GRAPH.find_mng(lhs_person_id);
   const lhs_pos = parseInt(selected_choice(document.getElementById('lhs_person_right_edge')));
   lhs_mng.right_side.change_priority(lhs_pos);
-  const rhs_mng = P_GRAPH.p_free_pos_mngrs.find(m => (m.pid === rhs_person_id));
+  const rhs_mng = P_GRAPH.find_mng(rhs_person_id);
   const rhs_pos = parseInt(selected_choice(document.getElementById('rhs_person_left_edge')));
   rhs_mng.left_side.change_priority(rhs_pos);
   // あとはリンクの線の種別を読み込んで、通常の「横の関係を追加する」メニューと
@@ -1646,8 +1649,8 @@ function remove_h_link_0(hlink_id) {
   const rhs_person = hlink_elt.dataset.rhs_person;
   const lhs_person_dat = document.getElementById(lhs_person + 'g').dataset;
   const rhs_person_dat = document.getElementById(rhs_person + 'g').dataset;
-  const lhs_mng = P_GRAPH.p_free_pos_mngrs.find(m => (m.pid === lhs_person));
-  const rhs_mng = P_GRAPH.p_free_pos_mngrs.find(m => (m.pid === rhs_person));
+  const lhs_mng = P_GRAPH.find_mng(lhs_person);
+  const rhs_mng = P_GRAPH.find_mng(rhs_person);
 
   function log_msg(str) {
     if (MODE.func_remove_h_link_0 > 0) {
@@ -1884,7 +1887,7 @@ function remove_v_link_0(vlink_id) {
     const parent1_dat = document.getElementById(parent1_id + 'g').dataset;
     parent1_dat.lower_links = parent1_dat.lower_links.replace(
       new RegExp('\^\(\.\*\)' + vlink_id + ',\(\.\*\)\$'), '$1$2');
-    const parent1_mng = P_GRAPH.p_free_pos_mngrs.find(m => (m.pid === parent1_id));
+    const parent1_mng = P_GRAPH.find_mng(parent1_id);
     const parent1_pos_idx = vlink_elt.dataset.parent1_pos_idx;
     parent1_mng.lower_side.remove_vlink(parent1_pos_idx);
     // 親の下辺の下にある (かもしれない) 横書き注釈の位置を決め直す。
@@ -1902,7 +1905,7 @@ function remove_v_link_0(vlink_id) {
   const child_dat = document.getElementById(child_id + 'g').dataset;
   child_dat.upper_links = child_dat.upper_links.replace(
     new RegExp('\^\(\.\*\)' + vlink_id + ',\(\.\*\)\$'), '$1$2');
-  const child_mng = P_GRAPH.p_free_pos_mngrs.find(m => (m.pid === child_id));
+  const child_mng = P_GRAPH.find_mng(child_id);
   const child_pos_idx = vlink_elt.dataset.child_pos_idx;
   child_mng.upper_side.remove_vlink(child_pos_idx);
   remove_val_from_array(P_GRAPH.v_links, vlink_id);
@@ -2627,9 +2630,9 @@ function set_p_graph_values() {
       let pos_info_lhs = get_posNo(lhs_person_id, path_id, true);
       let pos_info_rhs = get_posNo(rhs_person_id, path_id, false);
       if (pos_info_lhs.found && pos_info_rhs.found) {
-        let lhs_rect_mng = P_GRAPH.p_free_pos_mngrs.find(m => (m.pid === lhs_person_id));
+        let lhs_rect_mng = P_GRAPH.find_mng(lhs_person_id);
         lhs_rect_mng.right_side.set_hlink_at(pos_info_lhs.pos_No, pos_info_lhs.num_of_divisions, path_id);
-        let rhs_rect_mng = P_GRAPH.p_free_pos_mngrs.find(m => (m.pid === rhs_person_id));
+        let rhs_rect_mng = P_GRAPH.find_mng(rhs_person_id);
         rhs_rect_mng.left_side.set_hlink_at(pos_info_rhs.pos_No, pos_info_rhs.num_of_divisions, path_id);
       } else {
         alert('横リンク (' + path_id + ') の位置に異常があるので読み込みを中止します');
@@ -2706,7 +2709,7 @@ function set_EndPointsMngr_UL(pid, edge, link_type, pos_idx) {
 
 /* set_p_graph_values() の中から呼び出すためのもの。 */
 function get_posNo(pid, hid, is_lhs_person) {
-  const rect_mng = P_GRAPH.p_free_pos_mngrs.find(m => (m.pid === pid));
+  const rect_mng = P_GRAPH.find_mng(pid);
   // 左側の人物だったらその右辺に、右側の人物だったらその左辺に、リンクしている
   const mng = is_lhs_person ? rect_mng.right_side : rect_mng.left_side;
   const rect_info = get_rect_info(pid);
