@@ -1307,13 +1307,10 @@ free_pos_found() で空きを確認した後に使うこと。
 pid という ID を持つ人物を表す矩形の縦の辺 (右辺か左辺) における、
 次の接続先の点の位置 (矩形の最上部からの差分で表したもの) を求める。 */
 function occupy_next_pos(pid, edge, new_hid) {
-  const i = P_GRAPH.p_free_pos_mngrs.findIndex(m => (m.pid === pid));
-  if (i < 0) { return(-2); } // エラー
-  if (edge === 'right') {
-    return(P_GRAPH.p_free_pos_mngrs[i].right_side.next_position(new_hid));
-  } else if  (edge === 'left') {
-    return(P_GRAPH.p_free_pos_mngrs[i].left_side.next_position(new_hid));
-  }
+  const m = P_GRAPH.find_mng(pid);
+  if (m === undefined) { return(-2); } // エラー
+  if (edge === 'right') { return(m.right_side.next_position(new_hid)); }
+  if (edge === 'left') { return(m.left_side.next_position(new_hid)); }
   return(-1); // エラー
 }
 
@@ -1815,12 +1812,12 @@ function already_v_linked(pid1, pid2) {
 上辺または下辺の、真ん中・右寄り・左寄りのうち、どの場所にリンクをつなぐかを
 決める。 */
 function decide_where_to_connect(pid, edge, link_type, right_side_preferred) {
-  const i = P_GRAPH.p_free_pos_mngrs.findIndex(m => (m.pid === pid));
-  if (i < 0) { return(-2); } // エラー
+  const m = P_GRAPH.find_mng(pid);
+  if (m === undefined) { return(-2); } // エラー
   if (edge === 'upper') {
-    return(P_GRAPH.p_free_pos_mngrs[i].upper_side.next_position(link_type, right_side_preferred));
+    return(m.upper_side.next_position(link_type, right_side_preferred));
   } else if (edge === 'lower') {
-    return(P_GRAPH.p_free_pos_mngrs[i].lower_side.next_position(link_type, right_side_preferred));
+    return(m.lower_side.next_position(link_type, right_side_preferred));
   }
   return(-1); // エラー
 }
@@ -2694,14 +2691,14 @@ function set_p_graph_values() {
 
 /* set_p_graph_values() の中から呼び出すためのもの。 */
 function set_EndPointsMngr_UL(pid, edge, link_type, pos_idx) {
-  const i = P_GRAPH.p_free_pos_mngrs.findIndex(m => (m.pid === pid));
-  if (i < 0) { return(-2); } // エラー
+  const m = P_GRAPH.find_mng(pid);
+  if (m === undefined) { return(-2); } // エラー
   if (edge === 'upper') {
-    P_GRAPH.p_free_pos_mngrs[i].upper_side.points[pos_idx].status = link_type;
-    P_GRAPH.p_free_pos_mngrs[i].upper_side.points[pos_idx].count++;
+    m.upper_side.points[pos_idx].status = link_type;
+    m.upper_side.points[pos_idx].count++;
   } else if (edge === 'lower') {
-    P_GRAPH.p_free_pos_mngrs[i].lower_side.points[pos_idx].status = link_type;
-    P_GRAPH.p_free_pos_mngrs[i].lower_side.points[pos_idx].count++;
+    m.lower_side.points[pos_idx].status = link_type;
+    m.lower_side.points[pos_idx].count++;
   } else {
     return(-1); // エラー
   }
