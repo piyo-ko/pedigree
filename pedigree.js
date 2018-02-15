@@ -1659,7 +1659,11 @@ function remove_h_link() {
 function remove_h_link_0(hlink_id) {
   const hlink_elt = document.getElementById(hlink_id);
   const lower_links = hlink_elt.dataset.lower_links;
-  if (lower_links !== '') { alert('子供がいるので削除できません'); return; }
+  if (lower_links !== '') {
+    const ok = confirm('下に子供がぶら下がっています。子供への縦の線ごと削除して構わない場合は「OK」を選んでください');
+    if (!ok) { return; }
+    id_str_to_arr(lower_links).map(vid => { remove_v_link_0(vid); });
+  }
   const lhs_person = hlink_elt.dataset.lhs_person;
   const rhs_person = hlink_elt.dataset.rhs_person;
   const lhs_person_dat = document.getElementById(lhs_person + 'g').dataset;
