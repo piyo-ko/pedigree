@@ -763,11 +763,6 @@ function rename_person() {
         const new_rect_height = 
           Math.max(new_textLength + CONFIG.v_text_dy * 2, 
                    CONFIG.min_interval_between_h_links * max_num_div);
-/*
-        // 過去に「矩形を拡大する」を使った結果、dy が増えている可能性がある
-        // ので、初期値に戻す。
-        txt.setAttribute('dy', CONFIG.v_text_dy);
-*/
         decrease_height(pid, new_rect_height);
         const new_dy = Math.floor((new_rect_height - new_textLength)/2);
         txt.setAttribute('dy', new_dy);
