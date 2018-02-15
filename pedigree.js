@@ -349,7 +349,8 @@ window.top.onload = function () {
   // ページをロードしてからでないと、フォーム要素は参照できない (エラーになる)
   // ので、ここで PERSON_SELECTORSを設定する。
   PERSON_SELECTORS.push(m.position_ref, m.person_to_be_extended, 
-    m.person_to_rename, m.annotation_target, m.person_to_add_badge,
+    m.person_to_rename, m.annotation_target, m.person_to_add_badge, 
+    m.person_to_remove, 
     m.partner_1, m.partner_2, m.lhs_person, m.rhs_person, 
     m.parent_1, m.child_1, m.child_2, 
     m.target_person, m.ref_person, m.person_to_align, m.person_to_center,
@@ -587,6 +588,28 @@ function add_person() {
   }
   backup_svg(new_personal_name + 'を追加');
   document.menu.new_personal_name.value = ''; // 最後に名前の入力欄をクリアする
+}
+
+/* 「人を削除する」メニュー。 */
+function remove_person() {
+  const pid = selected_choice(document.menu.person_to_remove);
+  const name_of_this_person = name_str(pid); // 削除する前に名前の文字列を退避。
+  const g = document.getElementById(pid + 'g'), g_dat = g.dataset;
+  const h_links = g_dat.right_links + g_dat.left_links, 
+        v_links = g_dat.upper_links + g_dat.lower_links;
+  if (h_links !== '' || v_links !== '') {
+    const ok = confirm('この人物につながっている線があります。この人物を線ごと削除する場合は「OK」を選んでください');
+    if (!ok) { return; }
+  }
+  id_str_to_arr(v_links).map(vid => { remove_v_link_0(vid); });
+  apply_to_each_hid_pid_pair(h_links, (hid, partner_pid) => {
+    const vids = document.getElementById(hid).dataset.lower_links;
+    id_str_to_arr(vids).map(vid => { remove_v_link_0(vid); });
+    remove_h_link_0(hid);
+  });
+  document.getElementById('pedigree').removeChild(g);
+  PERSON_SELECTORS.map(sel => { remove_choice(sel, pid); });
+  backup_svg(name_of_this_person + 'を削除');
 }
 
 /* 上辺は固定して下辺を下にずらすことで、矩形の高さを増やす。
