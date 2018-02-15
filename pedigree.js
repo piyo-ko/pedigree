@@ -1625,6 +1625,13 @@ function draw_h_link(h_link, link_start_x, link_end_x, link_y) {
   h_link.dataset.y = link_y;
 }
 
+/* 再描画のときのよくある呼び出しパタンを関数にした。 */
+function redraw_h_link(hid, start_dx, end_dx, dy) {
+  const hlink = document.getElementById(hid), dat = hlink.dataset;
+  draw_h_link(hlink, parseInt(dat.start_x) + start_dx, 
+    parseInt(dat.end_x) + end_dx, parseInt(dat.y) + dy);
+}
+
 /* 「横の関係を削除する」メニュー */
 function remove_h_link() {
   const hlink_id = selected_choice(document.menu.hlink_to_remove);
@@ -2187,12 +2194,7 @@ function move_person_vertically(pid, dy) {
     target_l_links + ']');
 
   target_persons.map(pid => { move_rect_and_txt(pid, 0, actual_dy); });
-
-  target_h_links.map(hid => {
-    const h = document.getElementById(hid);
-    draw_h_link(h, parseInt(h.dataset.start_x), parseInt(h.dataset.end_x),
-                parseInt(h.dataset.y) + actual_dy);
-  });
+  target_h_links.map(hid => { redraw_h_link(hid, 0, 0, actual_dy); });
 
   // 上辺に接続しているリンクなので、そのリンクの上端は動かない。
   // リンクの下端 (上辺上の点) のみが動く。
@@ -2323,11 +2325,9 @@ function move_right_collectively() {
       // 右辺からの横リンクでつながっている人物を処理対象に加える
       push_if_not_included(target_persons, pid);
       // その横リンクの再描画 (とりあえず左端を移動させる)
-      const hlink = document.getElementById(hid);
-      draw_h_link(hlink, parseInt(hlink.dataset.start_x) + amount, 
-                  parseInt(hlink.dataset.end_x), parseInt(hlink.dataset.y));
+      redraw_h_link(hid, amount, 0, 0);
       // その横リンクからぶら下がる縦リンクを調べる
-      const vids = hlink.dataset.lower_links;
+      const vids = document.getElementById(hid).dataset.lower_links;
       id_str_to_arr(vids).map(function(vid) {
         // 縦リンクの上端を half_amount だけ右へ移動させる。
         redraw_v_link(vid, half_amount, 0, 0, 0);
@@ -2338,12 +2338,10 @@ function move_right_collectively() {
 
     apply_to_each_hid_pid_pair(gr.dataset.left_links, function(hid, pid) {
       // 左辺につながっている横リンクの再描画 (右端を移動させる)。
-      const hlink = document.getElementById(hid);
-      draw_h_link(hlink, parseInt(hlink.dataset.start_x), 
-                  parseInt(hlink.dataset.end_x) + amount, 
-                  parseInt(hlink.dataset.y));
+      redraw_h_link(hid, 0, amount, 0);
       // その横リンクからぶら下がる縦リンクの上端を half_amount だけ
       // 右へ移動させる。
+      const hlink = document.getElementById(hid);
       id_str_to_arr(hlink.dataset.lower_links).map(function(vid) {
         redraw_v_link(vid, half_amount, 0, 0, 0);
       });
