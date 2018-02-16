@@ -73,9 +73,14 @@ tr:nth-child(2n+1) > td {
   background: darkgrey;
 }
 th {
-  color: teal;
-  background: powderblue;
+  font-family: "筑紫B丸ゴシック", sans-serif;
   word-break: keep-all;
+}
+tr:nth-child(2n) > th {
+  background: linear-gradient(to right, teal, powderblue 30%, cadetblue 90%, teal);
+}
+tr:nth-child(2n+1) > th {
+  background: linear-gradient(to right, dimgray, lightgray 30%, darkgray 90%, dimgrey);
 }
 #svg_backup {
   display: inline;
