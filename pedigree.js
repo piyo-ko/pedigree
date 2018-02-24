@@ -354,7 +354,7 @@ window.top.onload = function () {
     m.partner_1, m.partner_2, m.lhs_person, m.rhs_person, 
     m.parent_1, m.child_1, m.child_2, 
     m.target_person, m.ref_person, m.person_to_align, m.person_to_center,
-    m.person_to_move_right, m.person_to_move_down);
+    m.person_to_move_down, m.person_to_move_right, m.person_to_move_left);
   HLINK_SELECTORS.push(m.hlink_to_remove, m.parents_2);
   VLINK_SELECTORS.push(m.vlink_to_remove);
 };
@@ -1143,7 +1143,7 @@ function relocate_lr_notes(pid) {
 /* 「番号のバッジをつける」メニュー。 */
 function add_num_badge() {
   const badge_num = parseInt(document.menu.badge_num.value);
-  if (! (0 <= badge_num && badge_num <= 999)) {
+  if (isNaN(badge_num) || ! (0 <= badge_num && badge_num <= 999)) {
     alert('0 から 999 までの数を指定してください'); return;
   }
   document.menu.badge_num.value = ''; // 値を読み終わったらクリアしておく
@@ -1937,7 +1937,9 @@ function move_person() {
   // 入力内容を読み込む
   const whom = selected_choice(document.menu.target_person);
   const amount = parseInt(document.menu.how_much_moved.value);
-  if (amount <= 0) { alert('移動量は正の数を指定して下さい'); return; }
+  if (isNaN(amount) || amount <= 0) {
+    alert('移動量は正の数を指定して下さい'); return;
+  }
   switch ( selected_radio_choice(document.menu.moving_direction) ) {
     case 'up':    move_person_vertically(whom, -amount); break;
     case 'down':  move_person_vertically(whom, amount); break;
@@ -2315,7 +2317,9 @@ function center_person_wrt_lower_links() {
 function move_down_person_and_descendants() {
   const whom = selected_choice(document.menu.person_to_move_down);
   const amount = parseInt(document.menu.how_much_moved_down.value);
-  if (amount <= 0) { alert('移動量は正の数を指定して下さい'); return; }
+  if (isNaN(amount) || amount <= 0) {
+    alert('移動量は正の数を指定して下さい'); return;
+  }
   move_down_collectively('', whom, amount);
   backup_svg(name_str(whom) + 'を子孫ごとまとめて下へ移動');
 }
@@ -2325,7 +2329,7 @@ function move_down_person_and_descendants() {
 function move_right_collectively() {
   const base_pid = selected_choice(document.menu.person_to_move_right);
   const amount = parseInt(document.menu.how_much_moved_right.value);
-  if (amount <= 0) { alert('正数を指定してください'); return; }
+  if (isNaN(amount) || amount <= 0) { alert('正数を指定してください'); return; }
   const half_amount = Math.floor(amount / 2);
   let target_persons = [base_pid];
 
@@ -2386,10 +2390,108 @@ function move_right_collectively() {
   backup_svg(name_str(base_pid) + 'から右・下をたどった先をまとめて右に移動する');
 }
 
+/* 「まとめて左に移動する」メニュー。*/
+function move_left_collectively() {
+  const base_pid = selected_choice(document.menu.person_to_move_left);
+  const amount = parseInt(document.menu.how_much_moved_left.value);
+  if (isNaN(amount) || amount <= 0) { alert('正数を指定してください'); return; }
+  const half_amount = Math.floor(amount / 2);
+  let target_persons = [base_pid], target_hlinks = [], target_vlinks = [];
+  let hlinks_to_extend_left = [], vlinks_to_move_their_upper_ends = [],
+      vlinks_to_move_their_lower_ends = [];
+  let min_x = 0;
+
+  // target_persons.length がループ内で変化することに注意。
+  // 移動自体はまだ行わないで、移動の対象だけ配列に記憶してゆく。
+  // この段階での記憶の仕方は、多少不正確な可能性がある (実際の移動のときに
+  // もう少しちゃんと確認する)。
+  for (let i = 0; i < target_persons.length; i++) {
+    let cur_person = target_persons[i]; // 一人ずつ注目してゆく。
+    let left_end = get_rect_info(cur_person).x_left;
+    // 移動後の一番左の座標
+    if (left_end - amount < min_x) { min_x = left_end - amount; }
+
+    let gr = document.getElementById(cur_person + 'g');
+    apply_to_each_hid_pid_pair(gr.dataset.left_links, function(hid, pid) {
+      // 左辺からの横リンクと、そのつながる先の相手は、左に移動する対象である。
+      push_if_not_included(target_hlinks, hid);
+      push_if_not_included(target_persons, pid);
+      // その横リンクからぶら下がっている縦リンクと、その下端につながった子も、
+      // 左に移動する対象である。
+      const hlink = document.getElementById(hid);
+      id_str_to_arr(hlink.dataset.lower_links).map(function(vid) {
+        push_if_not_included(target_vlinks, vid);
+        const c = document.getElementById(vid).dataset.child;
+        push_if_not_included(target_persons, c);
+      });
+    });
+    apply_to_each_hid_pid_pair(gr.dataset.right_links, function(hid, pid) {
+      // 今見ている人物が、誰かの左につながっているので左への移動対象となったの
+      // だとしたら、今見ている人物の右辺につながっている横リンクは、既に左への
+      // 移動対象として登録されているかもしれない。
+      if (target_persons.includes(pid)) { return; }
+      // が、未登録であれば、そのような右辺からの横リンクは、左端だけ左へ移動
+      // させる (右端は動かさないので、全体としては左へ延びる感じになる) 対象。
+      hlinks_to_extend_left.push(hid);
+      // その横リンクからぶら下がっている縦リンクは、横リンクが延びるのに連れて、
+      // 上端の位置が (半量だけ) 左へずれることになる。
+      const hlink = document.getElementById(hid);
+      id_str_to_arr(hlink.dataset.lower_links).map(function(vid) {
+        vlinks_to_move_their_upper_ends.push(vid);
+      });
+    });
+    // 今見ている人物の上辺につながる縦リンクは、この人物の移動に連れて、下端の
+    // 位置が左へずれることになる。
+    id_str_to_arr(gr.dataset.upper_links).map(function(vid) {
+      vlinks_to_move_their_lower_ends.push(vid);
+    });
+    // 今見ている人物の下辺につながる縦リンクは、この人物の移動に連れて、全体が
+    // 左に移動することになる (なぜなら下端につながっている子も左へ移動させる対象
+    // だから)。
+    id_str_to_arr(gr.dataset.lower_links).map(function(vid) {
+      push_if_not_included(target_vlinks, vid);
+      const c = document.getElementById(vid).dataset.child;
+      push_if_not_included(target_persons, c);
+    });
+  }
+
+  // 左への移動により枠の左端からはみ出るようなら、先に幅を増やして、全体を
+  // 右へ移動させておく。
+  if (min_x < 0) { modify_width_0(-min_x);  shift_all_0(-min_x, 0); }
+  // 左への単純な移動。
+  target_persons.map(pid => { move_rect_and_txt(pid, -amount, 0); });
+  target_hlinks.map(hid => { redraw_h_link(hid, -amount, -amount, 0); });
+  target_vlinks.map(vid => { redraw_v_link(vid, -amount, 0, -amount, 0); });
+  // 左端のみ左へ移動させるべき横リンク。
+  hlinks_to_extend_left.map(hid => {
+    // 全体を移動させる対象として重複して登録されている可能性があるかもしれない
+    // ので、一応チェックする。
+    if (target_hlinks.includes(hid)) { return; }
+    redraw_h_link(hid, -amount, 0, 0);
+  });
+  // 上端のみを半量だけ左へ移動させるべき縦リンク。
+  vlinks_to_move_their_upper_ends.map(vid => {
+    // 全体を移動させる対象として重複して登録されている可能性があるかもしれない
+    // ので、一応チェックする。
+    if (target_vlinks.includes(vid)) { return; }
+    redraw_v_link(vid, -half_amount, 0, 0, 0);
+  });
+  // 下端のみを左へ移動させるべき縦リンク。
+  vlinks_to_move_their_lower_ends.map(vid => {
+    // 全体を移動させる対象として重複して登録されている可能性があるかもしれない
+    // ので、一応チェックする。
+    if (target_vlinks.includes(vid)) { return; }
+    redraw_v_link(vid, 0, 0, -amount, 0);
+  });
+  backup_svg(name_str(base_pid) + 'から左・下をたどった先をまとめて左に移動する');
+}
+
 /* 「全体をずらす」メニュー。 */
 function shift_all() {
   const amount = parseInt(document.menu.how_much_shifted.value);
-  if (amount < 0) { alert('移動量は正の数を指定して下さい'); return; }
+  if (isNaN(amount) || amount < 0) {
+    alert('移動量は正の数を指定して下さい'); return;
+  }
   // dx, dy (x 方向、y 方向の移動量) を設定する
   let dx, dy;
   switch ( selected_radio_choice(document.menu.shift_direction) ) {
@@ -2399,6 +2501,12 @@ function shift_all() {
     case 'right': dx = amount; dy = 0; break;
     default     : dx = 0; dy = 0; break;
   }
+  shift_all_0(dx, dy);
+  backup_svg('全体をずらす');
+}
+/* 「全体をずらす」メニューの実質部分。他のメニューからも利用したいので、
+フォームの入力値の読み取りなどとは分けて、この部分だけを別の関数とした。 */
+function shift_all_0(dx, dy) {
   // 現状位置の各矩形の範囲を見て、全体としての上下左右の端を求める
   let min_x = P_GRAPH.svg_width, max_x = 0;  // 初期化
   let min_y = P_GRAPH.svg_height, max_y = 0;  // 初期化
@@ -2420,8 +2528,6 @@ function shift_all() {
   P_GRAPH.persons.map(pid => { move_rect_and_txt(pid, new_dx, new_dy); });
   P_GRAPH.h_links.map(hid => { move_link(hid, new_dx, new_dy, true); });
   P_GRAPH.v_links.map(vid => { move_link(vid, new_dx, new_dy, false); });
-
-  backup_svg('全体をずらす');
 }
 
 /* [汎用モジュール]
@@ -2477,7 +2583,9 @@ function move_link(id, dx, dy, is_h_link) {
 
 /* 「全体の高さを変える」メニュー。 */
 function modify_height() {
-  modify_height_0(parseInt(document.menu.height_diff.value));
+  const h = parseInt(document.menu.height_diff.value);
+  if (isNaN(h)) { alert('数値を入力してください'); return; }
+  modify_height_0(h);
   backup_svg('全体の高さを変える');
 }
 function modify_height_0(h_diff) {
@@ -2490,7 +2598,9 @@ function modify_height_0(h_diff) {
 
 /* 「全体の幅を変える」メニュー。 */
 function modify_width() {
-  modify_width_0(parseInt(document.menu.width_diff.value));
+  const w = parseInt(document.menu.width_diff.value);
+  if (isNaN(w)) { alert('数値を入力してください'); return; }
+  modify_width_0(w);
   backup_svg('全体の幅を変える');
 }
 function modify_width_0(w_diff) {
