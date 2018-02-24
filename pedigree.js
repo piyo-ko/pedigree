@@ -609,6 +609,7 @@ function remove_person() {
   });
   document.getElementById('pedigree').removeChild(g);
   PERSON_SELECTORS.map(sel => { remove_choice(sel, pid); });
+  remove_val_from_array(P_GRAPH.persons, pid);
   backup_svg(name_of_this_person + 'を削除');
 }
 
