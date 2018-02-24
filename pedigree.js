@@ -2667,6 +2667,20 @@ function set_prefix() {
   }
 }
 
+/* 「人物一覧を出力する」メニュー。 */
+function list_persons() {
+  const p = new Array();
+  P_GRAPH.persons.map(pid => { p.push({ id: pid, name: name_str(pid) }); });
+  p.sort((a, b) => { 
+    if (a.name < b.name) { return(-1); }
+    else if (a.name === b.name) { return(0); }
+    else { return(1); }
+  });
+  let s = '';
+  p.map(x => { s += x.id + ',' + x.name + '\n'; });
+  document.getElementById('list_of_persons').textContent = s;
+}
+
 /* 「作成済みのデータを読み込む」メニュー。本当は、読み取った内容が所望の形式か
 どうかを検査した方が良いが、そうしたエラーチェックは省略したままにするかも。 */
 function read_in() {
