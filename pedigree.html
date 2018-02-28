@@ -382,7 +382,9 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 
 <tr class="menu_output">
 <th>人物一覧を<wbr>出力する</th>
-<td>人物一覧を名前順で<input type="button" value="以下の枠内に出力する" onclick="list_persons()">。<br>
+<td>人物一覧を名前順で<input type="button" value="以下の枠内に出力する" onclick="list_persons()">
+(<input type="checkbox" name="output_notes" id="output_notes" checked>
+<label for="output_notes">注釈行の内容も出力する場合</label>はチェック)。<br>
 <code id="list_of_persons"></code>
 </td>
 </tr>

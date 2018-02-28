@@ -2760,13 +2760,29 @@ function set_prefix() {
 function list_persons() {
   const p = new Array();
   P_GRAPH.persons.map(pid => { p.push({ id: pid, name: name_str(pid) }); });
-  p.sort((a, b) => { 
+  p.sort((a, b) => { // 名前順でソートする
     if (a.name < b.name) { return(-1); }
     else if (a.name === b.name) { return(0); }
     else { return(1); }
   });
-  let s = '';
-  p.map(x => { s += x.id + ',' + x.name + '\n'; });
+
+  let s = ''; // 出力する文字列
+  if (document.menu.output_notes.checked) { // 注釈も出力する場合
+    p.map(x => {
+      s += x.id + ',' + x.name;
+      const g_elt = document.getElementById(x.id + 'g');
+      const txt_elts = g_elt.getElementsByTagName('text');
+      for (let i = 1; i < txt_elts.length; i++) {
+        // i = 0 は名前の text 要素なので i = 1 から始めている。
+        // 注釈以外の要素 (バッジの数字) は無視する。
+        if (get_note_num(txt_elts[i], x.id) === -1) { continue; } 
+        s += ',' + txt_elts[i].textContent; // カンマに続けて注釈を出力
+      }
+      s += '\n';
+    });
+  } else { // 注釈は出力しない場合 (ID と名前のみ出力する)
+    p.map(x => { s += x.id + ',' + x.name + '\n'; });
+  }
   document.getElementById('list_of_persons').textContent = s;
 }
 
