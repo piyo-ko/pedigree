@@ -918,6 +918,9 @@ function rename_person() {
   // ここにくるのは、エラー発生で return したりせず、無事に諸々の処理ができた
   // とき。人物を選択するためのセレクタの表示名を変更する必要がある。
   PERSON_SELECTORS.map(sel => { rename_choice(sel, pid, new_name); });
+  // この人物の矩形にマウスオーバしたときに表示される名前も、新たな名前に変える。
+  const rect = document.getElementById(pid + 'r');
+  rect.onmouseover = function() { show_info(pid, new_name); };
   // さらに、左右上下のリンクに関しても、セレクタの表示名を変更する必要がある。
   const g_dat = document.getElementById(pid + 'g').dataset;
   function rename_hlink_choice(on_rhs) {
