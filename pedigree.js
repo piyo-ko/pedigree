@@ -345,7 +345,7 @@ const VLINK_SELECTORS = new Array();
 window.top.onload = function () {
   const m = document.menu;
   P_GRAPH.reset_all();  m.reset();
-  print_current_svg_size();  backup_svg('初期状態');
+  print_current_svg_size();  backup_svg('初期状態', false);
   // ページをロードしてからでないと、フォーム要素は参照できない (エラーになる)
   // ので、ここで PERSON_SELECTORSを設定する。
   PERSON_SELECTORS.push(m.position_ref, m.person_to_be_extended, 
@@ -2727,8 +2727,10 @@ function download_svg() {
 }
 /* 作業の各段階での SVG ファイルをダウンロードするためのリンクを生成・追加する。
 各メニューに相当する関数の最後から呼び出す。
-description_str は、リンクテキストとして表示したい文字列。 */
-function backup_svg(description_str) {
+description_str は、リンクテキストとして表示したい文字列。
+auto_save_on_sessionStorage は、sessionStorage への自動バックアップも行うかどうか。
+ページの onload のとき以外は true。 */
+function backup_svg(description_str, auto_save_on_sessionStorage = true) {
   const s = document.getElementById('tree_canvas_div').innerHTML;
   const b = new Blob([s], {type :'image/svg+xml'});
   const ul = document.getElementById('svg_backup');
@@ -2739,6 +2741,11 @@ function backup_svg(description_str) {
   P_GRAPH.step_No++;
   a.href = URL.createObjectURL(b);  add_text_node(a, description_str);
   li.appendChild(a);
+  // ついでに sessionStorage に自動バックアップ
+  if (auto_save_on_sessionStorage) {
+    window.sessionStorage.setItem('pedigree_svg_data', 
+      document.getElementById('tree_canvas_div').innerHTML);
+  }
 }
 /* 作業の各段階での SVG ファイルのダウンロード用リンク (作成済みのもの) の 
 download 属性の値を、入力された接頭辞に置換する。
@@ -2964,6 +2971,18 @@ function get_posNo(pid, hid, is_lhs_person) {
   const rect_info = get_rect_info(pid);
   const hlink_y = parseInt(document.getElementById(hid).dataset.y);
   return(mng.find_posNo(hlink_y - rect_info.y_top));
+}
+
+/* 「自動保存したデータを読み込む」メニュー。 */
+function read_automatically_saved_data() {
+  const svg_data = window.sessionStorage.getItem('pedigree_svg_data');
+  if (svg_data !== null) {
+    document.getElementById('tree_canvas_div').innerHTML = svg_data;
+    set_p_graph_values(); // SVGの各要素を読み取って、変数の設定を行う。
+    backup_svg('自動保存したデータを読み込む'); // バックアップ用リンクも一応作る
+  } else {
+    alert('自動保存したデータはありません');
+  }
 }
 
 /* ID が pid で名前が pname の人物の矩形に対するマウスオーバ・イベントが発生
