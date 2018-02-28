@@ -645,9 +645,7 @@ function increase_height(pid, new_height) {
     }
   });
   // 右辺・左辺とその先の子孫たちを適宜下に移動させる。
-  move_down_in_rect_height_change(g.dataset.right_links, mng.right_side, true, diff_height);
-  move_down_in_rect_height_change(g.dataset.left_links, mng.left_side, true, diff_height);
-
+  move_down_in_rect_height_change(pid, true, diff_height);
   // 左辺にある (かもしれない) 縦書き注釈の位置を決め直す。
   relocate_tb_notes(pid);
 }
@@ -677,52 +675,123 @@ function decrease_height(pid, new_height) {
   });
 
   // 右辺・左辺とその先の子孫たちを適宜下に移動させる。
-  move_down_in_rect_height_change(g.dataset.right_links, mng.right_side, false, diff_height);
-  move_down_in_rect_height_change(g.dataset.left_links, mng.left_side, false, diff_height);
-
+  move_down_in_rect_height_change(pid, false, diff_height);
   // 左辺にある (かもしれない) 縦書き注釈の位置を決め直す。
   relocate_tb_notes(pid);
 }
 
 /* 矩形の高さを変えたいときに呼び出される関数。
-右辺・左辺でつながっている相手 (とさらにその先の関係者たち) を下に移動させ、
-横リンクも再描画する。その横リンクからぶら下がっている縦リンクがあれば、
-それらも再描画するが、その際、縦リンクの下端までの距離が十分にあるかを調べ、
-不十分なら、その縦リンク下端の子とその子孫を下に移動させる。 */
-function move_down_in_rect_height_change(hid_pid_str, edge_mng, rect_is_to_be_extended, diff_height) {
-  // 右辺と左辺で分割数が違う場合があるので、edge_mng を引数にとる。
-  const num_of_divisions = edge_mng.positions.length + 1;
-  apply_to_each_hid_pid_pair(hid_pid_str, function(hid, partner_pid) {
-    // 上辺を固定して下に矩形を拡大する場合、分割数 d のうちで位置番号 i の
+基本的な動作は以下の通り。
+* 右辺・左辺でつながっている相手 (とさらにその先の関係者たち) を下に移動させ、
+  横リンクも再描画する。
+* その横リンクからぶら下がっている縦リンクがあれば、それらも再描画するが、
+  その際、縦リンクの下端までの距離が十分にあるかを調べ、不十分なら、その
+  縦リンク下端の子とその子孫を下に移動させる。
+ただし、例外的ではあるものの考慮すべき場合がある (★)。
+人物 A (例: 皇帝) に B (例: 皇后) と C (例: 側室) が横リンクでつながっており、
+かつ、B と C が縦リンクでつながっている (例: 皇后が身分の低い側室を養女として
+いる) 場合がある。A にはさらに D なども横リンクでつながっているかもしれない。
+この場合、B を引数にして不用意に move_down_collectively を使うと、B の子の C、
+C と横につながった A、A と横につながった D までもが、B に対して指定された量だけ
+下に移動してしまう (が、それはもちろん所望の動作ではない)。そして C や D は、
+C 自身に対応する量、D 自身に対応する量だけ、それぞれさらに下に移動する。
+こうした事態 (や、もう少し間接的な関係に基づいて同様にして望まぬ連動が生じる
+事態) を防ぐため、move_down_collectively のオプション引数をうまく指定する必要が
+ある。
+ */
+function move_down_in_rect_height_change(pid_for_this_rect, rect_is_to_be_extended, diff_height) {
+  // 矩形の高さを変える対象となる人物に対応する g 要素と、その矩形の管理
+  // オブジェクトを求める。
+  const g = document.getElementById(pid_for_this_rect + 'g');
+  const mng = P_GRAPH.find_mng(pid_for_this_rect);
+
+  // この対象人物と直接横につながっている (ので下に移動する対象になる) 人たちに
+  // ついての情報をとりあえず記録する配列。
+  // 念のため、「子までの距離が確保できなくなる」という状態が (一時的にせよ)
+  // 生じないようにしておきたいので、右辺・左辺問わずに下から順に下への移動を
+  // 行うことにする。それにはまず記録して、後でソートする。
+  const targets_to_move = [];
+
+  // 横リンクの ID を引数にして、その横リンクをどれだけ下に移動するかを求める
+  // 関数 diff_y を定義する。なお、右辺と左辺で分割数が違う場合があることに注意
+  // (on_rhs はそのために必要な引数)。
+  const diff_y = rect_is_to_be_extended ?
+    // 上辺を固定して下に矩形を拡大する場合、分割数 d のうちで位置番号 p の
     // 横リンクの下がり幅は (矩形の高さが h1 から h2 に変化するものとして)、
-    // h2 * i/d - h1 * i/d = (h2 - h1) * i/d
-    // である。一方、下辺を固定して上辺を下に動かすことで矩形を縮小する場合、
+    // h2 * p/d - h1 * p/d = (h2 - h1) * p/d
+    // である。
+    function(hid, on_rhs) {
+      const m = on_rhs ? mng.right_side : mng.left_side,
+            num_div = m.positions.length + 1, pos = m.which_pos_No(hid);
+      return(Math.floor(diff_height * pos / num_div));
+    } :
+    // 一方、下辺を固定して上辺を下に動かすことで矩形を縮小する場合、
     // top1 + h1 = top2 + h2 より top1 - top2 = h2 - h1 (= diff_height)
-    // なので、分割数 d のうちで位置番号 i の横リンクの下がり幅は
-    // (top2 + h2 * i/d) - (top1 + h1 * i/d)
-    // = (top2 - top1) + (h2 - h1) * i/d
-    // = (h2 - h1) * (-1 + i/d)
-    // = - (h2 - h1) * ((d - i)/d)
-    const diff_y_for_hlink = rect_is_to_be_extended ?
-      Math.floor(diff_height * edge_mng.which_pos_No(hid) / num_of_divisions) :
-      Math.floor(-diff_height * (num_of_divisions - edge_mng.which_pos_No(hid)) / num_of_divisions);
-    // 右辺・左辺でつながっている相手 (とさらにその先の関係者たち) を下に移動
-    move_down_collectively('', partner_pid, diff_y_for_hlink, hid);
+    // なので、分割数 d のうちで位置番号 p の横リンクの下がり幅は
+    // (top2 + h2 * p/d) - (top1 + h1 * p/d)
+    // = (top2 - top1) + (h2 - h1) * p/d
+    // = (h2 - h1) * (-1 + p/d)
+    // = - (h2 - h1) * ((d - p)/d)
+    function(hid, on_rhs) {
+      const m = on_rhs ? mng.right_side : mng.left_side,
+            num_div = m.positions.length + 1, pos = m.which_pos_No(hid);
+      return(Math.floor(-diff_height * (num_div - pos) / num_div));
+    };
+
+  // 右辺につながっている相手に関する情報を記録してゆく。
+  apply_to_each_hid_pid_pair(g.dataset.right_links, function(hid, pid) {
+    targets_to_move.push({ hid: hid, pid: pid, 
+                           y: parseInt(document.getElementById(hid).dataset.y), 
+                           diff: diff_y(hid, true), on_rhs: true });
+  });
+  // 左辺についても同様。
+  apply_to_each_hid_pid_pair(g.dataset.left_links, function(hid, pid) {
+    targets_to_move.push({ hid: hid, pid: pid, 
+                           y: parseInt(document.getElementById(hid).dataset.y), 
+                           diff: diff_y(hid, false), on_rhs: false});
+  });
+  // y 座標の降順でソート (下の方にある横リンクについての情報の方が先になる)。
+  targets_to_move.sort((a, b) => { 
+    return( (a.y > b.y) ? -1 : ((a.y === b.y) ? 0 : 1) );
+  });
+
+  // 上記 (★) の事態を防ぐため、「横または縦のリンクをたどっているうちに、もし
+  // この人に到達してしまったら、この人自身は下へは移動しないで (この人物は移動
+  // 対象から除外して)、この人に到達したそのリンクは今すぐ再描画してしまい
+  // ましょう。そしてそこから先は、もうたどらないでおきましょう」と指定したい。
+  // そういう除外リストを指定するための配列。
+  const excluded_pids = []; // 配列の中身は後で増やしてゆく
+  targets_to_move.map(t => {
+    if (MODE.func_move_down_in_rect_height_change > 0) {
+      console.log('move_down_collectively(' + pid_for_this_rect + ', ' + 
+        t.pid + '(' + name_str(t.pid) + '), ' + t.diff + ', ' + t.hid + 
+        ', [' + excluded_pids + '])');
+    }
+    // 右辺または左辺でつながっている相手 (とさらにその先の関係者たち) を下に移動。
+    // なお、上記 (★) の事態を防ぐために、引数の指定に関して以下のことに注意する。
+    // * 移動しないで固定しておく人物の ID として、'' というダミーの値を指定する
+    //   のではなく、矩形の高さを変える対象人物の ID を明示的に指定する。
+    // * たどるべきでない横リンクとして、t.hid を明示的に指定する。
+    // * 今回の move_down_collectively の呼び出しにおける下への移動から除外すべき
+    //   人物のリストを明示的に指定する。
+    move_down_collectively(pid_for_this_rect, t.pid, t.diff, t.hid, excluded_pids);
+    // 移動し終わった人物の ID を除外リストに追加
+    excluded_pids.push(t.pid);
     // 横リンクも再描画
-    move_link(hid, 0, diff_y_for_hlink, true);
+    move_link(t.hid, 0, t.diff, true);
     // 以下は、その横リンクからぶら下がっている縦リンクについての処理
-    const hlink = document.getElementById(hid);
-    const new_connect_pos_y = parseInt(hlink.dataset.connect_pos_y);
-    id_str_to_arr(hlink.dataset.lower_links).map(function(vid) {
+    const hlink = document.getElementById(t.hid), 
+          new_connect_pos_y = parseInt(hlink.dataset.connect_pos_y);
+    id_str_to_arr(hlink.dataset.lower_links).map(vid => {
       // 縦リンクの上端が下がることは確定しているので、そのように再描画する。
-      redraw_v_link(vid, 0, diff_y_for_hlink, 0, 0);
+      redraw_v_link(vid, 0, t.diff, 0, 0);
       // 子の位置によっては縦リンクの下端も移動するかもしれない。
-      const child_id = document.getElementById(vid).dataset.child;
-      const dist = get_rect_info(child_id).y_top - new_connect_pos_y;
+      const child_id = document.getElementById(vid).dataset.child, 
+            dist = get_rect_info(child_id).y_top - new_connect_pos_y;
       if (dist < CONFIG.min_v_link_len) {
         // 子までの距離を保てなくなるので、子とその子孫を下へ移動する。
         const diff_y_for_child = CONFIG.min_v_link_len - dist;  // 移動量
-        move_down_collectively('', child_id, diff_y_for_child);
+        move_down_collectively('', child_id, diff_y_for_child, t.hid, excluded_pids);
         // なお、この move_down_collectively の実行結果として、横リンクから
         // 子までの縦リンクの下端も移動するので、下端を動かすために
         // redraw_v_link する必要はない。
@@ -730,6 +799,7 @@ function move_down_in_rect_height_change(hid_pid_str, edge_mng, rect_is_to_be_ex
     });
   });
 }
+
 /* 「名前を修正する」メニュー。 */
 function rename_person() {
   const pid = selected_choice(document.menu.person_to_rename);
@@ -1355,13 +1425,21 @@ pid_fixed の方は位置をそのままにして、pid_moved の矩形の位置
     「要注意対象」のクラスを設定して警告を出す。
     これについても、本来どうするのが良いのかは後日考える。
 
-なお、「矩形の高さを増やす」メニューでも使える処理なので、そちらでも使う。
-更に、これを流用すれば「子孫もまとめて下に移動する」メニューを容易に作れるので
+この関数を流用すれば「子孫もまとめて下に移動する」メニューを容易に作れるので
 作ってみた。
-hid_to_ignore は、たどる必要のない無視すべき横リンクの ID を示す。
-「矩形の高さを増やす」メニューで使う場合は、高さを増やす本人とつながっている
-横リンク。 */
-function move_down_collectively(pid_fixed, pid_moved, amount, hid_to_ignore = '') {
+
+また、「矩形の高さを増やす」メニューでも使える処理なので、そちらでも使うが、
+それには少し引数を増やして、例外的な場合の扱いを変える必要がある。
+* hid_to_ignore は、たどる必要のない無視すべき横リンクの ID を示す。
+ 「矩形の高さを増やす」メニューで使う場合は、高さを増やす本人とつながっている
+ 横リンクを指定する。
+* pids_not_moved は、「横または縦のリンクをたどっているうちに、もしこの人に
+  到達してしまったら、この人自身は下へは移動しないで、この人に到達したその
+  リンクは今すぐ再描画して終わりにしてしまいましょう。そしてそこから先は、
+  もうたどらないでおきましょう」という人物の ID の配列。なぜこれが必要なのかは
+  move_down_in_rect_height_change のコメントを参照。
+*/
+function move_down_collectively(pid_fixed, pid_moved, amount, hid_to_ignore = '', pids_not_moved = []) {
   // (a) の通常処理用 (移動対象を記録する配列)
   let persons_to_move_down = [pid_moved];
   let hlinks_to_move_down = [], vlinks_to_move_down = [];
@@ -1388,8 +1466,10 @@ function move_down_collectively(pid_fixed, pid_moved, amount, hid_to_ignore = ''
     let links_str = gr.dataset.right_links + gr.dataset.left_links;
     apply_to_each_hid_pid_pair(links_str, function(cur_hid, cur_pid) {
       // 「矩形の高さを増やす」メニューで使う場合での例外処理。
-      if (cur_hid === hid_to_ignore) { return; }
-      if (cur_pid === pid_fixed) { // (d) に該当する例外的な場合
+      if (cur_hid === hid_to_ignore) { return; } // たどるべきでない横リンク。
+      if (cur_pid === pid_fixed || pids_not_moved.includes(cur_pid)) {
+        // (d) に該当する例外的な場合、または、ある人物の矩形の高さの変更に伴う
+        // 移動の際に例外的に生じる状況の場合。
         // まずこの例外的な横リンクについての情報を記録する
         // (が、この横リンクのつなぎ先は pid_fixed なので特に記録しない)。
         exceptional_hlinks.push({ hlink_id: cur_hid, 
@@ -1425,6 +1505,9 @@ function move_down_collectively(pid_fixed, pid_moved, amount, hid_to_ignore = ''
             from_which_hlink: cur_hid,
             parent1_to_move: cur_person, parent2_to_move: cur_pid });
           return;
+        } else if (pids_not_moved.includes(cur_pid)) {
+          // 「矩形の高さを増やす」メニューで使う場合での例外処理
+          redraw_v_link(v, 0, amount, 0, 0); return;
         }
         // (a) に該当する普通の場合
         push_if_not_included(persons_to_move_down, child_id);
@@ -1454,6 +1537,9 @@ function move_down_collectively(pid_fixed, pid_moved, amount, hid_to_ignore = ''
           type: 'vlink_from_parent_downward_to_given_fixed_person',
           parent_id: cur_person });
         return;
+      } else if (pids_not_moved.includes(child_id)) {
+        // 「矩形の高さを増やす」メニューで使う場合での例外処理
+        redraw_v_link(v, 0, amount, 0, 0); return;
       }
       // (a) に該当する普通の場合
       push_if_not_included(persons_to_move_down, child_id);

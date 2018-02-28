@@ -4,6 +4,7 @@
 出す (ように拡張できるが、今は単に 0 と 1 のみを使う)。*/
 const MODE = {
   func_add_person: 0,
+  func_move_down_in_rect_height_change: 0,
   func_rename_person: 0,
   func_add_h_link: 0,
   func_remove_h_link_0: 0,
