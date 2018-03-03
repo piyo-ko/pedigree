@@ -66,21 +66,28 @@ td, th {
   border: solid 1px navy;
   padding: 4pt;
 }
-tr:nth-child(2n) > td {
+tr:nth-child(3n) > td {
   background: cadetblue;
 }
-tr:nth-child(2n+1) > td {
+tr:nth-child(3n+1) > td {
   background: darkgrey;
 }
+tr:nth-child(3n+2) > td {
+  background: tan;
+}
+
 th {
   font-family: "筑紫B丸ゴシック", sans-serif;
   word-break: keep-all;
 }
-tr:nth-child(2n) > th {
+tr:nth-child(3n) > th {
   background: linear-gradient(to right, teal, powderblue 30%, cadetblue 90%, teal);
 }
-tr:nth-child(2n+1) > th {
+tr:nth-child(3n+1) > th {
   background: linear-gradient(to right, dimgray, lightgray 30%, darkgray 90%, dimgrey);
+}
+tr:nth-child(3n+2) > th {
+  background: linear-gradient(to right, peru, wheat 30%, tan 90%, peru);
 }
 #svg_backup {
   display: inline;
@@ -103,12 +110,13 @@ nav {
   text-align: right;
 }
 p.info {
-  border: 1px solid royalblue;
+  border: 1px solid peru;
+  background: wheat;
   padding: 4pt;
 }
 span.info {
   font-family: "Monaco", "Ricty Discord", "Courier New", monospace;
-  background: lightcyan;
+  background: white;
 }
 p.btn {
   padding-left: 1em;
