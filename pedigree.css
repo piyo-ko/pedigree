@@ -139,3 +139,25 @@ span.btn:hover {
   background: navy;
   color: powderblue;
 }
+
+span.badge_color.black {
+  color: black;
+}
+span.badge_color.dimgray {
+  color: dimgray;
+}
+span.badge_color.darkblue {
+  color: darkblue;
+}
+span.badge_color.crimson {
+  color: crimson;
+}
+span.badge_color.saddlebrown {
+  color: saddlebrown;
+}
+span.badge_color.purple {
+  color: purple;
+}
+span.badge_color.darkgreen {
+  color: darkgreen;
+}
