@@ -140,6 +140,26 @@ span.btn:hover {
   color: powderblue;
 }
 
+span.note_color.blue {
+  font-size: 16px;
+  color: hsl(240, 90%, 50%);
+}
+span.note_color.sage_green {
+  color: hsl(190, 55%, 40%);
+}
+span.note_color.green {
+  color: hsl(100, 90%, 30%);
+}
+span.note_color.orange {
+  color: hsl(25, 80%, 50%);
+}
+span.note_color.red {
+  color: hsl(350, 90%, 50%);
+}
+span.note_color.purple {
+  color: hsl(310, 60%, 45%);
+}
+
 span.badge_color.black {
   color: black;
 }

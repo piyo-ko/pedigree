@@ -111,7 +111,25 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 に対して、
 <input type="text" name="annotation_txt" size="20">
 という注釈の行を
-<input type="button" value="追加する" onclick="annotate()">。
+<input type="button" value="追加する" onclick="annotate()">
+(色は
+<select id="note_color" name="note_color">
+<option value="blue" selected>青</option>
+<option value="sage_green">青緑</option>
+<option value="green">緑</option>
+<option value="orange">橙</option>
+<option value="red">赤</option>
+<option value="purple">赤紫</option>
+</select>
+)。
+<br>
+色見本:
+<span class="note_color blue">■</span>
+<span class="note_color sage_green">■</span>
+<span class="note_color green">■</span>
+<span class="note_color orange">■</span>
+<span class="note_color red">■</span>
+<span class="note_color purple">■</span>
 </td>
 </tr>
 

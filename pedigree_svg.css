@@ -17,9 +17,24 @@ text {
   font-size: 24px;
   font-family: 'ヒラギノ明朝 ProN';
 }
-text.note {
+text.note, text.note.blue {
   font-size: 16px;
   fill: hsl(240, 90%, 50%);
+}
+text.note.sage_green {
+  fill: hsl(190, 55%, 40%);
+}
+text.note.green {
+  fill: hsl(100, 90%, 30%);
+}
+text.note.orange {
+  fill: hsl(25, 80%, 50%);
+}
+text.note.red {
+  fill: hsl(350, 90%, 50%);
+}
+text.note.purple {
+  fill: hsl(310, 60%, 45%);
 }
 text.num_badge {
   font-size: 16px;

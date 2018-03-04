@@ -1081,6 +1081,7 @@ function annotate() {
   const pid = selected_choice(document.menu.annotation_target);
   const note = document.menu.annotation_txt.value;
   if (note === '') { alert('注釈を入力してください'); return; }
+  const note_color = selected_choice(document.menu.note_color);
   const note_length = note.length * CONFIG.note_font_size;
   const rect_info = get_rect_info(pid);
   const txt_elt = document.getElementById(pid + 't');
@@ -1123,7 +1124,7 @@ function annotate() {
     }
   }
   const att = new Map([['id', pid + 'n' + new_note_No], ['x', x], ['y', y], 
-                       ['dx', dx], ['dy', dy], ['class', 'note']]);
+                       ['dx', dx], ['dy', dy], ['class', 'note ' + note_color]]);
   att.forEach(function(val, key) { note_elt.setAttribute(key, val); });
   add_text_node(g_elt, '  ');
   g_elt.appendChild(note_elt);
