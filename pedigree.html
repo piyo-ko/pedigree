@@ -28,9 +28,9 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 </p>
 
 <p class="btn" role="menu">
-<span class="btn" role="menuitem" onclick="show_menu('menu_person')">人物の追加・拡大・注釈追加</span>
-<span class="btn" role="menuitem" onclick="show_menu('menu_hlink')">横の関係の追加・削除</span>
-<span class="btn" role="menuitem" onclick="show_menu('menu_vlink')">縦の関係の追加・削除</span>
+<span class="btn" role="menuitem" onclick="show_menu('menu_person')">個々の人物</span>
+<span class="btn" role="menuitem" onclick="show_menu('menu_hlink')">横の関係</span>
+<span class="btn" role="menuitem" onclick="show_menu('menu_vlink')">縦の関係</span>
 <span class="btn" role="menuitem" onclick="show_menu('menu_move_person')">人物の移動</span>
 <span class="btn" role="menuitem" onclick="show_menu('menu_shift_all')">全体の移動</span>
 <span class="btn" role="menuitem" onclick="show_menu('menu_whole_size')">全体の大きさの調整</span>
@@ -215,6 +215,19 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 <input type="radio" name="horizontal_link_type2" value="double" checked id="horizontal_link_type2_double">
 <label for="horizontal_link_type2_double">二重線</label>
 で <input type="button" value="結ぶ" onclick="add_h_link_2()">。
+</td>
+</tr>
+
+<tr class="menu_hlink">
+<th>横方向に<wbr>つなぐことの可能な<wbr>相手の数を<wbr>増やす</th>
+<td>
+<select id="target_of_increase_of_hlinks" name="target_of_increase_of_hlinks"></select> の
+<input type="radio" name="target_side" value="lhs" id="target_side_lhs" checked>
+<label for="target_side_lhs">左辺</label>
+<input type="radio" name="target_side" value="rhs" id="target_side_rhs">
+<label for="target_side_rhs">右辺</label>
+につなぐことの可能な相手の数を
+<input type="button" value="増やす" onclick="increase_num_of_hlinks()">。
 </td>
 </tr>
 

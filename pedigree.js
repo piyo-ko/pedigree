@@ -62,6 +62,26 @@ class EndPointsMngr_RL {
     this.hlink_ids.push(hid);
     return(pos);
   }
+  // 現状で接続可能な横リンクの数の上限に達していなくても、強制的に、
+  // 接続可能な数を増やす。
+  // 「横リンクを足しているうちに上限に達してしまったときに自動的に上限を
+  // 増やす」という通常の動作だけでなくて、「横リンクが大量に必要なことが
+  // あらかじめわかっている人物について上限の設定を先に済ませておくこと」も
+  // できるようにしたいので、そのために設けたメソッド。こうすることで、
+  // 横リンク先の相手をどういう順で配置するかを決めて作業するのが楽になる筈。
+  // [TO DO] これを使えば既存のメソッドも少し短縮できるかな？
+  forcibly_add_free_pos() {
+    const cur_num_of_divisions = this.positions.length + 1;
+    const new_num_of_divisions = cur_num_of_divisions * 2;
+    for (let i = 0; i < this.positions.length; i++) { 
+      this.positions[i] *= 2;
+    }
+    this.positions.push(1);
+    this.positions.push(new_num_of_divisions - 1);
+    for (let i = 3; i < new_num_of_divisions - 1; i += 2) {
+      this.positions.push(i);
+    }
+  }
   // 「矩形の高さを増やす」メニューなどにより辺の長さを増やすときに使う。
   change_length(new_len) { this.edge_length = new_len; }
   which_pos_No(hid) {
@@ -352,6 +372,7 @@ window.top.onload = function () {
     m.person_to_rename, m.annotation_target, m.person_to_add_badge, 
     m.person_to_remove, 
     m.partner_1, m.partner_2, m.lhs_person, m.rhs_person, 
+    m.target_of_increase_of_hlinks, 
     m.parent_1, m.child_1, m.child_2, 
     m.target_person, m.ref_person, m.person_to_align, m.person_to_center,
     m.person_to_move_down, m.person_to_move_right, m.person_to_move_left);
@@ -386,6 +407,14 @@ function remove_val_from_array(arr, val) {
 /* [汎用モジュール] プルダウンリストで選択されている項目の value を返す。 */
 function selected_choice(select_elt) {
   return(select_elt.options[select_elt.selectedIndex].value);
+}
+
+/* [汎用モジュール] プルダウンリストで、指定された値の選択肢を選択する。 */
+function select_specified_option(sel_elt, val) {
+  const L = sel_elt.options.length;
+  for (let i = 0; i < L; i++) {
+    if (sel_elt.options[i].value === val) { sel_elt.selectedIndex = i; return; }
+  }
 }
 
 /* [汎用モジュール] ラジオボタンで選択されている項目の value を返す。 */
@@ -1739,6 +1768,41 @@ function redraw_h_link(hid, start_dx, end_dx, dy) {
   const hlink = document.getElementById(hid), dat = hlink.dataset;
   draw_h_link(hlink, parseInt(dat.start_x) + start_dx, 
     parseInt(dat.end_x) + end_dx, parseInt(dat.y) + dy);
+}
+
+/* 「横方向につなぐことの可能な相手の数を増やす」メニュー。 */
+function increase_num_of_hlinks() {
+  const pid = selected_choice(document.menu.target_of_increase_of_hlinks);
+  const target_side = selected_radio_choice(document.menu.target_side);
+
+  const target_name = name_str(pid);
+  let msg = target_name + ' (' + pid + ') の';
+  msg += (target_side === 'lhs') ? '左辺' : '右辺';
+  msg += 'につなぐことの可能な人数は、現在、';
+  const rect_mng = P_GRAPH.find_mng(pid);
+  const edge_mng = (target_side === 'lhs') ? rect_mng.left_side : rect_mng.right_side;
+  const cur_num_of_possible_hlinks = edge_mng.positions.length;
+  msg += cur_num_of_possible_hlinks + '人までです。\n';
+
+  const cur_num_of_used_hlinks = edge_mng.next_position_idx;
+  msg += 'すでに' + cur_num_of_used_hlinks + '人がつながれています。\n';
+
+  const cur_num_of_divisions = cur_num_of_possible_hlinks + 1;
+  const new_num_of_divisions = cur_num_of_divisions * 2;
+  const min_edge_len = CONFIG.min_interval_between_h_links * new_num_of_divisions;
+  const cur_edge_len = edge_mng.edge_length;
+  if (cur_edge_len < min_edge_len) {
+    alert(msg + '今の矩形の高さではこれ以上の人数をつなげられません。\n矩形の高さを増やしてから再挑戦してください。\n');
+    select_specified_option(document.menu.person_to_be_extended, pid);
+    show_menu('menu_person');
+    return;
+  }
+  const new_num_of_possible_hlinks = new_num_of_divisions - 1;
+  const res = confirm(msg + new_num_of_possible_hlinks + '人までつなげるようにしたい場合は「OK」を選択してください。');
+  if (!res) { return; }
+
+  edge_mng.forcibly_add_free_pos();
+  backup_svg(target_name + 'の横方向につなげる相手の数を増やす');
 }
 
 /* 「横の関係を削除する」メニュー */
