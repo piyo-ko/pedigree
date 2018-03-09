@@ -118,6 +118,23 @@ span.info {
   font-family: "Monaco", "Ricty Discord", "Courier New", monospace;
   background: white;
 }
+#detailed_info_about_links {
+  margin-left: 1em;
+  margin-right: 1em;
+  border: 1px solid peru;
+  padding: 0;
+  max-height: 15em;
+  overflow: auto;
+}
+#detailed_info_about_links ul {
+  margin: 0;
+  display: inline;
+}
+#detailed_info_about_links dt {
+  font-family: "筑紫B丸ゴシック", sans-serif;
+  text-decoration: underline;
+}
+
 p.btn {
   padding-left: 1em;
   padding-right: 1em;

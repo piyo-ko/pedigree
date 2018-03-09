@@ -20,12 +20,15 @@
 
 <p class="info">
 ポインタの位置にある人物は、
-ID が <span id="info_pid" class="info">&nbsp;</span> で、
-名前が <span id="info_name" class="info">&nbsp;</span> で、
+ID が <span id="info_pid" class="info"></span> で、
+名前が <span id="info_name" class="info"></span> で、
 X 座標の範囲が <span class="info">[<span id="info_x_start"></span>, <span id="info_x_end"></span>]</span> で、
 その中心が <span id="info_x_mid" class="info">&nbsp;</span> で、
 Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span id="info_y_end"></span>]</span> です。
+<input type="button" value="縦横の関係の詳細" onclick="show_detailed_info_about_links()">
 </p>
+
+<div id="detailed_info_about_links"></div>
 
 <p class="btn" role="menu">
 <span class="btn" role="menuitem" onclick="show_menu('menu_person')">個々の人物</span>

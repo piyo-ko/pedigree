@@ -3063,6 +3063,76 @@ function show_info(pid, pname) {
   });
 }
 
+/* 座標情報が表示されている人物に関する縦横のリンクの詳細一覧を表示する。
+横リンク・縦リンクのセレクタに選択肢として表示している文字列が、提供したい
+情報の内容とちょうど合致しているので、セレクタの表示文字列をとってきて
+それを表示する。 */
+function show_detailed_info_about_links() {
+  const pid = document.getElementById('info_pid').textContent;
+
+  // 初期状態でまだ誰に対してもマウスオーバしていない場合は何もせず終了。
+  if (pid === '') { return; }
+
+  const p_name = document.getElementById('info_name').textContent;
+  const g = document.getElementById(pid + 'g');
+  const hid_pid_pairs = g.dataset.left_links + g.dataset.right_links;
+  const upper_vids = g.dataset.upper_links, lower_vids = g.dataset.lower_links;
+
+  // セレクタにおいて値が id に一致する選択肢の表示文字列を求める。
+  function get_opt_txt(sel, id) {
+    const L = sel.options.length;
+    for (let i = 0; i < L; i++) {
+      if (sel.options[i].value === id) {
+        return('<dd>' + sel.options[i].textContent + '</dd>\n'); 
+      }
+    }
+    return('error!'); // ありえない筈だが、一応つけておく。
+  }
+
+  let child_info_txt = '';
+
+  let hlink_info = '<dt>横の関係: </dt>';
+  if (hid_pid_pairs === '') {
+    hlink_info += '<dd>なし</dd>\n';
+  } else {
+    apply_to_each_hid_pid_pair(hid_pid_pairs, function(hid, partner_pid) {
+      hlink_info += get_opt_txt(HLINK_SELECTORS[0], hid);
+      const vids = document.getElementById(hid).dataset.lower_links;
+      if (vids === '') { return; }
+      id_str_to_arr(vids).map(vid => {
+        child_info_txt += get_opt_txt(VLINK_SELECTORS[0], vid);
+      });
+    });
+  }
+
+  let parent_info = '<dt>上側との縦の関係: </dt>';
+  if (upper_vids === '') {
+    parent_info += '<dd>なし</dd>\n';
+  } else {
+    id_str_to_arr(upper_vids).map(vid => {
+      parent_info += get_opt_txt(VLINK_SELECTORS[0], vid);
+    });
+  }
+
+  let child_info = '<dt>下側との縦の関係: </dt>';
+  if (lower_vids === '' && child_info_txt === '') {
+    child_info += '<dd>なし</dd>\n';
+  } else {
+    child_info += child_info_txt;
+    id_str_to_arr(lower_vids).map(vid => {
+      child_info += get_opt_txt(VLINK_SELECTORS[0], vid);
+    });
+  }
+
+  const div_elt = document.getElementById('detailed_info_about_links');
+  div_elt.innerHTML = '📝 [' + pid + '] ' + p_name + 'についての詳細情報　' + 
+    '<input type="button" value="しまう" onclick="hide_detailed_info()">\n' + 
+    '\n<dl>\n' + parent_info + hlink_info + child_info + '</dl>\n';
+}
+function hide_detailed_info() {
+  document.getElementById('detailed_info_about_links').innerHTML = '';
+}
+
 /* 関連機能別にグループ化したメニューを用意し、グループを tr 要素の class で
 示している。グループ単位で入力フォームの表示・非表示を切り換える */
 function show_menu(menu_group) {
