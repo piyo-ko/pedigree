@@ -15,16 +15,21 @@ select > option {
 }
 h1 {
   font-size: large;
-  font-family: "筑紫B丸ゴシック", sans-serif;
   text-align: center;
   color: white;
   background: teal;
+}
+[lang="ja"] h1 {
+  font-family: "筑紫B丸ゴシック", sans-serif;
+}
+[lang="en"] h1 {
+  font-family: Luminari, Skia, sans-serif;
 }
 code {
   background: lightcyan;
   color: darkslategray;
   border: 1px solid royalblue;
-  font-family: "Ricty Discord", "Courier New", monospace;
+  font-family: "Ricty Discord", "Courier New", Monaco, monospace;
   white-space: pre;
   margin: 4pt;
 }
@@ -62,6 +67,7 @@ table {
   border-collapse: collapse;
   margin: 1em;
 }
+
 td, th {
   border: solid 1px navy;
   padding: 4pt;
@@ -77,8 +83,13 @@ tr:nth-child(3n+2) > td {
 }
 
 th {
-  font-family: "筑紫B丸ゴシック", sans-serif;
   word-break: keep-all;
+}
+[lang="ja"] th {
+  font-family: "筑紫B丸ゴシック", sans-serif;
+}
+[lang="en"] th {
+  font-family: Optima, Skia, sans-serif;
 }
 tr:nth-child(3n) > th {
   background: linear-gradient(to right, teal, powderblue 30%, cadetblue 90%, teal);
@@ -89,6 +100,12 @@ tr:nth-child(3n+1) > th {
 tr:nth-child(3n+2) > th {
   background: linear-gradient(to right, peru, wheat 30%, tan 90%, peru);
 }
+
+td ul {
+  margin: 0;
+  padding-left: 1em;
+}
+
 #svg_backup {
   display: inline;
   list-style: none;
@@ -115,7 +132,7 @@ p.info {
   padding: 4pt;
 }
 span.info {
-  font-family: "Monaco", "Ricty Discord", "Courier New", monospace;
+  font-family: "Monaco", "Ricty Discord", "Courier New", Monaco, monospace;
   background: white;
 }
 #detailed_info_about_links {
@@ -130,8 +147,13 @@ span.info {
   margin: 0;
   display: inline;
 }
-#detailed_info_about_links dt {
+[lang="ja"] #detailed_info_about_links dt {
   font-family: "筑紫B丸ゴシック", sans-serif;
+  text-decoration: underline;
+}
+[lang="en"] #detailed_info_about_links dt {
+  font-family: Optima, Skia, sans-serif;
+  font-weight: bold;
   text-decoration: underline;
 }
 
@@ -158,7 +180,6 @@ span.btn:hover {
 }
 
 span.note_color.blue {
-  font-size: 16px;
   color: hsl(240, 90%, 50%);
 }
 span.note_color.sage_green {

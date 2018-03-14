@@ -54,8 +54,11 @@ class EndPointsMngr_RL {
   next_position(hid) { // 引数は、更新前の「次の位置」につなぐべき横リンクの ID
     const free_pos_exists = this.ensure_free_pos();
     if (!free_pos_exists) {
-      alert('この長さの辺にこれ以上多くの横リンクをつなぐことはできません');
-      return(-1);
+      const a = {
+        ja: 'この長さの辺にこれ以上多くの横リンクをつなぐことはできません',
+        en: 'This edge is too short to accommodate any more horizontal links.'
+      };
+      alert(a[LANG]);  return(-1);
     }
     const pos = Math.floor( this.edge_length * this.positions[this.next_position_idx] / (this.positions.length + 1) );
     this.next_position_idx++;
@@ -361,13 +364,24 @@ const PERSON_SELECTORS = new Array();
 const HLINK_SELECTORS = new Array();
 const VLINK_SELECTORS = new Array();
 
+/* ページの言語。日本語がデフォルト。英語 (en) のページもある。 */
+let LANG = 'ja';
+
 /* ページのロード (リロードも含む) の際に行う初期化。 */
 window.top.onload = function () {
+  // ページの言語を最初に読み込んで設定する。
+  if (document.documentElement.hasAttribute('lang')) {
+    LANG = document.documentElement.getAttribute('lang');
+  }
   const m = document.menu;
-  P_GRAPH.reset_all();  m.reset();
-  print_current_svg_size();  backup_svg('初期状態', false);
+  P_GRAPH.reset_all();
+  m.reset();
+  print_current_svg_size();
+  const b = {ja: '初期状態', en: 'initial state'};
+  backup_svg(b[LANG], false);
   // ページをロードしてからでないと、フォーム要素は参照できない (エラーになる)
-  // ので、ここで PERSON_SELECTORSを設定する。
+  // ので、ここで PERSON_SELECTORS と HLINK_SELECTORS と VLINK_SELECTORS を
+  // 設定する。
   PERSON_SELECTORS.push(m.position_ref, m.person_to_be_extended, 
     m.person_to_rename, m.annotation_target, m.person_to_add_badge, 
     m.person_to_remove, 
@@ -518,7 +532,10 @@ function add_person() {
   const new_personal_id = 'p' + P_GRAPH.next_person_id++; // IDを生成
   // 入力内容を読み込む
   let new_personal_name = document.menu.new_personal_name.value;
-  if (new_personal_name === '') { alert('名前を入力してください'); return; }
+  if (new_personal_name === '') { 
+    const a = {ja: '名前を入力してください', en: 'Enter a name.' };
+    alert(a[LANG]);  return;
+  }
   let verticalize = false; // デフォルト値
   if (document.menu.verticalize.checked) {
     verticalize = true;
@@ -615,7 +632,9 @@ function add_person() {
   if (MODE.func_add_person > 0) {
     console.log('add_person() ends.');  P_GRAPH.print();
   }
-  backup_svg(new_personal_name + 'を追加');
+  const b = {ja: new_personal_name + 'を追加', 
+             en: 'adding ' + new_personal_name};
+  backup_svg(b[LANG]);
   document.menu.new_personal_name.value = ''; // 最後に名前の入力欄をクリアする
 }
 
@@ -627,7 +646,9 @@ function remove_person() {
   const h_links = g_dat.right_links + g_dat.left_links, 
         v_links = g_dat.upper_links + g_dat.lower_links;
   if (h_links !== '' || v_links !== '') {
-    const ok = confirm('この人物につながっている線があります。この人物を線ごと削除する場合は「OK」を選んでください');
+    const m = {ja: 'この人物につながっている線があります。この人物を線ごと削除する場合は「OK」を選んでください',
+               en: 'One or more links connected to this person exist.  Select [OK] only when you want to remove the links as well as this person.'};
+    const ok = confirm(m[LANG]);
     if (!ok) { return; }
   }
   id_str_to_arr(v_links).map(vid => { remove_v_link_0(vid); });
@@ -639,7 +660,9 @@ function remove_person() {
   document.getElementById('pedigree').removeChild(g);
   PERSON_SELECTORS.map(sel => { remove_choice(sel, pid); });
   remove_val_from_array(P_GRAPH.persons, pid);
-  backup_svg(name_of_this_person + 'を削除');
+  const b = {ja: name_of_this_person + 'を削除', 
+             en: 'removing ' + name_of_this_person};
+  backup_svg(b[LANG]);
 }
 
 /* 上辺は固定して下辺を下にずらすことで、矩形の高さを増やす。
@@ -793,7 +816,7 @@ function move_down_in_rect_height_change(pid_for_this_rect, rect_is_to_be_extend
   targets_to_move.map(t => {
     if (MODE.func_move_down_in_rect_height_change > 0) {
       console.log('move_down_collectively(' + pid_for_this_rect + ', ' + 
-        t.pid + '(' + name_str(t.pid) + '), ' + t.diff + ', ' + t.hid + 
+        t.pid + ' (' + name_str(t.pid) + '), ' + t.diff + ', ' + t.hid + 
         ', [' + excluded_pids + '])');
     }
     // 右辺または左辺でつながっている相手 (とさらにその先の関係者たち) を下に移動。
@@ -833,7 +856,10 @@ function move_down_in_rect_height_change(pid_for_this_rect, rect_is_to_be_extend
 function rename_person() {
   const pid = selected_choice(document.menu.person_to_rename);
   let new_name = document.menu.renamed_as.value;
-  if (new_name === '') { alert('修正後の名前を入力してください'); return; }
+  if (new_name === '') {
+    const a = {ja: '修正後の名前を入力してください', en: 'Enter a new name.'}
+    alert(a[LANG]); return;
+  }
   const shrink_rect_if_name_shortened
     = document.menu.shrink_rect_if_name_shortened.checked;
 
@@ -903,7 +929,8 @@ function rename_person() {
           txt.setAttribute('textLength', new_textLength);
           txt.textContent = new_name;
         } else { // 常に true のはずだが一応。
-          alert('エラーです。ごめんなさい。');  return;
+          const a = {ja: 'エラーです。ごめんなさい。', en: 'Unexpected error.'};
+          alert(a[LANG]);  return;
         }
       }
     } else { // 名前は短くなるが矩形の大きさはそのままにしたい場合
@@ -939,8 +966,11 @@ function rename_person() {
         txt.setAttribute('textLength', new_textLength);
         txt.textContent = new_name;
       } else { // 右辺からリンクしている相手が近すぎる場合
-        alert('矩形の幅を拡大できないので、長い名前に変更できませんでした。');
-        return;
+        const a = {
+          ja: '矩形の幅を拡大できないので、長い名前に変更できませんでした。',
+          en: 'Sorry, the renaming failed because the new name is too long to keep sufficient space between this person and his/her partner(s) on the right-hand side.  Retry renaming, after moving the(se) partner(s) to the right farther away from this person.'
+        };
+        alert(a[LANG]);  return;
       }
     }
   }
@@ -955,14 +985,20 @@ function rename_person() {
   function rename_hlink_choice(on_rhs) {
     const hid_pid_pairs = on_rhs ? g_dat.right_links : g_dat.left_links;
     apply_to_each_hid_pid_pair(hid_pid_pairs, function(hid, partner) {
-      const parents_str = on_rhs ? new_name + 'と' + name_str(partner) : 
-                                   name_str(partner) + 'と' + new_name;
-      HLINK_SELECTORS.map(sel => { rename_choice(sel, hid, parents_str); });
+      const parents_str_ja = on_rhs ? new_name + 'と' + name_str(partner) : 
+                                      name_str(partner) + 'と' + new_name;
+      const parents_str_en = on_rhs ? 
+              'between ' + new_name + ' and ' + name_str(partner) : 
+              'between ' + name_str(partner) + ' and ' + new_name;
+      const parents_str = {ja: parents_str_ja, en: parents_str_en};
+      HLINK_SELECTORS.map(sel => { rename_choice(sel, hid, parents_str[LANG]); });
       const vids = id_str_to_arr(document.getElementById(hid).dataset.lower_links);
       vids.map(function (vid) { // 横リンクにぶら下がっている縦リンクのそれぞれ
         const child_str = name_str(document.getElementById(vid).dataset.child);
         VLINK_SELECTORS.map(sel => { 
-          rename_choice(sel, vid, parents_str + 'から' + child_str + 'へ');
+          let op_str = {ja: parents_str + 'から' + child_str + 'へ',
+                        en: 'from ' + parents_str + ' to ' + child_str};
+          rename_choice(sel, vid, op_str[LANG]);
         });
       });
     });
@@ -976,18 +1012,22 @@ function rename_person() {
     const v_elt_dat = document.getElementById(vid).dataset;
     const parent1 = v_elt_dat.parent1, parent2 = v_elt_dat.parent2;
     const str = (parent2 === undefined || parent2 === null || parent2 === '') ?
-      name_str(parent1) + 'から' + new_name + 'へ' :
-      name_str(parent1) + 'と' + name_str(parent2) + 'から' + new_name + 'へ';
-    VLINK_SELECTORS.map(sel => { rename_choice(sel, vid, str); });
+      {ja: name_str(parent1) + 'から' + new_name + 'へ',
+       en: 'from ' + name_str(parent1) + ' to ' + new_name } :
+      {ja: name_str(parent1) + 'と' + name_str(parent2) + 'から' + new_name + 'へ',
+       en: 'from ' + name_str(parent1) + ' and ' + name_str(parent2) + ' to ' + new_name};
+    VLINK_SELECTORS.map(sel => { rename_choice(sel, vid, str[LANG]); });
   });
   // 自分と子との間の縦リンクを選択するための表示名も変更
   id_str_to_arr(g_dat.lower_links).map(function(vid) {
     const child = document.getElementById(vid).dataset.child;
-    const str = new_name + 'から' + name_str(child) + 'へ';
-    VLINK_SELECTORS.map(sel => { rename_choice(sel, vid, str); });
+    const str = {ja: new_name + 'から' + name_str(child) + 'へ',
+                 en: 'from ' + new_name + ' to ' + name_str(child)};
+    VLINK_SELECTORS.map(sel => { rename_choice(sel, vid, str[LANG]); });
   });
 
-  backup_svg(new_name + 'に改名');  // ダウンロードリンクを作る。
+  const b = {ja: new_name + 'に改名', en: 'renaming to ' + new_name };
+  backup_svg(b[LANG]);  // ダウンロードリンクを作る。
 }
 
 /* 左辺は固定して右辺を右にずらすことで、矩形の幅を増やす。 */
@@ -1013,15 +1053,18 @@ function change_width(pid, new_width, width_is_to_be_increased) {
     // 近くに誰かがつながっていたら、矩形の幅は増やせない。
     const nearest_allowable_x = cur_rect_info.x_left + 
                                 new_width + CONFIG.min_h_link_len;
-    let extendable = true, err_msg = '';  // 初期化
+    let extendable = true, err_msg = {ja: '', en: ''};  // 初期化
     apply_to_each_hid_pid_pair(g.dataset.right_links, function(hid, partner) {
       if (get_rect_info(partner).x_left < nearest_allowable_x) {
         extendable = false;
-        err_msg += '\n(' + name_str(partner) + 'が近すぎます)';
+        err_msg.ja += '\n(' + name_str(partner) + 'が近すぎます)';
+        err_msg.en += '\n(' + name_str(partner) + 'is too close to this person.)';
       }
     });
     if (!extendable) {
-      alert('右側につながっている人物が近すぎるので矩形の幅を拡大できません。右側の人物をもっと離してください。' + err_msg);
+      err_msg.ja = '右側につながっている人物が近すぎるので矩形の幅を拡大できません。右側の人物をもっと離してください。' + err_msg.ja;
+      err_msg.en = 'Sorry, the width of this person cannot be extended because his/her partner(s) on the right-hand side is/are too close to him/her.  Move the(se) partner(s) to the right farther away from this person.' + err_msg.en;
+      alert(err_msg[LANG]);
       return(false);
     }
   }
@@ -1102,14 +1145,19 @@ function extend_rect() {
     txt.setAttribute('dy', cur_dy + CONFIG.font_size);
   }
 
-  backup_svg(txt.textContent + 'の矩形の高さを増やす');
+  const b = {ja: txt.textContent + 'の矩形の高さを増やす', 
+             en: 'heightening the rectangle of ' + txt.textContent};
+  backup_svg(b[LANG]);
 }
 
 /* 「注釈の行を追加する」メニュー。 */
 function annotate() {
   const pid = selected_choice(document.menu.annotation_target);
   const note = document.menu.annotation_txt.value;
-  if (note === '') { alert('注釈を入力してください'); return; }
+  if (note === '') {
+    const a = {ja: '注釈を入力してください', en: 'Enter a note.'};
+    alert(a[LANG]); return;
+  }
   const note_color = selected_choice(document.menu.note_color);
   const note_length = note.length * CONFIG.note_font_size;
   const rect_info = get_rect_info(pid);
@@ -1128,7 +1176,11 @@ function annotate() {
   if (writing_mode === 'tb') { // 縦書き。
     add_text_node(note_elt, tb_mode_str(note));
     x = rect_info.x_left - (CONFIG.note_font_size + CONFIG.note_margin) * (new_note_No + 1);
-    if (x < 0) { alert('左からはみ出るので注釈をつけられません'); return; }
+    if (x < 0) {
+      const a = {ja: '左からはみ出るので注釈をつけられません',
+                 en: 'Annotation failed because this new note would be out of the left edge of the outer frame of the whole diagram.'};
+      alert(a[LANG]); return;
+    }
     dx = Math.floor(CONFIG.note_font_size / 2);
     dy = 0;
     y = y_of_tb_note(pid, note_length);
@@ -1158,7 +1210,9 @@ function annotate() {
   add_text_node(g_elt, '  ');
   g_elt.appendChild(note_elt);
   add_text_node(g_elt, '\n');
-  backup_svg(txt_elt.textContent + 'に注釈を追加');
+  const b = {ja: txt_elt.textContent + 'に注釈を追加', 
+             en: 'annotating ' + txt_elt.textContent};
+  backup_svg(b[LANG]);
   document.menu.annotation_txt.value = ''; // 最後に注釈入力欄をクリアする
 }
 
@@ -1167,7 +1221,11 @@ function annotate() {
 function y_of_tb_note(pid, note_len) {
   const txt_elt = document.getElementById(pid + 't');
   const writing_mode = txt_elt.getAttribute('writing-mode');
-  if (writing_mode !== 'tb') { alert('これは縦書き専用です'); return(false); }
+  if (writing_mode !== 'tb') {
+    const a = {ja: 'これは縦書き専用です', 
+               en: 'This function should be used only for the top-to-bottom writing mode.'};
+    alert(a[LANG]); return(false);
+  }
 
   const rect_info = get_rect_info(pid);
   const mng = P_GRAPH.find_mng(pid);
@@ -1186,7 +1244,11 @@ function y_of_tb_note(pid, note_len) {
 function x_of_lr_note(pid, note_len) {
   const txt_elt = document.getElementById(pid + 't');
   const writing_mode = txt_elt.getAttribute('writing-mode');
-  if (writing_mode === 'tb') { alert('これは横書き専用です'); return(false); }
+  if (writing_mode === 'tb') {
+    const a = {ja: 'これは横書き専用です', 
+               en: 'This function should be used only for the left-to-right (or right-to-left) writing mode.'};
+    alert(a[LANG]); return(false);
+  }
 
   const rect_info = get_rect_info(pid);
   const mng = P_GRAPH.find_mng(pid);
@@ -1248,7 +1310,9 @@ function relocate_lr_notes(pid) {
 function add_num_badge() {
   const badge_num = parseInt(document.menu.badge_num.value);
   if (isNaN(badge_num) || ! (0 <= badge_num && badge_num <= 999)) {
-    alert('0 から 999 までの数を指定してください'); return;
+    const a = {ja: '0 から 999 までの数を指定してください',
+               en: 'Enter an integer from 0 to 999 inclusive.'};
+    alert(a[LANG]); return;
   }
   document.menu.badge_num.value = ''; // 値を読み終わったらクリアしておく
   const badge_pos = selected_radio_choice(document.menu.badge_pos);
@@ -1297,7 +1361,9 @@ function add_num_badge() {
   // text 要素を追加する
   add_text_node(g, '  ');  g.appendChild(txt);  add_text_node(g, '\n');
 
-  backup_svg(name_str(pid) + 'にバッジをつける');
+  const b = {ja: name_str(pid) + 'にバッジをつける', 
+             en: 'badging ' + name_str(pid)};
+  backup_svg(b[LANG]);
 }
 
 /* 「横の関係を追加する」メニュー。 */
@@ -1309,9 +1375,15 @@ function add_h_link() {
   add_h_link_0(p1_id, p2_id, link_type);
 }
 function add_h_link_0(p1_id, p2_id, link_type) {
-  if (p1_id === p2_id) { alert('同一人物を指定しないでください'); return; }
+  if (p1_id === p2_id) {
+    const a = {ja: '同一人物を指定しないでください',
+               en: 'Do not select the same person in the two selectors.'};
+    alert(a[LANG]); return;
+  }
   if (already_h_linked(p1_id, p2_id)) {
-    alert('もう横線でつないである組み合わせです。'); return;
+    const a = {ja: 'もう横線でつないである組み合わせです。',
+               en: 'The selected two persons are already linked to each other.'};
+    alert(a[LANG]); return;
   }
 
   // 対応する二つの矩形の範囲を求める
@@ -1324,9 +1396,11 @@ function add_h_link_0(p1_id, p2_id, link_type) {
     r1_is_left = false; // 矩形 r1 が右にあり、矩形 r2 が左にある。
   } else {
     console.log('error in add_h_link():');
-    console.log('1人目: (' + r1.x_left + ',' + r1.y_top + ') - (' + r1.x_right + ',' + r1.y_bottom + ')');
-    console.log('2人目: (' + r2.x_left + ',' + r2.y_top + ') - (' + r2.x_right + ',' + r2.y_bottom + ')');
-    alert('二人の矩形が重なっているか、矩形の間がくっつきすぎです。'); return;
+    console.log('1st person: (' + r1.x_left + ',' + r1.y_top + ') - (' + r1.x_right + ',' + r1.y_bottom + ')');
+    console.log('2nd person: (' + r2.x_left + ',' + r2.y_top + ') - (' + r2.x_right + ',' + r2.y_bottom + ')');
+    const a = {ja: '二人の矩形が重なっているか、矩形の間がくっつきすぎです。',
+               en: 'The rectangles of the selected two persons (maybe partially) overlap or they are too close to each other.'};
+    alert(a[LANG]); return;
   }
 
   // 横方向のリンクを追加する余地 (辺上の空き場所) があるかどうかをチェックする
@@ -1339,7 +1413,9 @@ function add_h_link_0(p1_id, p2_id, link_type) {
       free_pos_found(p1_id, 'left') && free_pos_found(p2_id, 'right');
   }
   if (! can_add_link) {
-    alert('横方向のリンクが既に多すぎる人を指定したのでエラーです。'); return;
+    const a = {ja: '横方向のリンクが既に多すぎる人を指定したのでエラーです。',
+               en: 'It is not allowed to add a new link to a person to whom too many partners are already linked.  There is no space for accommodating a new link.'};
+    alert(a[LANG]); return;
   }
 
   // ここにくるのは、リンクを追加して良い場合。
@@ -1387,9 +1463,13 @@ function add_h_link_0(p1_id, p2_id, link_type) {
 
   // 横リンクの削除メニューと縦リンクの追加メニューのプルダウンリストに
   // 選択肢を追加する
-  const t1 = name_str(p1_id), t2 = name_str(p2_id);
-  const displayed_str = r1_is_left ? (t1 + 'と' + t2) : (t2 + 'と' + t1);
-  HLINK_SELECTORS.map(sel => { add_selector_option(sel, hid, displayed_str); });
+  const t_left = r1_is_left ? name_str(p1_id) : name_str(p2_id),
+        t_right = r1_is_left ? name_str(p2_id) : name_str(p1_id),
+        displayed_str = {ja: t_left + 'と' + t_right, 
+                         en: 'between ' + t_left + ' and ' + t_right};
+  HLINK_SELECTORS.map(sel => { 
+    add_selector_option(sel, hid, displayed_str[LANG]); 
+  });
   select_dummy_options(); // ダミーの人物を明示的に選択しておく
 
   // 右側にある矩形の左辺にある (かもしれない) 縦書き注釈の位置を決め直す。
@@ -1402,7 +1482,9 @@ function add_h_link_0(p1_id, p2_id, link_type) {
   if (MODE.func_add_h_link > 0) {
     console.log('add_h_link() ends.');  P_GRAPH.print();
   }
-  backup_svg(displayed_str + 'の間の横の関係を追加');
+  const b = {ja: displayed_str_ja + 'の間の横の関係を追加',
+             en: 'adding a horizontal link between ' + displayed_str_en};
+  backup_svg(b[LANG]);
 }
 
 /* 「横の関係を追加する」メニューのための部品。
@@ -1679,11 +1761,15 @@ function set_pos_choices(person_sel_id, edge_sel_id, is_change_on_right_edge) {
 function add_h_link_2() {
   const lhs_person_id = selected_choice(document.menu.lhs_person);
   if (lhs_person_id === 'dummy') {
-    alert('左側の人物を指定してください');  return;
+    const a = {ja: '左側の人物を指定してください',
+               en: 'Select the person on the left-hand side.'};
+    alert(a[LANG]);  return;
   }
   const rhs_person_id = selected_choice(document.menu.rhs_person);
   if (rhs_person_id === 'dummy') {
-    alert('右側の人物を指定してください');  return;
+    const a = {ja: '右側の人物を指定してください',
+               en: 'Select the person on the right-hand side.'};
+    alert(a[LANG]);  return;
   }
   // 左と右の指定が妥当か確認する。
   const lhs_rect = get_rect_info(lhs_person_id);
@@ -1693,9 +1779,13 @@ function add_h_link_2() {
       ': [' + lhs_rect.x_left + ', ' + lhs_rect.x_right + ']');
     console.log('[' + rhs_person_id + '] ' + name_str(rhs_person_id) +
       ': [' + rhs_rect.x_left + ', ' + rhs_rect.x_right + ']');
-    alert('左右が逆、あるいは、二人の矩形が重なっています');  return;
+    const a = {ja: '左右が逆、あるいは、二人の矩形が重なっています',
+               en: 'The person actually positioned on the right-hand side is incorrectly selected as the left-hand side one (or vice versa), or two rectangles (maybe partially) overlap.'};
+    alert(a[LANG]);  return;
   } else if (lhs_rect.x_right + CONFIG.min_h_link_len > rhs_rect.x_left) {
-    alert('矩形の間がくっつきすぎです');  return;
+    const a = {ja: '矩形の間がくっつきすぎです', 
+               en: 'Two rectangles are too close to each other.'};
+    alert(a[LANG]);  return;
   }
   // ここに来るのは横リンクを追加して良い場合のみ。
   // ユーザによる位置の指定を、人物の矩形の辺を管理するオブジェクトに反映させる。
@@ -1776,46 +1866,61 @@ function increase_num_of_hlinks() {
   const target_side = selected_radio_choice(document.menu.target_side);
 
   const target_name = name_str(pid);
-  let msg = target_name + ' (' + pid + ') の';
-  msg += (target_side === 'lhs') ? '左辺' : '右辺';
-  msg += 'につなぐことの可能な人数は、現在、';
+  let msg = {ja: '', en: ''};
+  msg.ja = target_name + ' (' + pid + ') の';
+  msg.ja += (target_side === 'lhs') ? '左辺' : '右辺';
+  msg.ja += 'につなぐことの可能な人数は、現在、';
+  msg.en = 'The maximum (allowable) number of partners connectable to the ';
+  msg.en += (target_side === 'lhs') ? 'left' : 'right';
+  msg.en += ' edge of ' + target_name + ' (' + pid + ') is now ';
   const rect_mng = P_GRAPH.find_mng(pid);
   const edge_mng = (target_side === 'lhs') ? rect_mng.left_side : rect_mng.right_side;
   const cur_num_of_possible_hlinks = edge_mng.positions.length;
-  msg += cur_num_of_possible_hlinks + '人までです。\n';
+  msg.ja += cur_num_of_possible_hlinks + '人までです。\n';
+  msg.en += cur_num_of_possible_hlinks + '.\n';
 
   const cur_num_of_used_hlinks = edge_mng.next_position_idx;
-  msg += 'すでに' + cur_num_of_used_hlinks + '人がつながれています。\n';
+  msg.ja += 'すでに' + cur_num_of_used_hlinks + '人がつながれています。\n';
+  msg.en += cur_num_of_used_hlinks + ' partner(s) is/are currently connected.\n';
 
   const cur_num_of_divisions = cur_num_of_possible_hlinks + 1;
   const new_num_of_divisions = cur_num_of_divisions * 2;
   const min_edge_len = CONFIG.min_interval_between_h_links * new_num_of_divisions;
   const cur_edge_len = edge_mng.edge_length;
   if (cur_edge_len < min_edge_len) {
-    alert(msg + '今の矩形の高さではこれ以上の人数をつなげられません。\n矩形の高さを増やしてから再挑戦してください。\n');
+    const a = {ja: msg.ja + '今の矩形の高さではこれ以上の人数をつなげられません。\n矩形の高さを増やしてから再挑戦してください。\n', 
+               en: msg.en + 'The height of this rectangular cannot accommodate any more horizontal links to connect partners.\nRetry this menu after increasing the height.\n'};
+    alert(a[LANG]);
     select_specified_option(document.menu.person_to_be_extended, pid);
     show_menu('menu_person');
     return;
   }
   const new_num_of_possible_hlinks = new_num_of_divisions - 1;
-  const res = confirm(msg + new_num_of_possible_hlinks + '人までつなげるようにしたい場合は「OK」を選択してください。');
+  const conf_msg = {ja: msg.ja + new_num_of_possible_hlinks + '人までつなげるようにしたい場合は「OK」を選択してください。',
+                    en: msg.en + 'Select [OK] if you decide to increase the number of partners connectable to this person to ' + new_num_of_possible_hlinks + '.'};
+  const res = confirm(conf_msg[LANG]);
   if (!res) { return; }
 
   edge_mng.forcibly_add_free_pos();
-  backup_svg(target_name + 'の横方向につなげる相手の数を増やす');
+  const b = {ja: target_name + 'の横方向につなげる相手の数を増やす',
+             en: 'increasing the number of partners connectable to ' + target_name};
+  backup_svg(b[LANG]);
 }
 
 /* 「横の関係を削除する」メニュー */
 function remove_h_link() {
   const hlink_id = selected_choice(document.menu.hlink_to_remove);
   remove_h_link_0(hlink_id);
-  backup_svg('横の関係を削除');
+  const b = {ja: '横の関係を削除', en: 'removing a horizontal link'};
+  backup_svg(b[LANG]);
 }
 function remove_h_link_0(hlink_id) {
   const hlink_elt = document.getElementById(hlink_id);
   const lower_links = hlink_elt.dataset.lower_links;
   if (lower_links !== '') {
-    const ok = confirm('下に子供がぶら下がっています。子供への縦の線ごと削除して構わない場合は「OK」を選んでください');
+    let msg = {ja: '下に子供がぶら下がっています。子供への縦の線ごと削除して構わない場合は「OK」を選んでください',
+               en: 'One or more children are connected to this horizontal link.  Select [OK] only when you want to remove this horizontal link and the vertical link(s) connecting the child(ren) to this horizontal link.'};
+    const ok = confirm(msg[LANG]);
     if (!ok) { return; }
     id_str_to_arr(lower_links).map(vid => { remove_v_link_0(vid); });
   }
@@ -1829,11 +1934,13 @@ function remove_h_link_0(hlink_id) {
   function log_msg(str) {
     if (MODE.func_remove_h_link_0 > 0) {
       console.log('remove_h_link(): ' + str);
-      console.log('  * 左側の人物の右辺の情報:'); lhs_mng.right_side.print();
-      console.log('  * 右側の人物の左辺の情報:'); rhs_mng.left_side.print();
+      console.log('  * details of the right edge of the person on the left-hand side of the link:');
+      lhs_mng.right_side.print();
+      console.log('  * details of the left edge of the person on the right-hand side of the link:');
+      rhs_mng.left_side.print();
     }
   }
-  log_msg(hlink_id + 'の削除前');
+  log_msg('before removing ' + hlink_id);
 
   lhs_person_dat.right_links = lhs_person_dat.right_links.replace(
     new RegExp('\^\(\.\*\)' + hlink_id + ',' + rhs_person + ',\(\.\*\)\$'), 
@@ -1852,7 +1959,7 @@ function remove_h_link_0(hlink_id) {
   // 右側にある矩形の左辺にある (かもしれない) 縦書き注釈の位置を決め直す。
   relocate_tb_notes(rhs_person);
 
-  log_msg(hlink_id + 'の削除後');
+  log_msg('after remobing ' + hlink_id);
 }
 
 /* 「縦の関係を追加する」メニューの前半。
@@ -1862,16 +1969,24 @@ function add_v_link_1() {
   const p_id = selected_choice(document.menu.parent_1);
   const c_id = selected_choice(document.menu.child_1);
   const link_type = selected_radio_choice(document.menu.vertical_link1_type);
-  if (p_id === c_id) { alert('同一人物を指定しないでください'); return; }
+  if (p_id === c_id) {
+    const a = {ja: '同一人物を指定しないでください',
+               en: 'Do not select the same person in the two selectors.'};
+    alert(a[LANG]); return;
+  }
   if (already_v_linked(p_id, c_id)) {
-    alert('すでに親子関係にあります。'); return;
+    const a = {ja: 'すでに親子関係にあります。',
+               en: 'The selected two persons are already connected by a vertical link.'};
+    alert(a[LANG]); return;
   }
   // 対応する二つの矩形の範囲を求める
   const p = get_rect_info(p_id), c = get_rect_info(c_id);
   // 最小の隙間以上の隙間をあけて親の方が子よりも上にあるのかどうかを
   // チェックする
   if (p.y_bottom + CONFIG.min_v_link_len > c.y_top) {
-    alert('二人の矩形が重なっているか、矩形の間の上下方向の隙間が少なすぎるか、子供の方が上にあるかの、いずれかです。'); return;
+    const a = {ja: '二人の矩形が重なっているか、矩形の間の上下方向の隙間が少なすぎるか、子供の方が上にあるかの、いずれかです。',
+               en: 'The rectangles of the selected two persons are not appropriately positioned: they (maybe partially) overlap, they are too close to each other in the vertical direction, or the rectangle of the child is positioned above that of the parent.'};
+    alert(a[LANG]); return;
   }
   // ここにくるのは、リンクを追加して良い場合。
   const vid = 'v' + P_GRAPH.next_vlink_id++;  // IDを生成
@@ -1907,10 +2022,14 @@ function add_v_link_1() {
   relocate_lr_notes(p_id);
 
   const p_txt = name_str(p_id), c_txt = name_str(c_id);
+  const op = {ja: p_txt + 'から' + c_txt + 'へ', 
+              en: 'from ' + p_txt + ' to ' + c_txt};
   VLINK_SELECTORS.map(sel => { 
-    add_selector_option(sel, vid, p_txt + 'から' + c_txt + 'へ');
+    add_selector_option(sel, vid, op[LANG]);
   });
-  backup_svg(p_txt + 'と' + c_txt + 'の間の縦の関係を追加' );
+  const b = {ja: p_txt + 'と' + c_txt + 'の間の縦の関係を追加',
+             en: 'adding a vertical link between ' + p_txt + ' and ' + c_txt};
+  backup_svg(b[LANG]);
 }
 
 /* 「縦の関係を追加する」メニューの後半。
@@ -1925,10 +2044,14 @@ function add_v_link_2() {
   const p1_id = h_link.dataset.lhs_person, p2_id = h_link.dataset.rhs_person;
 
   if (p1_id === c_id || p2_id === c_id) {
-    alert('親と子に同一人物を指定しないでください'); return;
+    const a = {ja: '親と子に同一人物を指定しないでください',
+               en: 'Do not select one of the parents as a child.'};
+    alert(a[LANG]); return;
   }
   if (already_v_linked(p1_id, c_id) || already_v_linked(p2_id, c_id)) {
-    alert('すでに親子関係にあります。'); return;
+    const a = {ja: 'すでに親子関係にあります。',
+               en: 'The person selected as the child is already linked from at least one of these parents.'};
+    alert(a[LANG]); return;
   }
   // 親同士をつなぐ横リンクの方が、最小の隙間以上の隙間をあけて、
   // 子よりも上にあるのかどうかをチェックする。
@@ -1937,7 +2060,9 @@ function add_v_link_2() {
   const c = get_rect_info(c_id);
   if (start_pos_y + CONFIG.min_v_link_len > c.y_top) {
     console.log('error: ' + start_pos_y + ' + ' + CONFIG.min_v_link_len + ' > ' + c.y_top);
-    alert('親子の上下方向の隙間が少なすぎるか、子供の方が上にあるかの、いずれかです。'); return;
+    const a = {ja: '親子の上下方向の隙間が少なすぎるか、子供の方が上にあるかの、いずれかです。',
+               en: 'The child is positioned too close to the parents in the vertical direction, or positioned above the link between the parents.'};
+    alert(a[LANG]); return;
   }
   // ここにくるのは、リンクを追加して良い場合。
   const vid = 'v' + P_GRAPH.next_vlink_id++;  // IDを生成
@@ -1966,11 +2091,16 @@ function add_v_link_2() {
     console.log('add_v_link_2() ends.');  P_GRAPH.print();
   }
   const p1_txt = name_str(p1_id), p2_txt = name_str(p2_id), c_txt = name_str(c_id);
+  const op = {ja: p1_txt + 'と' + p2_txt + 'から' + c_txt + 'へ',
+              en: 'from ' + p1_txt + ' and ' + p2_txt + ' to ' + c_txt};
   VLINK_SELECTORS.map(sel => {
-    add_selector_option(sel, vid, p1_txt + 'と' + p2_txt + 'から' + c_txt + 'へ');
+    add_selector_option(sel, vid, op[LANG]);
   });
-  backup_svg(p1_txt + 'と' + p2_txt + 'を結ぶ横線から' + c_txt + 
-    'への縦の関係を追加');
+  const b = {ja: p1_txt + 'と' + p2_txt + 'を結ぶ横線から' + 
+                 c_txt + 'への縦の関係を追加',
+             en: 'adding a vertical link from the horizontal link between ' + 
+                 p1_txt + ' and ' + p2_txt + ' to ' + c_txt};
+  backup_svg(b[LANG]);
 }
 
 /* 「横の関係を追加する」「縦の関係を追加する」メニューのための部品。
@@ -2048,7 +2178,8 @@ function redraw_v_link(vid, upper_pt_dx, upper_pt_dy, lower_pt_dx, lower_pt_dy) 
 function remove_v_link() {
   const vlink_id = selected_choice(document.menu.vlink_to_remove);
   remove_v_link_0(vlink_id);
-  backup_svg('縦の関係を削除');
+  const b = {ja: '縦の関係を削除', en: 'removing a vertical link'};
+  backup_svg(b[LANG]);
 }
 function remove_v_link_0(vlink_id) {
   const vlink_elt = document.getElementById(vlink_id);
@@ -2093,7 +2224,9 @@ function move_person() {
   const whom = selected_choice(document.menu.target_person);
   const amount = parseInt(document.menu.how_much_moved.value);
   if (isNaN(amount) || amount <= 0) {
-    alert('移動量は正の数を指定して下さい'); return;
+    const a = {ja: '移動量は正の数を指定して下さい', 
+               en: 'Enter a positive integer.'};
+    alert(a[LANG]); return;
   }
   switch ( selected_radio_choice(document.menu.moving_direction) ) {
     case 'up':    move_person_vertically(whom, -amount); break;
@@ -2102,7 +2235,8 @@ function move_person() {
     case 'right': move_person_horizontally(whom, amount); break;
     default:      alert('error in move_person()'); return;
   }
-  backup_svg(name_str(whom) + 'を移動');
+  const n = name_str(whom), b = {ja: n + 'を移動', en: 'moving ' + n};
+  backup_svg(b[LANG]);
 }
 
 /* 右または左への移動。
@@ -2140,7 +2274,9 @@ function move_person_horizontally(pid, dx) {
   if (0 < actual_dx) { // 右への移動
     if (r_linked_persons.length === 0) { // 右側でつながっている相手はいない
       if (P_GRAPH.svg_width < r.x_right + actual_dx) {
-        alert('右枠からはみ出るので、枠を拡大します。');
+        const a = {ja: '右枠からはみ出るので、枠を拡大します。',
+                   en: 'The outer frame of the whole diagram is extended rightwards, since the target person will be moved out of the current frame.'};
+        alert(a[LANG]);
         // 移動によって本人が右枠にぶつかるので、右枠を拡大する
         modify_width_0(r.x_right + actual_dx - P_GRAPH.svg_width);
       }
@@ -2152,8 +2288,9 @@ function move_person_horizontally(pid, dx) {
         if (gap - actual_dx < CONFIG.min_h_link_len) {
           actual_dx = gap - CONFIG.min_h_link_len;
           if (actual_dx < 0) { actual_dx = 0; } // エラー避け (不要な筈だが)
-          alert('右側でつながっている相手に近くなりすぎるので、移動量を' + 
-                actual_dx + 'pxに減らします。');
+          const a = {ja: '右側でつながっている相手に近くなりすぎるので、移動量を' + actual_dx + 'pxに減らします。',
+                     en: 'The amount for the movement is changed to ' + actual_dx + ' px so as to keep the minimum space to the partner linked on the right-hand side.'};
+          alert(a[LANG]);
         }
       });
     }
@@ -2162,8 +2299,9 @@ function move_person_horizontally(pid, dx) {
       if (r.x_left + actual_dx < 0) {
         // 移動によって左枠からはみ出るので、はみ出ない範囲の移動にとどめる
         actual_dx = - r.x_left;
-        alert('左枠からはみ出さないように、移動量を' + actual_dx 
-              + 'pxに減らします。');
+        const a = {ja: '左枠からはみ出さないように、移動量を' + actual_dx + 'pxに減らします。',
+                   en: 'The amount for the movement is changed to ' + actual_dx + ' px so as to keep this person inside the left edge of the outer frame of the whole diagram.'};
+        alert(a[LANG]);
       }
     } else { // 左側でつながっている相手がいる
       l_linked_persons.map(function(l_linked) {
@@ -2172,8 +2310,9 @@ function move_person_horizontally(pid, dx) {
         if (gap + actual_dx < CONFIG.min_h_link_len) {
           actual_dx = CONFIG.min_h_link_len - gap;
           if (actual_dx > 0) { actual_dx = 0; } // エラー避け (不要な筈だが)
-          alert('左側でつながっている相手に近くなりすぎるので、移動量を' 
-                + (-actual_dx).toString() + 'pxに減らします。');
+          const a = {ja: '左側でつながっている相手に近くなりすぎるので、移動量を' + (-actual_dx).toString() + 'pxに減らします。',
+                     en: 'The amount for the movement is changed to ' + (-actual_dx).toString() + ' px so as to keep the minimum space to the partner linked on the left-hand side.'};
+          alert(a[LANG]);
         }
       });
     }
@@ -2261,14 +2400,17 @@ function move_person_vertically(pid, dy) {
 
     if (0 < dy) { // 下への移動なので下端をチェックする
       if (P_GRAPH.svg_height < rect.y_bottom + actual_dy) {
-        alert('はみ出し防止のため、下の枠を拡大します。');
+        let a = {ja: 'はみ出し防止のため、下の枠を拡大します。',
+                 en: 'The outer frame of the whole diagram is extended downwards, since the target person will be moved out of the current frame.'};
+        alert(a[LANG]);
         modify_height_0(rect.y_bottom + actual_dy - P_GRAPH.svg_height);
       }
     } else { // 上への移動なので上端をチェックする
       if (rect.y_top + actual_dy < 0) {
         actual_dy = - rect.y_top;
-        alert('上枠からはみ出さないように、移動量を' + actual_dy 
-              + 'pxに変更します。');
+        let a = {ja: '上枠からはみ出さないように、移動量を' + actual_dy + 'pxに変更します。',
+                 en: 'The amount for the movement is changed to ' + actual_dy + ' px so as to keep this person inside the upper edge of the outer frame of the whole diagram.'};
+        alert(a[LANG]);
       }
     }
 
@@ -2361,11 +2503,15 @@ function move_person_vertically(pid, dy) {
   }
 
   if (actual_dy === 0) {
-    alert('必要な最小間隔を保てなくなるので移動を中止します');
+    const a = {ja: '必要な最小間隔を保てなくなるので移動を中止します',
+               en: 'The movement is cancelled to keep the minimum necessary gap.'};
+    alert(a[LANG]);
     return;
   }
   if (actual_dy != dy) {
-    alert('必要な最小間隔を保つために、移動量を' + actual_dy + 'pxに変更します');
+    const a = {ja: '必要な最小間隔を保つために、移動量を' + actual_dy + 'pxに変更します',
+               en: 'The amount for the movement is changed to ' + actual_dy + ' px to keep the minimum necessary gap.'};
+    alert(a[LANG]);
   }
   err_msg(0, '** fixed **: actual_dy=' + actual_dy + '\ntarget_persons=[' + 
     target_persons + ']\ntarget_h_links=[' + target_h_links + 
@@ -2414,10 +2560,15 @@ function align_person() {
     case 'v_align_bottom':
       d = ref_rect.y_bottom - target_rect.y_bottom;
       move_person_vertically(person_to_align, d); break;
-    default: alert('不明な位置揃え方法が指定されました'); return;
+    default: 
+      const a = {ja: '不明な位置揃え方法が指定されました',
+                 en: 'An illegal type of alignment is specified.'};
+      alert(a[LANG]); return;
   }
-  backup_svg(name_str(ref_person) + 'を基準にして' + 
-    name_str(person_to_align) + 'を移動');
+  const r = name_str(ref_person), a = name_str(person_to_align),
+        b = {ja: r + 'を基準にして' + a + 'を移動', 
+             en: 'moving ' + a + 'w.r.t. ' + r};
+  backup_svg(b[LANG]);
 }
 
 /* 「親または子を基準にして人を動かす」メニューで、親からの縦線がまっすぐになるように、人を動かす。 */
@@ -2425,27 +2576,38 @@ function center_person_wrt_upper_link() {
   const pid = selected_choice(document.menu.person_to_center);
   const upper_links = document.getElementById(pid + 'g').dataset.upper_links;
   if (upper_links === '') {
-    alert(name_str(pid) + '(' + pid + ') には親がいないので、このメニューは使えません。');
+    const a = {ja: name_str(pid) + ' (' + pid + ') には親がいないので、このメニューは使えません。',
+               en: 'This menu is unavailable because ' + name_str(pid) + ' (' + pid + ') has no parent.'};
+    alert(a[LANG]);
     return;
   }
   const vids = id_str_to_arr(upper_links);
   const first_vlink_dat = document.getElementById(vids[0]).dataset;
   if (vids.length !== 1) {
     const p1 = first_vlink_dat.parent1, p2 = first_vlink_dat.parent2;
-    let msg = name_str(pid) + '(' + pid + ') の上辺には複数本の線がつながっています。\nこのうち' + name_str(p1) + '(' + p1 + ') ';
+    let msg = {ja: '', en: ''};
+    msg.ja = name_str(pid) + ' (' + pid + ') の上辺には複数本の線がつながっています。\n';
+    msg.en = 'Multiple links are connected to the upper edge of ' + name_str(pid) + ' (' + pid + ').\n';
+    msg.ja += 'このうち' + name_str(p1) + ' (' + p1 + ') ';
+    msg.en += 'Select [OK] if it is acceptable to use the link from ' + name_str(p1) + ' (' + p1 + ') ';
     if (p2 === undefined || p2 === null || p2 === '') {
-      msg += 'への';
+      msg.ja += 'への';
     } else {
-      msg += 'と' + name_str(p2) + '(' + p2 + ') への'
+      msg.ja += 'と' + name_str(p2) + ' (' + p2 + ') への';
+      msg.en += 'and ' + name_str(p2) + ' (' + p2 + ') ';
     }
-    msg += '線を基準にして良ければ、「OK」を選んでください。';
-    const res = confirm(msg);
+    msg.ja += '線を基準にして良ければ、「OK」を選んでください。';
+    msg.en += 'as the alignment reference.';
+    const res = confirm(msg[LANG]);
     if (! res) { return; }
   }
   const new_center_x = parseInt(first_vlink_dat.from_x);
   const cur_center_x = get_rect_info(pid).x_center;
   move_person_horizontally(pid, new_center_x - cur_center_x);
-  backup_svg('親からの縦線がまっすぐになるように' + name_str(pid) + 'を移動');
+  const n = name_str(pid),
+        b = {ja: '親からの縦線がまっすぐになるように' + n + 'を移動',
+             en: 'moving ' + n + 'so that the link from the parent(s) will be straight'};
+  backup_svg(b[LANG]);
 }
 
 /* 「親または子を基準にして人を動かす」メニューで、下辺につながっている子 (たち) の中央へ人を動かす。 */
@@ -2453,7 +2615,9 @@ function center_person_wrt_lower_links() {
   const pid = selected_choice(document.menu.person_to_center);
   const lower_links = document.getElementById(pid + 'g').dataset.lower_links;
   if (lower_links === '') {
-    alert(name_str(pid) + '(' + pid + ') の下辺に直接つながっている子はいないので、このメニューは使えません。');
+    const a = {ja: name_str(pid) + ' (' + pid + ') の下辺に直接つながっている子はいないので、このメニューは使えません。',
+               en: 'This menu is unavailable because ' + name_str(pid) + ' (' + pid + ') has no child directly connected to the lower edge of his/her rectangle.'};
+    alert(a[LANG]);
     return;
   }
   let min_x = P_GRAPH.svg_width, max_x = 0; // 初期化
@@ -2465,7 +2629,10 @@ function center_person_wrt_lower_links() {
   const new_center_x = Math.floor((min_x + max_x) / 2);
   const cur_center_x = get_rect_info(pid).x_center;
   move_person_horizontally(pid, new_center_x - cur_center_x);
-  backup_svg(name_str(pid) + 'を下辺の子 (たち) の中央へ移動');
+  const n = name_str(pid),
+        b = {ja: n + 'を下辺の子 (たち) の中央へ移動',
+             en: 'moving ' + n + ' to be alined with the center of the child(ren)'};
+  backup_svg(b[LANG]);
 }
 
 /* 「子孫もまとめて下に移動する」メニュー */
@@ -2473,10 +2640,15 @@ function move_down_person_and_descendants() {
   const whom = selected_choice(document.menu.person_to_move_down);
   const amount = parseInt(document.menu.how_much_moved_down.value);
   if (isNaN(amount) || amount <= 0) {
-    alert('移動量は正の数を指定して下さい'); return;
+    const a = {ja: '移動量は正の数を指定して下さい',
+               en: 'Enter a positive integer.'};
+    alert(a[LANG]); return;
   }
   move_down_collectively('', whom, amount);
-  backup_svg(name_str(whom) + 'を子孫ごとまとめて下へ移動');
+  const n = name_str(whom),
+        b = {ja: n + 'を子孫ごとまとめて下へ移動',
+             en: 'moving down ' + n + ' and the descendants'};
+  backup_svg(b[LANG]);
 }
 
 /* 「まとめて右に移動する」メニュー。同じ横リンクの再描画を 2 回行うなど、
@@ -2484,7 +2656,10 @@ function move_down_person_and_descendants() {
 function move_right_collectively() {
   const base_pid = selected_choice(document.menu.person_to_move_right);
   const amount = parseInt(document.menu.how_much_moved_right.value);
-  if (isNaN(amount) || amount <= 0) { alert('正数を指定してください'); return; }
+  if (isNaN(amount) || amount <= 0) {
+    const a = {ja: '正数を指定してください', en: 'Enter a positive integer.'};
+    alert(a[LANG]); return;
+  }
   const half_amount = Math.floor(amount / 2);
   let target_persons = [base_pid];
 
@@ -2542,14 +2717,20 @@ function move_right_collectively() {
     });
   }
 
-  backup_svg(name_str(base_pid) + 'から右・下をたどった先をまとめて右に移動する');
+  const n = name_str(base_pid),
+        b = {ja: n + 'から右・下をたどった先をまとめて右に移動する',
+             en: 'moving ' + n + ' and related persons cascadingly to the right'};
+  backup_svg(b[LANG]);
 }
 
 /* 「まとめて左に移動する」メニュー。*/
 function move_left_collectively() {
   const base_pid = selected_choice(document.menu.person_to_move_left);
   const amount = parseInt(document.menu.how_much_moved_left.value);
-  if (isNaN(amount) || amount <= 0) { alert('正数を指定してください'); return; }
+  if (isNaN(amount) || amount <= 0) {
+    const a = {ja: '正数を指定してください', en: 'Enter a positive integer.'};
+    alert(a[LANG]); return;
+  }
   const half_amount = Math.floor(amount / 2);
   let target_persons = [base_pid], target_hlinks = [], target_vlinks = [];
   let hlinks_to_extend_left = [], vlinks_to_move_their_upper_ends = [],
@@ -2638,14 +2819,20 @@ function move_left_collectively() {
     if (target_vlinks.includes(vid)) { return; }
     redraw_v_link(vid, 0, 0, -amount, 0);
   });
-  backup_svg(name_str(base_pid) + 'から左・下をたどった先をまとめて左に移動する');
+
+  const n = name_str(base_pid),
+        b = {ja: n + 'から左・下をたどった先をまとめて右に移動する',
+             en: 'moving ' + n + ' and related persons cascadingly to the left'};
+  backup_svg(b[LANG]);
 }
 
 /* 「全体をずらす」メニュー。 */
 function shift_all() {
   const amount = parseInt(document.menu.how_much_shifted.value);
   if (isNaN(amount) || amount < 0) {
-    alert('移動量は正の数を指定して下さい'); return;
+    const a = {ja: '移動量は正の数を指定して下さい', 
+               en: 'Enter a positive integer.'};
+    alert(a[LANG]); return;
   }
   // dx, dy (x 方向、y 方向の移動量) を設定する
   let dx, dy;
@@ -2657,7 +2844,8 @@ function shift_all() {
     default     : dx = 0; dy = 0; break;
   }
   shift_all_0(dx, dy);
-  backup_svg('全体をずらす');
+  const b = {ja: '全体をずらす', en: 'shifting the whole diagram'};
+  backup_svg(b[LANG]);
 }
 /* 「全体をずらす」メニューの実質部分。他のメニューからも利用したいので、
 フォームの入力値の読み取りなどとは分けて、この部分だけを別の関数とした。 */
@@ -2739,9 +2927,14 @@ function move_link(id, dx, dy, is_h_link) {
 /* 「全体の高さを変える」メニュー。 */
 function modify_height() {
   const h = parseInt(document.menu.height_diff.value);
-  if (isNaN(h)) { alert('数値を入力してください'); return; }
+  if (isNaN(h)) { 
+    const a = {ja: '数値を入力してください', en: 'Enter an integer.'};
+    alert(a[LANG]); return; 
+  }
   modify_height_0(h);
-  backup_svg('全体の高さを変える');
+  const b = {ja: '全体の高さを変える', 
+             en: 'modifying the height of the whole diagram'};
+  backup_svg(b[LANG]);
 }
 function modify_height_0(h_diff) {
   P_GRAPH.svg_height += h_diff;
@@ -2754,9 +2947,14 @@ function modify_height_0(h_diff) {
 /* 「全体の幅を変える」メニュー。 */
 function modify_width() {
   const w = parseInt(document.menu.width_diff.value);
-  if (isNaN(w)) { alert('数値を入力してください'); return; }
+  if (isNaN(w)) { 
+    const a = {ja: '数値を入力してください', en: 'Enter an integer.'};
+    alert(a[LANG]); return; 
+  }
   modify_width_0(w);
-  backup_svg('全体の幅を変える');
+  const b = {ja: '全体の幅を変える', 
+             en: 'modifying the width of the whole diagram'};
+  backup_svg(b[LANG]);
 }
 function modify_width_0(w_diff) {
   P_GRAPH.svg_width += w_diff;
@@ -2867,7 +3065,9 @@ function read_in() {
     // として書き出す。
     document.getElementById('tree_canvas_div').innerHTML = e.target.result;
     set_p_graph_values(); // SVGの各要素を読み取って、変数の設定を行う。
-    backup_svg('作成済みのデータを読み込む'); // バックアップ用リンクも一応作る
+    const b = {ja: '作成済みのデータを読み込む', 
+               en: 'reading data saved before'};
+    backup_svg(b[LANG]); // バックアップ用リンクも一応作る
   }
   // テキストファイルとして読み込む。
   reader.readAsText(document.getElementById('input_svg_file').files[0]);
@@ -2885,13 +3085,15 @@ function set_p_graph_values() {
   });
 
   // ただしダミーの選択肢が必要なセレクタがあるので、それらを作り直す。
+  const dummy_lhs = {ja: '左側の人物', en: 'who?'},
+        dummy_rhs = {ja: '右側の人物', en: 'who?'};
   let opt = document.createElement('option');
   opt.value = 'dummy';
-  add_text_node(opt, '左側の人物');
+  add_text_node(opt, dummy_lhs[LANG]);
   document.getElementById('lhs_person').appendChild(opt);
   opt = document.createElement('option');
   opt.value = 'dummy';
-  add_text_node(opt, '右側の人物');
+  add_text_node(opt, dummy_rhs[LANG]);
   document.getElementById('rhs_person').appendChild(opt);
   
   P_GRAPH.reset_all();
@@ -2956,15 +3158,20 @@ function set_p_graph_values() {
         let rhs_rect_mng = P_GRAPH.find_mng(rhs_person_id);
         rhs_rect_mng.left_side.set_hlink_at(pos_info_rhs.pos_No, pos_info_rhs.num_of_divisions, path_id);
       } else {
-        alert('横リンク (' + path_id + ') の位置に異常があるので読み込みを中止します');
+        const a = {ja: '横リンク (' + path_id + ') の位置に異常があるので読み込みを中止します',
+                   en: 'Reading the SVG file is stopped because the position of the horizontal link (' + path_id + ') is illegal.'};
+        alert(a[LANG]);
         console.log('pos_info_lhs:\n' + JSON.stringify(pos_info_lhs));
         console.log('pos_info_rhs:\n' + JSON.stringify(pos_info_rhs));
         return;
       }
       // 横リンクの削除メニューと縦リンクの追加メニューのプルダウンリストに
       // 選択肢を追加する
-      let str = name_str(lhs_person_id) + 'と' + name_str(rhs_person_id);
-      HLINK_SELECTORS.map(sel => { add_selector_option(sel, path_id, str); });
+      let lhs_name = name_str(lhs_person_id), 
+          rhs_name = name_str(rhs_person_id),
+          str = {ja: lhs_name + 'と' + rhs_name, 
+                 en: 'between ' + lhs_name + ' and ' + rhs_name};
+      HLINK_SELECTORS.map(sel => { add_selector_option(sel, path_id, str[LANG]); });
     } else if (m[1] === 'v') {  // 縦リンクを見ている
       //「次の番号」用の変数を更新
       if (P_GRAPH.next_vlink_id <= id_No) { P_GRAPH.next_vlink_id = id_No + 1; }
@@ -2979,12 +3186,15 @@ function set_p_graph_values() {
         // 親の下辺の使用状況を設定する。
         set_EndPointsMngr_UL(parent1_id, 'lower', link_type, 
                              parseInt(cur_path.dataset.parent1_pos_idx));
-        str = p1_txt + 'から' + c_txt + 'へ';
+        str = {ja: p1_txt + 'から' + c_txt + 'へ', 
+               en: 'from ' + p1_txt + ' to ' + c_txt};
       } else {
-        str = p1_txt + 'と' + name_str(parent2_id) + 'から' + c_txt + 'へ';
+        let p2_txt = name_str(parent2_id);
+        str = {ja: p1_txt + 'と' + p2_txt + 'から' + c_txt + 'へ',
+               en: 'from ' + p1_txt + ' and ' + p2_txt + ' to ' + c_txt};
       }
       // 縦リンクの削除メニューのプルダウンリストに選択肢を追加する。
-      VLINK_SELECTORS.map(sel => { add_selector_option(sel, path_id, str); });
+      VLINK_SELECTORS.map(sel => { add_selector_option(sel, path_id, str[LANG]); });
       // 子の上辺については、リンクのつなぎ方によらず、その使用状況を設定する。
       set_EndPointsMngr_UL(cur_path.dataset.child, 'upper', link_type,
                            parseInt(cur_path.dataset.child_pos_idx));
@@ -3044,9 +3254,13 @@ function read_automatically_saved_data() {
   if (svg_data !== null) {
     document.getElementById('tree_canvas_div').innerHTML = svg_data;
     set_p_graph_values(); // SVGの各要素を読み取って、変数の設定を行う。
-    backup_svg('自動保存したデータを読み込む'); // バックアップ用リンクも一応作る
+    const b = {ja: '自動保存したデータを読み込む',
+               en: 'reading automatically saved data'};
+    backup_svg(b[LANG]); // バックアップ用リンクも一応作る
   } else {
-    alert('自動保存したデータはありません');
+    const a = {ja: '自動保存したデータはありません', 
+               en: 'There is no automatically saved data.'};
+    alert(a[LANG]);
   }
 }
 
@@ -3089,45 +3303,57 @@ function show_detailed_info_about_links() {
     return('error!'); // ありえない筈だが、一応つけておく。
   }
 
-  let child_info_txt = '';
+  let child_info_txt = {ja: '', en: ''};
 
-  let hlink_info = '<dt>横の関係: </dt>';
+  let hlink_info = {ja: '<dt>横の関係: </dt>', 
+                    en: '<dt>Horizontal Link(s): </dt>'};
   if (hid_pid_pairs === '') {
-    hlink_info += '<dd>なし</dd>\n';
+    hlink_info.ja += '<dd>なし</dd>\n';
+    hlink_info.en += '<dd>None</dd>\n';
   } else {
     apply_to_each_hid_pid_pair(hid_pid_pairs, function(hid, partner_pid) {
-      hlink_info += get_opt_txt(HLINK_SELECTORS[0], hid);
+      hlink_info[LANG] += get_opt_txt(HLINK_SELECTORS[0], hid);
       const vids = document.getElementById(hid).dataset.lower_links;
       if (vids === '') { return; }
       id_str_to_arr(vids).map(vid => {
-        child_info_txt += get_opt_txt(VLINK_SELECTORS[0], vid);
+        child_info_txt[LANG] += get_opt_txt(VLINK_SELECTORS[0], vid);
       });
     });
   }
 
-  let parent_info = '<dt>上側との縦の関係: </dt>';
+  let parent_info = {ja: '<dt>上側との縦の関係: </dt>',
+                     en: '<dt>Vertical Link(s) from Parent(s): </dt>'};
   if (upper_vids === '') {
-    parent_info += '<dd>なし</dd>\n';
+    parent_info.ja += '<dd>なし</dd>\n';
+    parent_info.en += '<dd>None</dd>\n';
   } else {
     id_str_to_arr(upper_vids).map(vid => {
-      parent_info += get_opt_txt(VLINK_SELECTORS[0], vid);
+      parent_info[LANG] += get_opt_txt(VLINK_SELECTORS[0], vid);
     });
   }
 
-  let child_info = '<dt>下側との縦の関係: </dt>';
-  if (lower_vids === '' && child_info_txt === '') {
-    child_info += '<dd>なし</dd>\n';
+  let child_info = {ja: '<dt>下側との縦の関係: </dt>',
+                    en: '<dt>Vertical Link(s) to the Child(ren): </dt>'};
+  if (lower_vids === '' && child_info_txt[LANG] === '') {
+    child_info.ja += '<dd>なし</dd>\n';
+    child_info.en += '<dd>None</dd>\n';
   } else {
-    child_info += child_info_txt;
+    child_info[LANG] += child_info_txt[LANG];
     id_str_to_arr(lower_vids).map(vid => {
-      child_info += get_opt_txt(VLINK_SELECTORS[0], vid);
+      child_info[LANG] += get_opt_txt(VLINK_SELECTORS[0], vid);
     });
   }
 
   const div_elt = document.getElementById('detailed_info_about_links');
-  div_elt.innerHTML = '📝 [' + pid + '] ' + p_name + 'についての詳細情報　' + 
-    '<input type="button" value="しまう" onclick="hide_detailed_info()">\n' + 
-    '\n<dl>\n' + parent_info + hlink_info + child_info + '</dl>\n';
+  const header_txt = {ja: '📝 [' + pid + '] ' + p_name + 'についての詳細情報　',
+                      en: '📝 Details about [' + pid + '] ' + p_name + '&nbsp;'},
+        button_txt = {ja: 'しまう', en: 'Hide this area'};
+  div_elt.innerHTML = header_txt[LANG] + 
+    '<input type="button" value="' + button_txt[LANG] + 
+    '" onclick="hide_detailed_info()">\n' + 
+    '\n<dl>\n' + 
+    parent_info[LANG] + hlink_info[LANG] + child_info[LANG] +
+    '</dl>\n';
 }
 function hide_detailed_info() {
   document.getElementById('detailed_info_about_links').innerHTML = '';

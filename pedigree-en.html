@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="pedigree.css" type="text/css">
+<script type="text/javascript" src="mode_setting.js"></script>
+<script type="text/javascript" src="pedigree.js"></script>
+<base target="_top">
+<title>Draw a pedigree diagram in SVG format</title>
+</head>
+<body>
+
+<h1>Draw a pedigree diagram in SVG format</h1>
+
+<div id="tree_canvas_div">
+<svg id="pedigree" xmlns="http://www.w3.org/2000/svg" width="600" height="300" viewBox="0 0 600 300">
+<style><![CDATA[ @import url(pedigree_svg.css); ]]></style>
+</svg>
+</div>
+
+<p class="info">
+The person indicated by the pointer has
+the ID of <span id="info_pid" class="info"></span> and
+the name of <span id="info_name" class="info"></span>.
+The range of his/her rectangle's X coordinate is <span class="info">[<span id="info_x_start"></span>, <span id="info_x_end"></span>]</span>, 
+of which center is <span id="info_x_mid" class="info">&nbsp;</span>, and
+the range of his/her rectangle's Y coordinate is <span class="info">[<span id="info_y_start"></span>, <span id="info_y_end"></span>]</span>.
+<input type="button" value="Details of links connected to him/her" onclick="show_detailed_info_about_links()">
+<!--Details of vertical and horizontal links connected to him/her-->
+</p>
+
+<div id="detailed_info_about_links"></div>
+
+<p class="btn" role="menu">
+<span class="btn" role="menuitem" onclick="show_menu('menu_person')">Individuals</span>
+<span class="btn" role="menuitem" onclick="show_menu('menu_hlink')">Horizontal links</span>
+<span class="btn" role="menuitem" onclick="show_menu('menu_vlink')">Vertical links</span>
+<span class="btn" role="menuitem" onclick="show_menu('menu_move_person')">Moving persons</span>
+<span class="btn" role="menuitem" onclick="show_menu('menu_shift_all')">Overall shifting</span>
+<span class="btn" role="menuitem" onclick="show_menu('menu_whole_size')">Resizing</span>
+<span class="btn" role="menuitem" onclick="show_menu('menu_output')">Output</span>
+<span class="btn" role="menuitem" onclick="show_menu('menu_read')">Read-in</span>
+</p>
+
+<form name="menu">
+<table id="menu_table">
+<tr class="menu_person">
+<th>Add a person</th>
+<td>
+<ul>
+<li>Enter the name of a person to be added: <input type="text" name="new_personal_name" size="10">.</li>
+
+<li>Check the box
+<input type="checkbox" name="verticalize" id="verticalize"> 
+<label for="verticalize">if the name should be displayed vertically (e.g., in the case where the name is written in Han characters)</label>.</li>
+
+<li>Specify the style to be applied as
+<input type="radio" name="new_personal_gender" value="neutral" checked id="new_personal_gender_neutral">
+<label for="new_personal_gender_neutral">neutral</label>,
+
+<input type="radio" name="new_personal_gender" value="feminine" id="new_personal_gender_feminine">
+<label for="new_personal_gender_feminine">feminine</label>, or
+
+<input type="radio" name="new_personal_gender" value="masculine" id="new_personal_gender_masculine">
+<label for="new_personal_gender_masculine">masculine</label>.</li>
+
+<li>Decide to locate the person
+<input type="radio" name="position" value="random" id="position_random" checked>
+<label for="position_random">at random</label>, or<br>
+decide to locate the person
+<input type="radio" name="position" value="upper_left" id="position_upper_left">
+<label for="position_upper_left">at the upper left of</label>, 
+<input type="radio" name="position" value="upper_center" id="position_upper_center">
+<label for="position_upper_center">just above</label>, 
+<input type="radio" name="position" value="upper_right" id="position_upper_right">
+<label for="position_upper_right">at the upper right of</label>,
+<input type="radio" name="position" value="left" id="position_left">
+<label for="position_left">on the left-hand side of</label>,
+<input type="radio" name="position" value="right" id="position_right">
+<label for="position_right">on the right-hand side of</label>,
+<input type="radio" name="position" value="lower_left" id="position_lower_left">
+<label for="position_lower_left">at the lower left of</label>,
+<input type="radio" name="position" value="lower_center" id="position_lower_center">
+<label for="position_lower_center">just below</label>, or
+<input type="radio" name="position" value="lower_right" id="position_lower_right">
+<label for="position_lower_right">at the lower right of</label>
+<select id="position_ref" name="position_ref"></select>.
+</li>
+<li><input type="button" value="Add this person as specified above" onclick="add_person()"></li>
+</ul>
+</td>
+</tr>
+
+<tr class="menu_person">
+<th>Modify a name</th>
+<td>
+Specify the new name of
+<select id="person_to_rename" name="person_to_rename"></select> as
+<input type="text" name="renamed_as" size="10"> and
+<input type="button" value="modify the name so" onclick="rename_person()">.
+<br>
+(Note: Check the box 
+<input type="checkbox" id="shrink_rect_if_name_shortened" name="shrink_rect_if_name_shortened"> beforehand,
+<label for="shrink_rect_if_name_shortened">in the case where you want to shrink the rectangle of this person as his/her name become shorter</label>.)
+</td>
+</tr>
+
+<tr class="menu_person">
+<th>Increase the height of a rectangle</th>
+<td>
+Select the person
+<select id="person_to_be_extended" name="person_to_be_extended"></select>
+and
+<input type="button" value="increase the height of his/her rectangle" onclick="extend_rect()">.
+</td>
+</tr>
+
+<tr class="menu_person">
+<th>Annotate a person</th>
+<td>
+<ul>
+<li>Select the person to be annotated:
+<select id="annotation_target" name="annotation_target"></select>
+</li>
+<li>Enter the note to be added:
+<input type="text" name="annotation_txt" size="20">
+</li>
+<li>
+Select the color of the note:
+<select id="note_color" name="note_color">
+<option value="blue" selected>blue</option>
+<option value="sage_green">sage green</option>
+<option value="green">green</option>
+<option value="orange">orange</option>
+<option value="red">red</option>
+<option value="purple">red purple</option>
+</select>
+(Color samples:
+<span class="note_color blue">■</span>
+<span class="note_color sage_green">■</span>
+<span class="note_color green">■</span>
+<span class="note_color orange">■</span>
+<span class="note_color red">■</span>
+<span class="note_color purple">■</span>)
+</li>
+<li>
+<input type="button" value="Add the note as specified above" onclick="annotate()">
+</li>
+</td>
+</tr>
+
+<tr class="menu_person">
+<th>Add a circular badge (in which a number is written) to a person</th>
+<td>
+<ul>
+<li>Select the person:
+<select id="person_to_add_badge" name="person_to_add_badge"></select>
+</li>
+<li>Select the position where the badge should be attached:
+<input type="radio" name="badge_pos" id="badge_pos_upper_left" value="upper_left">
+<label for="badge_pos_upper_left">the upper left corner</label>
+<input type="radio" name="badge_pos" id="badge_pos_upper_right" value="upper_right" checked>
+<label for="badge_pos_upper_right">the upper right corner</label>
+<input type="radio" name="badge_pos" id="badge_pos_lower_left" value="lower_left">
+<label for="badge_pos_lower_left">the lower left corner</label>
+<input type="radio" name="badge_pos" id="badge_pos_lower_right" value="lower_right">
+<label for="badge_pos_lower_right">the lower right corner</label>
+</li>
+<li>Select the background color of the badge:
+<select name="badge_color" id="badge_color">
+<option value="black">black</option>
+<option value="dimgray">gray</option>
+<option value="darkblue" selected>dark blue</option>
+<option value="crimson">crimson</option>
+<option value="saddlebrown">brown</option>
+<option value="purple">purple</option>
+<option value="darkgreen">dark green</option>
+</select>
+(Color samples:
+<span class="badge_color black">■</span>
+<span class="badge_color dimgray">■</span>
+<span class="badge_color darkblue">■</span>
+<span class="badge_color crimson">■</span>
+<span class="badge_color saddlebrown">■</span>
+<span class="badge_color purple">■</span>
+<span class="badge_color darkgreen">■</span>)
+</li>
+<li>
+Enter the integer number (from 0 to 999 inclusive) which should be written within the badge: <input type="text" name="badge_num" id="badge_num" size="3">
+</li>
+<li>
+<input type="button" value="Add the badge as specified above" onclick="add_num_badge()">
+</li>
+</ul>
+</td>
+</tr>
+
+<tr class="menu_person">
+<th>Remove a person</th>
+<td>
+Select the person to be removed
+<select id="person_to_remove" name="person_to_remove"></select>
+and
+<input type="button" value="remove him/her from the diagram" onclick="remove_person()">.
+</td>
+</tr>
+
+<tr class="menu_hlink">
+<th>Add a horizontal link</th>
+<td>
+Select two persons 
+(<select id="partner_1" name="partner_1"></select> and
+<select id="partner_2" name="partner_2"></select>),
+select the type of the horizontal link 
+(<input type="radio" name="horizontal_link_type" value="single" id="horizontal_link_type_single">
+<label for="horizontal_link_type_single">single-line link</label>
+or
+<input type="radio" name="horizontal_link_type" value="double" checked id="horizontal_link_type_double">
+<label for="horizontal_link_type_double">double-line link</label>),
+and then,
+<input type="button" value="add a new link as specified" onclick="add_h_link()">.
+</td>
+</tr>
+
+<tr class="menu_hlink">
+<th>Add a horizontal link with details specified</th>
+<td>
+<ul>
+<li>
+Select the person on the left-hand side of a new horisontal link:
+<select id="lhs_person" name="lhs_person" onchange="lhs_set_choices()">
+<option value="dummy" selected>who?</option>
+</select>
+</li>
+<li>
+Select the position, to which the new link should be connected, on the right edge of his/her rectangle: 
+<select id="lhs_person_right_edge" name="lhs_person_right_edge"></select>
+from the top of the edge
+<br>
+(Note: The already occupied position(s) is/are disabled.)
+</li>
+<li>
+Select the person on the right-hand side of the new link:
+<select id="rhs_person" name="rhs_person" onchange="rhs_set_choices()">
+<option value="dummy" selected>who?</option>
+</select>
+</li>
+<li>
+Select the position, to which the new link should be connected, on the left edge of his/her rectangle: 
+<select id="rhs_person_left_edge" name="rhs_person_left_edge"></select>
+from the top of the edge
+<br>
+(Note: The already occupied position(s) is/are disabled.)
+</li>
+<li>
+Select the type of the new horizontal link: 
+<input type="radio" name="horizontal_link_type2" value="single" id="horizontal_link_type2_single">
+<label for="horizontal_link_type2_single">single-line link</label>
+<input type="radio" name="horizontal_link_type2" value="double" checked id="horizontal_link_type2_double">
+<label for="horizontal_link_type2_double">double-line link</label>
+</li>
+<li><input type="button" value="Add the new link as specified above" onclick="add_h_link_2()"></li>
+</ul>
+</td>
+</tr>
+
+<tr class="menu_hlink">
+<th>Increase the allowable number of horizontally connectable partners</th>
+<td>
+Select the target person
+<select id="target_of_increase_of_hlinks" name="target_of_increase_of_hlinks"></select>,
+and select the 
+<input type="radio" name="target_side" value="lhs" id="target_side_lhs" checked>
+<label for="target_side_lhs">left edge</label>
+or
+<input type="radio" name="target_side" value="rhs" id="target_side_rhs">
+<label for="target_side_rhs">right edge</label>.
+Then,
+<input type="button" value="increase the allowable number of partners" onclick="increase_num_of_hlinks()"> connectable to the selected edge of the rectangle of the target person.
+<br>
+(Note: The number is 7 by default and can be increased to 15, 31, 63, &hellip;.)
+</li>
+</ul>
+</td>
+</tr>
+
+<tr class="menu_hlink">
+<th>Remove a horizontal link</th>
+<td>
+Select the horizontal link to be removed 
+<select id="hlink_to_remove" name="hlink_to_remove"></select>
+and 
+<input type="button" value="remove it from the diagram" onclick="remove_h_link()">.
+</td>
+</tr>
+
+<tr class="menu_vlink">
+<th>Add a vertical link</th>
+<td>
+<ul>
+<li>
+Select a parent (or ancestor) <select id="parent_1" name="parent_1"></select> and
+a child (or descendant) <select id="child_1" name="child_1"></select>, 
+specify the type of a new vertical link as
+<input type="radio" name="vertical_link1_type" value="solid" checked id="vertical_link1_type_solid">
+<label for="vertical_link1_type_solid">a solid line</label>
+or
+<input type="radio" name="vertical_link1_type" value="dashed" id="vertical_link1_type_dashed">
+<label for="vertical_link1_type_dashed">a dashed line</label>,
+and
+<input type="button" value="add the vertical link as specified" onclick="add_v_link_1()">.
+</li>
+<li>
+ALTERNATIVELY, 
+<!--既に横線で結ばれている二人-->
+select a horizontal link 
+<select id="parents_2" name="parents_2"></select>,
+select a child
+<select id="child_2" name="child_2"></select>,
+specify the type of a new vertical link as
+<input type="radio" name="vertical_link2_type" value="solid" checked id="vertical_link2_type_solid">
+<label for="vertical_link2_type_solid">a solid line</label>
+or
+<input type="radio" name="vertical_link2_type" value="dashed" id="vertical_link2_type_dashed">
+<label for="vertical_link2_type_dashed">a dashed line</label>,
+and
+<input type="button" value="add the vertical link as specified" onclick="add_v_link_2()">.
+</li>
+</ul>
+</td>
+</tr>
+
+
+<tr class="menu_vlink">
+<th>Remove a vertical link</th>
+<td>
+Select the vertical link to be removed
+<select id="vlink_to_remove" name="vlink_to_remove"></select>
+and
+<input type="button" value="remove it from the diagram" onclick="remove_v_link()">.
+</td>
+</tr>
+
+<tr class="menu_move_person">
+<th>Move a person</th>
+<td>
+<ul>
+<li>
+Select a person to be moved:
+<select id="target_person" name="target_person"></select>
+</li>
+<li>
+Select the moving direction:
+<input type="radio" name="moving_direction" value="up" checked id="moving_direction_up">
+<label for="moving_direction_up">up</label>
+
+<input type="radio" name="moving_direction" value="down" id="moving_direction_down">
+<label for="moving_direction_down">down</label>
+
+<input type="radio" name="moving_direction" value="left" id="moving_direction_left">
+<label for="moving_direction_left">left</label>
+
+<input type="radio" name="moving_direction" value="right" id="moving_direction_right">
+<label for="moving_direction_right">right</label>
+</li>
+<li>
+Specify how much this person should be moved: 
+<input type="text" name="how_much_moved" size="3"> px
+</li>
+<li>
+<input type="button" value="Move him/her as specified above" onclick="move_person()">.
+</li>
+</ul>
+</td>
+</tr>
+
+<tr class="menu_move_person">
+<th>Align a person with another</th>
+<td>
+<ul>
+<li>
+Select a target person to be moved:
+<select id="person_to_align" name="person_to_align"></select> 
+</li>
+<li>
+Select a reference person whose position should be used as the reference point:
+<select id="ref_person" name="ref_person"></select>
+</li>
+<li>
+Specify the type of alignment: 
+<select id="alignment_type" name="alignment_type">
+<option value="h_align_left">left-aligned</option>
+<option value="h_align_center" selected>center-aligned</option>
+<option value="h_align_right">right-aligned</option>
+<option value="v_align_top">top-aligned</option>
+<option value="v_align_middle">middle-aligned</option>
+<option value="v_align_bottom">bottom-aligned</option>
+</select>
+</li>
+<li>
+<input type="button" value="Align the target person with the reference person" onclick="align_person()">.
+</li>
+</td>
+</tr>
+
+
+<tr class="menu_move_person">
+<th>Move a person with reference to his/her parent(s) or child(ren)</th>
+<td>
+<ul>
+<li>
+Select a target person to be moved:
+<select id="person_to_center" name="person_to_center"></select>
+</li>
+<li>
+<input type="button" value="Move the target person" onclick="center_person_wrt_upper_link()"> so that the vertical link from his/her parent(s) will be straight, or
+</li>
+<li>
+ALTERNATIVELY,
+<input type="button" value="move the target person" onclick="center_person_wrt_lower_links()"> so that he/she will be positioned at the center, in the horizontal direction, of the position(s) of his/her child(ren) connected to him/her.
+</li>
+</ul>
+</td>
+</tr>
+
+<tr class="menu_move_person">
+<th>Move down a person and his/her descendants</th>
+<td>
+<ul>
+<li>
+Select a target person to be moved down:
+<select id="person_to_move_down" name="person_to_move_down"></select>
+</li>
+<li>
+Specify how much the target person and his/her descendants should be moved down: <input type="text" name="how_much_moved_down" size="3"> px
+</li>
+<li>
+<input type="button" value="Move down the target person and his/her descendants" onclick="move_down_person_and_descendants()">.
+</li>
+</ul>
+</td>
+</tr>
+
+<tr class="menu_move_person">
+<th>Move persons cascadingly to the right</th>
+<td>
+Note: This menu is for moving a target person and all the persons reachable from him/her by following any links downwards or rightwards.
+<ul>
+<li>
+Select the target person:
+<select id="person_to_move_right" name="person_to_move_right"></select>.
+</li>
+<li>
+Specify how much the persons should be moved right:
+<input type="text" name="how_much_moved_right" size="3"> px
+</li>
+<li>
+<input type="button" value="Move them rightwards" onclick="move_right_collectively()">.
+</li>
+</ul>
+</td>
+</tr>
+
+<tr class="menu_move_person">
+<th>Move persons cascadingly to the left</th>
+<td>
+Note: This menu is for moving a target person and all the persons reachable from him/her by following any links downwards or leftwards.
+<ul>
+<li>
+Select the target person to be moved left:
+<select id="person_to_move_left" name="person_to_move_left"></select>.
+</li>
+<li>
+Specify how much the persons should be moved left:
+<input type="text" name="how_much_moved_left" size="3"> px
+</li>
+<li>
+<input type="button" value="Move them leftwards" onclick="move_left_collectively()">.
+</li>
+</ul>
+</td>
+</tr>
+
+<tr class="menu_shift_all">
+<th>Shift the whole diagram</th>
+<td>
+<ul>
+<li>Select the shifting direction:
+
+<input type="radio" name="shift_direction" value="up" checked id="shift_direction_up">
+<label for="shift_direction_up">up</label>
+
+<input type="radio" name="shift_direction" value="down" id="shift_direction_down">
+<label for="shift_direction_down">down</label>
+
+<input type="radio" name="shift_direction" value="left" id="shift_direction_left">
+<label for="shift_direction_left">left</label>
+
+<input type="radio" name="shift_direction" value="right" id="shift_direction_right">
+<label for="shift_direction_right">right</label>
+</li>
+<li>
+Specify how much the whole diagram should be shifted:
+<input type="text" name="how_much_shifted" size="3"> px
+</li>
+<li>
+<input type="button" value="Shift the whole diagram as specified above" onclick="shift_all()">
+</li>
+</ul>
+</td>
+</tr>
+
+<tr class="menu_whole_size">
+<th>Modify the height of the whole diagram</th>
+<td>
+The current height is <span id="current_height"></span> px.
+Enter the amount for increasing the height 
+(<input type="text" name="height_diff" size="3"> px), and 
+<input type="button" value="modify the height as specified" onclick="modify_height()">.
+<br>
+Note: Enter a negative integer if you want to decrease the height.
+</td>
+</tr>
+
+<tr class="menu_whole_size">
+<th>Modify the width of the whole diagram</th>
+<td>
+The current width is <span id="current_width"></span> px.
+Enter the amount for increasing the width 
+(<input type="text" name="width_diff" size="3"> px), and
+<input type="button" value="modify the width as specified" onclick="modify_width()">.
+<br>
+Note: Enter a negative integer if you want to decrease the width.
+</td>
+</tr>
+
+<tr class="menu_output">
+<th>See the SVG code</th>
+<td>
+<input type="button" value="Output the current SVG code in the box below" onclick="output_svg_src()">
+<code id="svg_code"></code>
+</td>
+</tr>
+
+<tr class="menu_output">
+<th>Download the SVG file of the current state</th>
+<td>
+<input type="button" value="Download the SVG file" onclick="download_svg()"> of the current state, using 
+<input type="text" size="10" name="filename_prefix" value="pedigree" onchange="set_prefix()"/> as the prefix of the file name.
+<br>
+Note: In order to display the diagram of the downloaded SVG file appropriately, download <a href="pedigree_svg.css" download="pedigree_svg.css">the cascading style sheet (CSS) file</a> and then put the CSS file and the downloaded SVG file on the same folder (i.e., the same directory) on your computer.
+</td>
+</tr>
+
+<tr class="menu_output">
+<th>Download the SVG file of any preferable step</th>
+<td>The following is the list of download links for SVG files corresponding to all the steps so far.  The prefix of each downloaded file will be as specified in the above input field in the above menu.
+<br>
+<ul id="svg_backup"></ul></td>
+</tr>
+
+<tr class="menu_output">
+<th>Output the list of names</th>
+<td>
+Check the box <input type="checkbox" name="output_notes" id="output_notes" checked>
+<label for="output_notes">if notes should also be output</label>.
+
+<input type="button" value="Output the list of names" onclick="list_persons()"> in ascending order.
+<code id="list_of_persons"></code>
+</td>
+</tr>
+
+<tr class="menu_read">
+<th>Read an SVG file created and saved before</th>
+<td>Select your SVG file
+(<input type="file" id="input_svg_file" name="input_svg_file" />)
+and
+<input type="button" value="display the diagram of the file" onclick="read_in()">.
+</td>
+</tr>
+
+<tr class="menu_read">
+<th>Read automatically saved SVG data</th>
+<td>If there is automatically saved SVG data, 
+<input type="button" value="read it and display the diagram as read" onclick="read_automatically_saved_data()">.
+<br>
+Note: It depends on your browser settings whether SVG data can be automatically saved or not.
+The SVG data, if any, will be deleted when you close this tab or quit the browser.
+This reading menu is only a makeshift measure against disappearance of data due to your unintended actions such as going back/forward to another page in this tab or reloading this page.
+</td>
+</tr>
+
+</table>
+</form>
+
+<nav>[
+<a href="https://piyo-ko.github.io/index.html#eng">Home</a> |
+<a href="pedigree.html">Japanese version</a> |
+<a href="https://twitter.com/share?text=@pi__yo__ko%20" target="_blank">Contact me on Twitter</a> |
+<a href="https://piyo-ko.github.io/tools/svg2png.html">Convert your SVG file into PNG format</a> (the linked page is written in Japanese) |
+<a href="https://github.com/piyo-ko/pedigree">About this page</a>
+]</nav>
+</body>
+</html>
