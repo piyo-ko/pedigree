@@ -3084,7 +3084,14 @@ function list_persons() {
   } else { // 注釈は出力しない場合 (ID と名前のみ出力する)
     p.map(x => { s += x.id + ',' + x.name + '\n'; });
   }
-  document.getElementById('list_of_persons').textContent = s;
+
+  const b = new Blob([s], {type :'text/plain'});
+  const a = document.createElement('a');
+  document.getElementsByTagName('body')[0].appendChild(a);
+  a.download = 'pedigree_name_data.txt';  // ファイル名は固定
+  a.href = URL.createObjectURL(b);
+  a.click();
+  document.getElementsByTagName('body')[0].removeChild(a);
 }
 
 /* 「作成済みのデータを読み込む」メニュー。本当は、読み取った内容が所望の形式か
