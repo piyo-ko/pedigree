@@ -352,7 +352,10 @@ const CONFIG = {
   badge_radius: 17,
   // 人名の矩形の頂点そのものをバッジの円の中心にすると、人名の文字にバッジが
   // かぶさってしまうので、バッジを少し外側へずらす。そのずらす量。
-  badge_offset: 6
+  badge_offset: 6,
+  // ラテン文字などを使用している際の横書きにおいて、文字の幅をフォントサイズの
+  // 何倍とみなすか (この倍率を使って、文字列の占める幅を簡易計算する)。
+  narrow_mode_scaling_factor: 0.6
 };
 
 /* SVG 用の名前空間 */
@@ -518,6 +521,16 @@ function tb_mode_str(orig_str) {
   return( orig_str.replace(/[(（]/g, '︵').replace(/[)）]/g, '︶') );
 }
 
+/* 文字列の占める高さまたは幅を、決め打ち的な簡易的計算で求める。 */
+function char_str_size(str, applied_font_size, writing_mode) {
+  let w = str.length * applied_font_size;
+  const mode = selected_radio_choice(document.menu.character_spacing_mode);
+  if (writing_mode !== 'tb' && mode === 'narrow_mode') {
+    w = Math.ceil(w * CONFIG.narrow_mode_scaling_factor);
+  }
+  return(w);
+}
+
 /* 「詳細を指定して横の関係を追加する」メニューの使用前に、ダミーの人物が
 明示的に選択されていることを保証するために、他のメニューの使用後 (手作業での
 人物の追加と、既存の SVG データの読み取りの結果としての人物の追加の後) に
@@ -549,14 +562,16 @@ function add_person() {
   const g = document.createElementNS(SVG_NS, 'g');
   g.setAttribute('id', new_personal_id + 'g');
   // 矩形の幅と高さを計算する。
-  let box_w, box_h;
-  const L = new_personal_name.length;
+  let txtlen_val, box_w, box_h;
   if (verticalize) { // 縦書き
-    box_h = CONFIG.font_size * L + CONFIG.v_text_dy * 2;
+    txtlen_val = char_str_size(new_personal_name, CONFIG.font_size, 'tb');
+    box_h = txtlen_val + CONFIG.v_text_dy * 2;
     box_w = CONFIG.v_text_width;
   } else { // 横書き
     box_h = CONFIG.h_text_height;
-    box_w = CONFIG.font_size * L + CONFIG.h_text_dx * 2;
+    // 'rl' はとりあえず対象外 (というか便宜的にここでは 'lr' としている)
+    txtlen_val = char_str_size(new_personal_name, CONFIG.font_size, 'lr');
+    box_w = txtlen_val + CONFIG.h_text_dx * 2;
   }
   // 名前が長すぎたら枠を強制的に拡大する。
   if (box_h > P_GRAPH.svg_height) {modify_height_0(box_h - P_GRAPH.svg_height);}
@@ -606,10 +621,11 @@ function add_person() {
   add_text_node(t, new_personal_name);
   const t_attr = (verticalize) ?
     ( new Map([['id', new_personal_id + 't'], ['x', x], ['y', y],
-      ['textLength', CONFIG.font_size * L], ['writing-mode', 'tb'],
+      ['textLength', txtlen_val], [lengthAdjust, 'spacingAndGlyphs'], 
+      ['writing-mode', 'tb'],
       ['dx', CONFIG.v_text_dx], ['dy', CONFIG.v_text_dy]]) ) :
     ( new Map([['id', new_personal_id + 't'], ['x', x], ['y', y],
-      ['textLength', CONFIG.font_size * L], 
+      ['textLength', txtlen_val], [lengthAdjust, 'spacingAndGlyphs'], 
       ['dx', CONFIG.h_text_dx], ['dy', CONFIG.h_text_dy]]) );
   t_attr.forEach(function(val, key) { t.setAttribute(key, val); });
   g.appendChild(t);  add_text_node(g, '\n');
@@ -869,20 +885,20 @@ function rename_person() {
 
   // 今の名前の (表示上の) 長さ (単位: px) を求める
   const txt = document.getElementById(pid + 't');
-  let cur_textLength = txt.getAttribute('textLength');
-  if (cur_textLength === undefined || cur_textLength === null || cur_textLength === '') {
-    cur_textLength = CONFIG.font_size * txt.textContent.length;
-  } else {
-    cur_textLength = parseInt(cur_textLength);
-  }
+  const cur_textLength = txt.hasAttribute('textLength') ? 
+                         parseInt(txt.getAttribute('textLength')) :
+                         CONFIG.font_size * txt.textContent.length;
+  // なおここで textLength 属性がない場合とは、古い版で作ったデータである場合の
+  // ことなので、新規追加した char_str_size 関数は使わないで単純な掛け算を使う。
 
-  // 修正後の名前の文字列を決定する
-  const writing_mode = txt.getAttribute('writing-mode');
+  // 修正後の名前の文字列を決定する。なお、writing_mode は後で使うので、
+  // 指定されていない場合は 'lr' と見なすことにより必ず値を持つようにしておく。
+  const writing_mode = txt.hasAttribute('writing-mode') ?
+                       txt.getAttribute('writing-mode') : 'lr';
   if (writing_mode === 'tb') { new_name = tb_mode_str(new_name); }
 
   // 修正後の名前の (表示上最低限必要な) 長さ (単位: px) を求める
-  const new_textLength = new_name.length * CONFIG.font_size;
-
+  const new_textLength = char_str_size(new_name, CONFIG.font_size, writing_mode);
 
   if (MODE.func_rename_person > 0) {
     console.log('cur_textLength=' + cur_textLength + ', new_name=' + new_name + ', new_textLength=' + new_textLength + ', shrink_rect_if_name_shortened=' + shrink_rect_if_name_shortened);
@@ -895,6 +911,7 @@ function rename_person() {
     // それに合わせて減らす) ことも考えられるが、とりあえず、そうしないでおく。
     // 名前とその (表示上の) 長さの更新だけ行う。
     txt.setAttribute('textLength', new_textLength);
+    txt.setAttribute('lengthAdjust', 'spacingAndGlyphs');
     txt.textContent = new_name;
     if (MODE.func_rename_person > 0) { console.log('* length unchanged'); }
   } else if (new_textLength < cur_textLength) {
@@ -918,6 +935,7 @@ function rename_person() {
         // text 要素の上辺の位置を、更新後の矩形の上辺の位置に合わせて下げる。
         txt.setAttribute('y', get_rect_info(pid).y_top);
         txt.setAttribute('textLength', new_textLength);
+        txt.setAttribute('lengthAdjust', 'spacingAndGlyphs');
         txt.textContent = new_name;
         if (MODE.func_rename_person > 0) {
           console.log('new_rect_height=' + new_rect_height + ', new_dy=' + new_dy);
@@ -927,6 +945,7 @@ function rename_person() {
         let res = decrease_width(pid, new_textLength + CONFIG.h_text_dx * 2);
         if (res) {
           txt.setAttribute('textLength', new_textLength);
+          txt.setAttribute('lengthAdjust', 'spacingAndGlyphs');
           txt.textContent = new_name;
         } else { // 常に true のはずだが一応。
           const a = {ja: 'エラーです。ごめんなさい。', en: 'Unexpected error.'};
@@ -937,6 +956,7 @@ function rename_person() {
       if (MODE.func_rename_person > 0) { console.log('* not shirink'); }
       // 余白のバランスを保つため、textLength は今の値のままにしておく。
       txt.textContent = new_name;  // 名前だけ更新する。
+      txt.setAttribute('lengthAdjust', 'spacingAndGlyphs');
     }
   } else { // 今の表示上の長さには収まらないほど、名前が長くなる。
     if (MODE.func_rename_person > 0) { console.log('* insufficient length'); }
@@ -951,12 +971,14 @@ function rename_person() {
         increase_height(pid, min_new_rect_height);
         txt.setAttribute('dy', CONFIG.v_text_dy);  // dy を初期値に戻す
         txt.setAttribute('textLength', new_textLength);
+        txt.setAttribute('lengthAdjust', 'spacingAndGlyphs');
         txt.textContent = new_name;
       } else { // 矩形自体は必要最小限以上の高さがある。
         // dy を調整すれば、今の矩形のままで新たな名前に十分な高さが確保できる。
         const new_dy = Math.floor( (cur_rect_height - new_textLength)/2 );
         txt.setAttribute('dy', new_dy);
         txt.setAttribute('textLength', new_textLength);
+        txt.setAttribute('lengthAdjust', 'spacingAndGlyphs');
         txt.textContent = new_name;
         // 矩形の大きさはそのまま。
       }
@@ -964,6 +986,7 @@ function rename_person() {
       let res = increase_width(pid, new_textLength + CONFIG.h_text_dx * 2);
       if (res) {
         txt.setAttribute('textLength', new_textLength);
+        txt.setAttribute('lengthAdjust', 'spacingAndGlyphs');
         txt.textContent = new_name;
       } else { // 右辺からリンクしている相手が近すぎる場合
         const a = {
@@ -1138,9 +1161,12 @@ function extend_rect() {
     txt.setAttribute('dy', cur_dy + Math.floor(CONFIG.font_size / 2));
     let cur_textLength = parseInt(txt.getAttribute('textLength'));
     if (isNaN(cur_textLength)) { // 古い版では textLength 指定をしていないので
+      // ここは古い版への対応のための処理だから、新たに追加した関数
+      // char_str_size で計算しては駄目で、以下の単純な掛け算で計算する。
       cur_textLength = CONFIG.font_size * txt.textContent.length;
     }
     txt.setAttribute('textLength', cur_textLength + CONFIG.font_size);
+    txt.setAttribute('lengthAdjust', 'spacingAndGlyphs');
   } else { // 横書き (上下に 1 行ずつ空行を追加したような見かけになる)
     txt.setAttribute('dy', cur_dy + CONFIG.font_size);
   }
@@ -1159,10 +1185,13 @@ function annotate() {
     alert(a[LANG]); return;
   }
   const note_color = selected_choice(document.menu.note_color);
-  const note_length = note.length * CONFIG.note_font_size;
   const rect_info = get_rect_info(pid);
   const txt_elt = document.getElementById(pid + 't');
-  const writing_mode = txt_elt.getAttribute('writing-mode');
+  // writing_mode は文字列の長さの計算にも使うので、指定されていない
+  // 場合は 'lr' と見なすことにより必ず値を持つようにしておく。
+  const writing_mode = txt_elt.hasAttribute('writing-mode') ?
+          txt_elt.getAttribute('writing-mode') : 'lr';
+  const note_length = char_str_size(note, CONFIG.note_font_size, writing_mode);
   const g_elt = document.getElementById(pid + 'g');
   let new_note_No = 0, cur_elt = g_elt.firstChild;
   while (cur_elt !== null) {
@@ -1205,6 +1234,8 @@ function annotate() {
     }
   }
   const att = new Map([['id', pid + 'n' + new_note_No], ['x', x], ['y', y], 
+                       ['textLength', note_length], 
+                       ['lengthAdjust', 'spacingAndGlyphs'], 
                        ['dx', dx], ['dy', dy], ['class', 'note ' + note_color]]);
   att.forEach(function(val, key) { note_elt.setAttribute(key, val); });
   add_text_node(g_elt, '  ');
