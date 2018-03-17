@@ -1110,9 +1110,12 @@ function change_width(pid, new_width, width_is_to_be_increased) {
     const hlink = document.getElementById(hid);
     const end_x = parseInt(hlink.dataset.end_x); // リンクの右端
     const y = parseInt(hlink.dataset.y);
-    draw_h_link(hlink, start_x, end_x, y);
-    const mid_x = Math.floor((start_x + end_x) / 2);
-    const diff_x = mid_x - parseInt(hlink.dataset.connect_pos_x);
+    // 現状での縦リンクのぶら下がり位置を、横リンクを再描画する前に退避する。
+    const cur_connect_pos_x = parseInt(hlink.dataset.connect_pos_x);
+    draw_h_link(hlink, start_x, end_x, y); // 横リンクを再描画
+    // 再描画後の、新たなぶら下がり位置を読み取る。
+    const new_connect_pos_x = parseInt(hlink.dataset.connect_pos_x);
+    const diff_x = new_connect_pos_x - cur_connect_pos_x;
     id_str_to_arr(hlink.dataset.lower_links).map(function(vid) {
       redraw_v_link(vid, diff_x, 0, 0, 0);
     });
