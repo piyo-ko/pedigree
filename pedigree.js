@@ -621,11 +621,11 @@ function add_person() {
   add_text_node(t, new_personal_name);
   const t_attr = (verticalize) ?
     ( new Map([['id', new_personal_id + 't'], ['x', x], ['y', y],
-      ['textLength', txtlen_val], [lengthAdjust, 'spacingAndGlyphs'], 
+      ['textLength', txtlen_val], ['lengthAdjust', 'spacing'], 
       ['writing-mode', 'tb'],
       ['dx', CONFIG.v_text_dx], ['dy', CONFIG.v_text_dy]]) ) :
     ( new Map([['id', new_personal_id + 't'], ['x', x], ['y', y],
-      ['textLength', txtlen_val], [lengthAdjust, 'spacingAndGlyphs'], 
+      ['textLength', txtlen_val], ['lengthAdjust', 'spacingAndGlyphs'], 
       ['dx', CONFIG.h_text_dx], ['dy', CONFIG.h_text_dy]]) );
   t_attr.forEach(function(val, key) { t.setAttribute(key, val); });
   g.appendChild(t);  add_text_node(g, '\n');
@@ -911,7 +911,7 @@ function rename_person() {
     // それに合わせて減らす) ことも考えられるが、とりあえず、そうしないでおく。
     // 名前とその (表示上の) 長さの更新だけ行う。
     txt.setAttribute('textLength', new_textLength);
-    txt.setAttribute('lengthAdjust', 'spacingAndGlyphs');
+    //txt.setAttribute('lengthAdjust', 'spacingAndGlyphs');
     txt.textContent = new_name;
     if (MODE.func_rename_person > 0) { console.log('* length unchanged'); }
   } else if (new_textLength < cur_textLength) {
@@ -935,7 +935,7 @@ function rename_person() {
         // text 要素の上辺の位置を、更新後の矩形の上辺の位置に合わせて下げる。
         txt.setAttribute('y', get_rect_info(pid).y_top);
         txt.setAttribute('textLength', new_textLength);
-        txt.setAttribute('lengthAdjust', 'spacingAndGlyphs');
+        txt.setAttribute('lengthAdjust', 'spacing');
         txt.textContent = new_name;
         if (MODE.func_rename_person > 0) {
           console.log('new_rect_height=' + new_rect_height + ', new_dy=' + new_dy);
@@ -956,7 +956,7 @@ function rename_person() {
       if (MODE.func_rename_person > 0) { console.log('* not shirink'); }
       // 余白のバランスを保つため、textLength は今の値のままにしておく。
       txt.textContent = new_name;  // 名前だけ更新する。
-      txt.setAttribute('lengthAdjust', 'spacingAndGlyphs');
+      txt.setAttribute('lengthAdjust', 'spacing');
     }
   } else { // 今の表示上の長さには収まらないほど、名前が長くなる。
     if (MODE.func_rename_person > 0) { console.log('* insufficient length'); }
@@ -971,14 +971,14 @@ function rename_person() {
         increase_height(pid, min_new_rect_height);
         txt.setAttribute('dy', CONFIG.v_text_dy);  // dy を初期値に戻す
         txt.setAttribute('textLength', new_textLength);
-        txt.setAttribute('lengthAdjust', 'spacingAndGlyphs');
+        txt.setAttribute('lengthAdjust', 'spacing');
         txt.textContent = new_name;
       } else { // 矩形自体は必要最小限以上の高さがある。
         // dy を調整すれば、今の矩形のままで新たな名前に十分な高さが確保できる。
         const new_dy = Math.floor( (cur_rect_height - new_textLength)/2 );
         txt.setAttribute('dy', new_dy);
         txt.setAttribute('textLength', new_textLength);
-        txt.setAttribute('lengthAdjust', 'spacingAndGlyphs');
+        txt.setAttribute('lengthAdjust', 'spacing');
         txt.textContent = new_name;
         // 矩形の大きさはそのまま。
       }
@@ -1169,7 +1169,7 @@ function extend_rect() {
       cur_textLength = CONFIG.font_size * txt.textContent.length;
     }
     txt.setAttribute('textLength', cur_textLength + CONFIG.font_size);
-    txt.setAttribute('lengthAdjust', 'spacingAndGlyphs');
+    txt.setAttribute('lengthAdjust', 'spacing');
   } else { // 横書き (上下に 1 行ずつ空行を追加したような見かけになる)
     txt.setAttribute('dy', cur_dy + CONFIG.font_size);
   }
@@ -1204,7 +1204,7 @@ function annotate() {
   }
   const note_elt = document.createElementNS(SVG_NS, 'text');
 
-  let x, y, dx, dy;
+  let x, y, dx, dy, lengthAdjust;
   if (writing_mode === 'tb') { // 縦書き。
     add_text_node(note_elt, tb_mode_str(note));
     x = rect_info.x_left - (CONFIG.note_font_size + CONFIG.note_margin) * (new_note_No + 1);
@@ -1216,6 +1216,7 @@ function annotate() {
     dx = Math.floor(CONFIG.note_font_size / 2);
     dy = 0;
     y = y_of_tb_note(pid, note_length);
+    lengthAdjust = 'spacing';
     // 枠の下端からもはみ出るなら枠を拡大する
     if (y + note_length > P_GRAPH.svg_height) {
       modify_height_0(y + note_length - P_GRAPH.svg_height);
@@ -1231,6 +1232,7 @@ function annotate() {
     dx = 0;
     dy = CONFIG.note_margin + Math.floor(CONFIG.note_font_size / 2);
     x = x_of_lr_note(pid, note_length);
+    lengthAdjust = 'spacingAndGlyphs';
     // 枠の右端からもはみ出るなら枠を拡大する
     if (x + note_length > P_GRAPH.svg_width) {
       modify_width_0(x + note_length - P_GRAPH.svg_width);
@@ -1238,7 +1240,7 @@ function annotate() {
   }
   const att = new Map([['id', pid + 'n' + new_note_No], ['x', x], ['y', y], 
                        ['textLength', note_length], 
-                       ['lengthAdjust', 'spacingAndGlyphs'], 
+                       ['lengthAdjust', lengthAdjust], 
                        ['dx', dx], ['dy', dy], ['class', 'note ' + note_color]]);
   att.forEach(function(val, key) { note_elt.setAttribute(key, val); });
   add_text_node(g_elt, '  ');
