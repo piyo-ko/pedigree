@@ -12,7 +12,7 @@ A pedigree diagram in SVG format is good in that:
 * the style applied to the diagram can be easily customized by editing [the Cascading Style Sheet (CSS) file used](https://piyo-ko.github.io/pedigree/pedigree_svg.css), and 
 * many application programs (including Web browsers) support SVG format.
 
-Two simple example diagrams are shown below (precisely speaking, they are Portable Network Graphics (PNG) images converted from original images in SVG format).  Links to other examples are [listed on another page] (https://piyo-ko.github.io/fun/pedigree_examples_index.html).  Although Chinese/Japanese characters (not Latin characters) are used in these diagrams, you will still see that how complex diagram can be created by using [this drawing tool](https://piyo-ko.github.io/pedigree/pedigree-en.html). 
+Two simple example diagrams are shown below (precisely speaking, they are Portable Network Graphics (PNG) images converted from original images in SVG format).  Links to other examples are [listed on another page](https://piyo-ko.github.io/fun/pedigree_examples_index.html).  Although Chinese/Japanese characters (not Latin characters) are used in these diagrams, you will still see that how complex diagram can be created by using [this drawing tool](https://piyo-ko.github.io/pedigree/pedigree-en.html). 
 
 Please do not hesitate to contact me on GitHub (`@piyo-ko`) or on Twitter (`@pi__yo__ko`).
 
