@@ -2697,7 +2697,9 @@ function move_right_collectively() {
     alert(a[LANG]); return;
   }
   const half_amount = Math.floor(amount / 2);
-  let target_persons = [base_pid];
+  let target_persons = [base_pid], target_hlinks = [], target_vlinks = [];
+  let hlinks_to_extend_right = [], vlinks_to_move_their_upper_ends = [],
+      vlinks_to_move_their_lower_ends = [];
 
   // target_persons.length がループ内で変化することに注意。
   for (let i = 0; i < target_persons.length; i++) {
@@ -2707,51 +2709,81 @@ function move_right_collectively() {
     if (right_end + amount > P_GRAPH.svg_width) {
       modify_width_0(right_end + amount - P_GRAPH.svg_width);
     }
-    // 今注目している人物をとりあえず右へ移動する。
-    move_rect_and_txt(cur_person, amount, 0);
 
     let gr = document.getElementById(cur_person + 'g');
 
     // 右側につながっている人物についての処理
     apply_to_each_hid_pid_pair(gr.dataset.right_links, function(hid, pid) {
-      // 右辺からの横リンクでつながっている人物を処理対象に加える
+      // 右辺からの横リンクと、そのつながる先の相手は、右に移動する対象である。
+      push_if_not_included(target_hlinks, hid);
       push_if_not_included(target_persons, pid);
-      // その横リンクの再描画 (とりあえず左端を移動させる)
-      redraw_h_link(hid, amount, 0, 0);
-      // その横リンクからぶら下がる縦リンクを調べる
+      // その横リンクからぶら下がる縦リンクと、その下端につながった子も、
+      // 右に移動する対象である。
       const vids = document.getElementById(hid).dataset.lower_links;
       id_str_to_arr(vids).map(function(vid) {
-        // 縦リンクの上端を half_amount だけ右へ移動させる。
-        redraw_v_link(vid, half_amount, 0, 0, 0);
-        const v = document.getElementById(vid);
-        push_if_not_included(target_persons, v.dataset.child);
+        push_if_not_included(target_vlinks, vid);
+        const c = document.getElementById(vid).dataset.child;
+        push_if_not_included(target_persons, c);
       });
     });
 
     apply_to_each_hid_pid_pair(gr.dataset.left_links, function(hid, pid) {
-      // 左辺につながっている横リンクの再描画 (右端を移動させる)。
-      redraw_h_link(hid, 0, amount, 0);
-      // その横リンクからぶら下がる縦リンクの上端を half_amount だけ
-      // 右へ移動させる。
+      // 今見ている人物が、誰かの右につながっているので右への移動対象となったの
+      // だとしたら、今見ている人物の左辺につながっている横リンクは、既に右への
+      // 移動対象として登録されているかもしれない。
+      if (target_persons.includes(pid)) { return; }
+      // が、未登録であれば、そのような左辺からの横リンクは、右端だけ右へ移動
+      // させる (左端は動かさないので、全体としては右へ延びる感じになる) 対象。
+      hlinks_to_extend_right.push(hid);
+      // その横リンクからぶら下がっている縦リンクは、横リンクが延びるのに連れて、
+      // 上端の位置が (半量だけ) 右へずれることになる。
       const hlink = document.getElementById(hid);
       id_str_to_arr(hlink.dataset.lower_links).map(function(vid) {
-        redraw_v_link(vid, half_amount, 0, 0, 0);
+        vlinks_to_move_their_upper_ends.push(vid);
       });
     });
 
-    // 上辺につながっている縦リンクの再描画 (下端を移動させる)。
+    // 今見ている人物の上辺につながる縦リンクは、この人物の移動に連れて、下端の
+    // 位置が右へずれることになる。
     id_str_to_arr(gr.dataset.upper_links).map(function(vid) {
-      redraw_v_link(vid, 0, 0, amount, 0);
+      vlinks_to_move_their_lower_ends.push(vid);
     });
 
-    // 下辺につながっている縦リンクの再描画 (上端を移動させる)。
+    // 今見ている人物の下辺につながる縦リンクは、この人物の移動に連れて、全体が
+    // 右に移動することになる (なぜなら下端につながっている子も右へ移動させる対象
+    // だから)。
     id_str_to_arr(gr.dataset.lower_links).map(function(vid) {
-      redraw_v_link(vid, amount, 0, 0, 0);
-      // 縦リンクで接続された相手 (子) を、処理対象に加える。
+      push_if_not_included(target_vlinks, vid);
       const c = document.getElementById(vid).dataset.child;
       push_if_not_included(target_persons, c);
     });
   }
+
+  // 右への単純な移動。
+  target_persons.map(pid => { move_rect_and_txt(pid, amount, 0); });
+  target_hlinks.map(hid => { redraw_h_link(hid, amount, amount, 0); });
+  target_vlinks.map(vid => { redraw_v_link(vid, amount, 0, amount, 0); });
+  // 右端のみ右へ移動させるべき横リンク。
+  hlinks_to_extend_right.map(hid => {
+    // 全体を移動させる対象として重複して登録されている可能性があるかもしれない
+    // ので、一応チェックする。
+    if (target_hlinks.includes(hid)) { return; }
+    redraw_h_link(hid, 0, amount, 0);
+  });
+  // 上端のみを半量だけ右へ移動させるべき縦リンク。
+  vlinks_to_move_their_upper_ends.map(vid => {
+    // 全体を移動させる対象として重複して登録されている可能性があるかもしれない
+    // ので、一応チェックする。
+    if (target_vlinks.includes(vid)) { return; }
+    redraw_v_link(vid, half_amount, 0, 0, 0);
+  });
+  // 下端のみを右へ移動させるべき縦リンク。
+  vlinks_to_move_their_lower_ends.map(vid => {
+    // 全体を移動させる対象として重複して登録されている可能性があるかもしれない
+    // ので、一応チェックする。
+    if (target_vlinks.includes(vid)) { return; }
+    redraw_v_link(vid, 0, 0, amount, 0);
+  });
 
   const n = name_str(base_pid),
         b = {ja: n + 'から右・下をたどった先をまとめて右に移動する',
