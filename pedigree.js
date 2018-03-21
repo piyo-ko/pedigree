@@ -1524,8 +1524,8 @@ function add_h_link_0(p1_id, p2_id, link_type) {
   if (MODE.func_add_h_link > 0) {
     console.log('add_h_link() ends.');  P_GRAPH.print();
   }
-  const b = {ja: displayed_str_ja + 'の間の横の関係を追加',
-             en: 'adding a horizontal link between ' + displayed_str_en};
+  const b = {ja: displayed_str.ja + 'の間の横の関係を追加',
+             en: 'adding a horizontal link between ' + displayed_str.en};
   backup_svg(b[LANG]);
 }
 
@@ -2697,7 +2697,7 @@ function align_person() {
   }
   const r = name_str(ref_person), a = name_str(person_to_align),
         b = {ja: r + 'を基準にして' + a + 'を移動', 
-             en: 'moving ' + a + 'w.r.t. ' + r};
+             en: 'moving ' + a + ' w.r.t. ' + r};
   backup_svg(b[LANG]);
 }
 
