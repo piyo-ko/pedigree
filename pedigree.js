@@ -355,7 +355,12 @@ const CONFIG = {
   badge_offset: 6,
   // ラテン文字などを使用している際の横書きにおいて、文字の幅をフォントサイズの
   // 何倍とみなすか (この倍率を使って、文字列の占める幅を簡易計算する)。
-  narrow_mode_scaling_factor: 0.6
+  narrow_mode_scaling_factor: 0.6,
+  // 横リンクから縦リンクをぶら下げる位置として許される範囲を百分率で示す。
+  // 横リンクの左端を 0% とし、右端を 100% として、上記範囲の下限と上限を
+  // ここで定数として決めておく。
+  min_percentage_for_connect_pos_x: 5,
+  max_percentage_for_connect_pos_x: 95
 };
 
 /* SVG 用の名前空間 */
@@ -393,7 +398,8 @@ window.top.onload = function () {
     m.parent_1, m.child_1, m.child_2, 
     m.target_person, m.ref_person, m.person_to_align, m.person_to_center,
     m.person_to_move_down, m.person_to_move_right, m.person_to_move_left);
-  HLINK_SELECTORS.push(m.hlink_to_remove, m.parents_2);
+  HLINK_SELECTORS.push(m.hlink_to_remove, m.parents_2, 
+    m.hlink_to_ajdust_its_connect_pos_x);
   VLINK_SELECTORS.push(m.vlink_to_remove);
 };
 
@@ -1843,7 +1849,7 @@ function draw_new_h_link(hid, link_start_x, link_end_x, link_y, link_type, pid_l
   h_link.setAttribute('id', hid);  // IDを記録
   h_link.setAttribute('class', link_type);  // 線種も記録
   // その path 要素に対して属性を設定することで横リンクを描画する
-  draw_h_link(h_link, link_start_x, link_end_x, link_y);
+  draw_h_link(h_link, link_start_x, link_end_x, link_y, true);
   // 左右の人物を表す g 要素の data-* 属性と、このリンクの data-* 属性を設定
   const g_left = document.getElementById(pid_left + 'g');
   const g_right = document.getElementById(pid_right + 'g');
@@ -1860,7 +1866,7 @@ function draw_new_h_link(hid, link_start_x, link_end_x, link_y, link_type, pid_l
 }
 
 /* 横リンクの新規描画・再描画の共通部分 */
-function draw_h_link(h_link, link_start_x, link_end_x, link_y) {
+function draw_h_link(h_link, link_start_x, link_end_x, link_y, use_default_connect_pos_x = false) {
   if (MODE.func_draw_h_link > 0) {
     console.log('draw_h_link(h_link,' + link_start_x + ',' + link_end_x + ',' + link_y + ')');
   }
@@ -1869,7 +1875,25 @@ function draw_h_link(h_link, link_start_x, link_end_x, link_y) {
   const link_len = link_end_x - link_start_x;
   // この横リンクを起点にして将来的に縦リンクを作成する場合に備え、
   // 縦リンクの起点の座標も計算しておく (後で data-* 属性として設定する)
-  const connect_pos_x = link_start_x + Math.floor(link_len / 2);
+  let cur_connect_pos_x = h_link.dataset.connect_pos_x;
+  let connect_pos_x;
+  if (use_default_connect_pos_x || cur_connect_pos_x === undefined || 
+      cur_connect_pos_x === null || cur_connect_pos_x === '' || 
+      isNaN(cur_connect_pos_x)) {
+    // 横リンクを新たに作る場合など、デフォルトの位置 (真ん中) にしたい場合。
+    // あるいは、なぜか data-connect_pos_x 属性が未設定という想定外の場合。
+    connect_pos_x = link_start_x + Math.floor(link_len / 2);
+  } else {
+    // 真ん中以外の位置から縦リンクをぶら下げるように調整済みの場合、その
+    // 相対位置 (横リンクの長さに対する、左端からぶら下げ位置までの長さの
+    // 比率) を維持するように、新たなぶら下げ位置を決める。
+    let cur_start_x, cur_end_x, p;
+    cur_connect_pos_x = parseInt(cur_connect_pos_x);
+    cur_start_x = parseInt(h_link.dataset.start_x);
+    cur_end_x = parseInt(h_link.dataset.end_x);
+    p = (cur_connect_pos_x - cur_start_x) / (cur_end_x - cur_start_x);
+    connect_pos_x = link_start_x + Math.floor(link_len * p);
+  }
   let connect_pos_y;
   if (h_link.getAttribute('class') === 'double') { // 二重線
     const upper_line_y = link_y - 2, lower_line_y = link_y + 2;
@@ -2210,6 +2234,74 @@ function redraw_v_link(vid, upper_pt_dx, upper_pt_dy, lower_pt_dx, lower_pt_dy) 
     parseInt(dat.to_x) + lower_pt_dx, parseInt(dat.to_y) + lower_pt_dy);
 }
 
+/* 「縦の関係の開始位置を調整する」メニュー用。
+横リンクが選択されると実行される。範囲指定用のスライダ要素に対して、
+ユーザがスライダを動かし始める前の初期値 (選ばれた横リンクにおける現在の
+縦リンクのぶら下げ位置に対応する値) を設定する。 */
+function set_current_connect_pos_x() {
+  // 選択された横リンクの ID
+  const hid = selected_choice(document.menu.hlink_to_ajdust_its_connect_pos_x);
+  // その横リンクにおける、現状の縦リンクのぶら下げ位置を表す百分率を求める。
+  const hlink_dat = document.getElementById(hid).dataset;
+  const start_x = parseInt(hlink_dat.start_x);
+  const connect_pos_x = parseInt(hlink_dat.connect_pos_x);
+  const end_x = parseInt(hlink_dat.end_x);
+  let p = Math.round( (connect_pos_x - start_x) / (end_x - start_x) * 100);
+  // 一応、下限と上限の範囲内に収まるかを検査して、収まるように保証しておく。
+  if (p < CONFIG.min_percentage_for_connect_pos_x) {
+    p = CONFIG.min_percentage_for_connect_pos_x;
+  }
+  if (CONFIG.max_percentage_for_connect_pos_x < p) {
+    p = CONFIG.max_percentage_for_connect_pos_x;
+  }
+  // 求めた百分率を、範囲指定用のスライダ要素に反映させる。
+  document.menu.connect_pos_x_range.value = p;
+}
+/* 「縦の関係の開始位置を調整する」メニュー用。
+スライダ要素の値が変化すると実行される。ユーザがスライダを動かすと、その動きに
+合わせて、縦リンクのぶら下げ位置を移動させる。また、「真ん中に戻す」ボタンが
+押されたときも、それに合わせて縦リンクのぶら下げ位置を移動させる。 */
+function apply_connect_pos_x_input() {
+  // 選択されている横リンクの ID
+  const hid = selected_choice(document.menu.hlink_to_ajdust_its_connect_pos_x);
+  // 範囲指定用のスライダ要素で指定されている百分率
+  const p = parseInt(document.menu.connect_pos_x_range.value);
+  // その百分率に対応する x 座標を求める
+  const hlink_dat = document.getElementById(hid).dataset;
+  const start_x = parseInt(hlink_dat.start_x);
+  const end_x = parseInt(hlink_dat.end_x);
+  const new_connect_pos_x = start_x + Math.round( (end_x - start_x) * p / 100);
+  // 現在の位置との差分を求める
+  const cur_connect_pos_x = parseInt(hlink_dat.connect_pos_x);
+  const diff = new_connect_pos_x - cur_connect_pos_x;
+  // 横リンクの属性を書き換える
+  hlink_dat.connect_pos_x = new_connect_pos_x;
+  // 子への縦リンクがあれば再描画する
+  id_str_to_arr(hlink_dat.lower_links).map(vid => {
+    redraw_v_link(vid, diff, 0, 0, 0);
+  });
+}
+/* 「縦の関係の開始位置を調整する」メニュー用。スライダ要素の値が変化し終わる
+(確定する) と実行される。「真ん中に戻す」ボタンが押されたときにも実行される。
+「作業の各段階のファイルをダウンロードする」メニュー用のダウンロードリンクを
+作成する。 */
+function record_connect_pos_x_adjustment() {
+  // 選択されている横リンクの ID
+  const hid = selected_choice(document.menu.hlink_to_ajdust_its_connect_pos_x);
+  const hlink_dat = document.getElementById(hid).dataset;
+  const lhs = name_str(hlink_dat.lhs_person);
+  const rhs = name_str(hlink_dat.rhs_person);
+  const msg = {ja: lhs + 'と' + rhs + 'の間の線の下に縦線をぶら下げる位置を調整',
+               en: 'on the link between ' + lhs + ' and ' + rhs + ', adjusting the position from which vertical links are to run down'};
+  backup_svg(msg[LANG]);
+}
+/* 「縦の関係の開始位置を調整する」メニュー用。スライダの位置を真ん中に戻す。 */
+function reset_connect_pos_x() {
+  document.menu.connect_pos_x_range.value = 50;
+  apply_connect_pos_x_input();
+  record_connect_pos_x_adjustment();
+}
+
 /* 「縦の関係を削除する」メニュー */
 function remove_v_link() {
   const vlink_id = selected_choice(document.menu.vlink_to_remove);
@@ -2368,12 +2460,13 @@ function move_person_horizontally(pid, dx) {
     // 線幅の調整のため、+1 との操作が必要 (end_x は横リンクの属性から読んだ
     // ものだから調整不要)。
     draw_h_link(h_link, moved_r.x_right + 1, end_x, parseInt(h_link.dataset.y));
-    // この横リンクから下へ縦リンクがのびている場合は、横リンクの中点を
-    // 計算し直して、その中点から縦リンクを再描画せねばならない。
-    const mid_x = Math.floor( (moved_r.x_right + end_x)/2 );
+    // この横リンクから下へ縦リンクがのびている場合は、縦リンクを再描画せねば
+    // ならない。縦リンクのぶら下がり位置は、再描画後の横リンクの属性を読めば
+    // わかる。
+    const connect_pos_x = parseInt(h_link.dataset.connect_pos_x);
     id_str_to_arr(h_link.dataset.lower_links).map(function(v) {
       const v_elt = document.getElementById(v);
-      draw_v_link(v_elt, mid_x, parseInt(h_link.dataset.connect_pos_y),
+      draw_v_link(v_elt, connect_pos_x, parseInt(h_link.dataset.connect_pos_y),
         parseInt(v_elt.dataset.to_x), parseInt(v_elt.dataset.to_y));
     });
   });
@@ -2384,12 +2477,13 @@ function move_person_horizontally(pid, dx) {
     const start_x = parseInt(h_link.dataset.start_x);
     // このリンクの右端はこの人物の左端 (moved_r.x_left) であり、ここが動く。
     draw_h_link(h_link, start_x, moved_r.x_left - 1, parseInt(h_link.dataset.y));
-    // この横リンクから下へ縦リンクがのびている場合は、横リンクの中点を
-    // 計算し直して、その中点から縦リンクを再描画せねばならない。
-    const mid_x = Math.floor( (start_x + moved_r.x_left)/2 );
+    // この横リンクから下へ縦リンクがのびている場合は、縦リンクを再描画せねば
+    // ならない。縦リンクのぶら下がり位置は、再描画後の横リンクの属性を読めば
+    // わかる。
+    const connect_pos_x = parseInt(h_link.dataset.connect_pos_x);
     id_str_to_arr(h_link.dataset.lower_links).map(function(v) {
       const v_elt = document.getElementById(v);
-      draw_v_link(v_elt, mid_x, parseInt(h_link.dataset.connect_pos_y),
+      draw_v_link(v_elt, connect_pos_x, parseInt(h_link.dataset.connect_pos_y),
         parseInt(v_elt.dataset.to_x), parseInt(v_elt.dataset.to_y));
     });
   });
@@ -2687,8 +2781,7 @@ function move_down_person_and_descendants() {
   backup_svg(b[LANG]);
 }
 
-/* 「まとめて右に移動する」メニュー。同じ横リンクの再描画を 2 回行うなど、
-効率は悪いが、簡単に記述することを優先してある。 */
+/* 「まとめて右に移動する」メニュー。 */
 function move_right_collectively() {
   const base_pid = selected_choice(document.menu.person_to_move_right);
   const amount = parseInt(document.menu.how_much_moved_right.value);
@@ -2696,7 +2789,6 @@ function move_right_collectively() {
     const a = {ja: '正数を指定してください', en: 'Enter a positive integer.'};
     alert(a[LANG]); return;
   }
-  const half_amount = Math.floor(amount / 2);
   let target_persons = [base_pid], target_hlinks = [], target_vlinks = [];
   let hlinks_to_extend_right = [], vlinks_to_move_their_upper_ends = [],
       vlinks_to_move_their_lower_ends = [];
@@ -2736,10 +2828,10 @@ function move_right_collectively() {
       // させる (左端は動かさないので、全体としては右へ延びる感じになる) 対象。
       hlinks_to_extend_right.push(hid);
       // その横リンクからぶら下がっている縦リンクは、横リンクが延びるのに連れて、
-      // 上端の位置が (半量だけ) 右へずれることになる。
+      // 上端の位置が (ぶら下げ位置に応じて決まる長さだけ) 右へずれることになる。
       const hlink = document.getElementById(hid);
       id_str_to_arr(hlink.dataset.lower_links).map(function(vid) {
-        vlinks_to_move_their_upper_ends.push(vid);
+        vlinks_to_move_their_upper_ends.push({vid: vid, hid: hid});
       });
     });
 
@@ -2770,12 +2862,20 @@ function move_right_collectively() {
     if (target_hlinks.includes(hid)) { return; }
     redraw_h_link(hid, 0, amount, 0);
   });
-  // 上端のみを半量だけ右へ移動させるべき縦リンク。
-  vlinks_to_move_their_upper_ends.map(vid => {
+  // 上端のみを右へ (ぶら下げ位置に応じて決まる長さだけ) 移動させるべき縦リンク。
+  vlinks_to_move_their_upper_ends.map(vid_hid_pair => {
+    const vid = vid_hid_pair.vid, hid = vid_hid_pair.hid;
     // 全体を移動させる対象として重複して登録されている可能性があるかもしれない
     // ので、一応チェックする。
     if (target_vlinks.includes(vid)) { return; }
-    redraw_v_link(vid, half_amount, 0, 0, 0);
+    // 縦リンクの新たなぶら下げ位置を、再描画後の横リンクの属性から読みとる。
+    // 現在のぶら下げ位置は、当該たてリンクの属性から読みとる。その差分が移動量。
+    const hlink = document.getElementById(hid),
+          vlink = document.getElementById(vid),
+          new_connect_pos_x = parseInt(hlink.dataset.connect_pos_x),
+          cur_connect_pos_x = parseInt(vlink.dataset.from_x),
+          diff = new_connect_pos_x - cur_connect_pos_x;
+    redraw_v_link(vid, diff, 0, 0, 0);
   });
   // 下端のみを右へ移動させるべき縦リンク。
   vlinks_to_move_their_lower_ends.map(vid => {
@@ -2799,7 +2899,6 @@ function move_left_collectively() {
     const a = {ja: '正数を指定してください', en: 'Enter a positive integer.'};
     alert(a[LANG]); return;
   }
-  const half_amount = Math.floor(amount / 2);
   let target_persons = [base_pid], target_hlinks = [], target_vlinks = [];
   let hlinks_to_extend_left = [], vlinks_to_move_their_upper_ends = [],
       vlinks_to_move_their_lower_ends = [];
@@ -2838,10 +2937,10 @@ function move_left_collectively() {
       // させる (右端は動かさないので、全体としては左へ延びる感じになる) 対象。
       hlinks_to_extend_left.push(hid);
       // その横リンクからぶら下がっている縦リンクは、横リンクが延びるのに連れて、
-      // 上端の位置が (半量だけ) 左へずれることになる。
+      // 上端の位置が (ぶら下げ位置に応じて決まる長さだけ) 左へずれることになる。
       const hlink = document.getElementById(hid);
       id_str_to_arr(hlink.dataset.lower_links).map(function(vid) {
-        vlinks_to_move_their_upper_ends.push(vid);
+        vlinks_to_move_their_upper_ends.push({vid: vid, hid: hid});
       });
     });
     // 今見ている人物の上辺につながる縦リンクは、この人物の移動に連れて、下端の
@@ -2873,12 +2972,20 @@ function move_left_collectively() {
     if (target_hlinks.includes(hid)) { return; }
     redraw_h_link(hid, -amount, 0, 0);
   });
-  // 上端のみを半量だけ左へ移動させるべき縦リンク。
-  vlinks_to_move_their_upper_ends.map(vid => {
+  // 上端のみを左へ (ぶら下げ位置に応じて決まる長さだけ) 移動させるべき縦リンク。
+  vlinks_to_move_their_upper_ends.map(vid_hid_pair => {
+    const vid = vid_hid_pair.vid, hid = vid_hid_pair.hid;
     // 全体を移動させる対象として重複して登録されている可能性があるかもしれない
     // ので、一応チェックする。
     if (target_vlinks.includes(vid)) { return; }
-    redraw_v_link(vid, -half_amount, 0, 0, 0);
+    // 縦リンクの新たなぶら下げ位置を、再描画後の横リンクの属性から読みとる。
+    // 現在のぶら下げ位置は、当該たてリンクの属性から読みとる。その差分が移動量。
+    const hlink = document.getElementById(hid),
+          vlink = document.getElementById(vid),
+          new_connect_pos_x = parseInt(hlink.dataset.connect_pos_x),
+          cur_connect_pos_x = parseInt(vlink.dataset.from_x),
+          diff = new_connect_pos_x - cur_connect_pos_x;
+    redraw_v_link(vid, diff, 0, 0, 0);
   });
   // 下端のみを左へ移動させるべき縦リンク。
   vlinks_to_move_their_lower_ends.map(vid => {

@@ -345,6 +345,23 @@ and
 </td>
 </tr>
 
+<tr class="menu_vlink">
+<th>On a horizontal link, adjust the position from which vertical links are to run down</th>
+<td>
+<ul>
+<li>Select a target horizontal link: 
+<select id="hlink_to_ajdust_its_connect_pos_x" name="hlink_to_ajdust_its_connect_pos_x" onchange="set_current_connect_pos_x()"></select>
+</li>
+<li>By using the slider, specify the position (on the target horizontal link) from which vertical links should start and run down to children: <br>
+[near the left end]
+<input id="connect_pos_x_range" name="connect_pos_x_range" type="range" min="5" max="95" step="1" oninput="apply_connect_pos_x_input()" onchange="record_connect_pos_x_adjustment()">
+[near the right end]
+<br>
+Or <input type="button" value="reset the position to the middle point" onclick="reset_connect_pos_x()">.
+</li>
+</ul>
+</td>
+</tr>
 
 <tr class="menu_vlink">
 <th>Remove a vertical link</th>
