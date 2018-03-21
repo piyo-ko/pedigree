@@ -3193,7 +3193,7 @@ function set_prefix() {
   const backup_links = document.getElementById('svg_backup').getElementsByTagName('a');
   const L = backup_links.length;
   for (let i = 0; i < L; i++) {
-    let matches = backup_links[i].download.match(/^.+_step_(\d+)\.svg$/);
+    let matches = backup_links[i].download.match(/^.*_step_(\d+)\.svg$/);
     if (matches === null || matches.length !== 2) {
       alert('error in set_prefix()'); return;
     }
