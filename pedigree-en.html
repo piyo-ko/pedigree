@@ -26,23 +26,22 @@ The range of his/her rectangle's X coordinate is <span class="info">[<span id="i
 of which center is <span id="info_x_mid" class="info">&nbsp;</span>, and
 the range of his/her rectangle's Y coordinate is <span class="info">[<span id="info_y_start"></span>, <span id="info_y_end"></span>]</span>.
 <input type="button" value="Details of links connected to him/her" onclick="show_detailed_info_about_links()">
-<!--Details of vertical and horizontal links connected to him/her-->
 </p>
 
 <div id="detailed_info_about_links"></div>
 
+<form name="menu">
 <p class="btn" role="menu">
-<span class="btn" role="menuitem" onclick="show_menu('menu_person')">Individuals</span>
-<span class="btn" role="menuitem" onclick="show_menu('menu_hlink')">Horizontal links</span>
-<span class="btn" role="menuitem" onclick="show_menu('menu_vlink')">Vertical links</span>
-<span class="btn" role="menuitem" onclick="show_menu('menu_move_person')">Moving persons</span>
-<span class="btn" role="menuitem" onclick="show_menu('menu_shift_all')">Overall shifting</span>
-<span class="btn" role="menuitem" onclick="show_menu('menu_whole_size')">Resizing</span>
-<span class="btn" role="menuitem" onclick="show_menu('menu_output')">Output</span>
-<span class="btn" role="menuitem" onclick="show_menu('menu_read')">Read-in</span>
+<button class="menu" type="button" onclick="show_menu('menu_person')">Individuals</button>
+<button class="menu" type="button" onclick="show_menu('menu_hlink')">Horizontal links</button>
+<button class="menu" type="button" onclick="show_menu('menu_vlink')">Vertical links</button>
+<button class="menu" type="button" onclick="show_menu('menu_move_person')">Moving persons</button>
+<button class="menu" type="button" onclick="show_menu('menu_shift_all')">Overall shifting</button>
+<button class="menu" type="button" onclick="show_menu('menu_whole_size')">Resizing</button>
+<button class="menu" type="button" onclick="show_menu('menu_output')">Output</button>
+<button class="menu" type="button" onclick="show_menu('menu_read')">Read-in</button>
 </p>
 
-<form name="menu">
 <table id="menu_table">
 
 <tr class="menu_person">
@@ -327,7 +326,6 @@ and
 </li>
 <li>
 ALTERNATIVELY, 
-<!--既に横線で結ばれている二人-->
 select a horizontal link 
 <select id="parents_2" name="parents_2"></select>,
 select a child

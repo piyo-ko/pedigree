@@ -160,23 +160,28 @@ span.info {
 p.btn {
   padding-left: 1em;
   padding-right: 1em;
-  line-height: 240%;
 }
-span.btn {
+button.menu {
+  color: navy;
+  font-weight: bold;
   white-space: pre;
-  font-family: serif;
   border-top: deepskyblue solid 4pt;
   border-right: teal solid 4pt;
   border-bottom: teal solid 4pt;
   border-left: deepskyblue solid 4pt;
   border-radius: 8pt;
-  padding: 2pt;
   margin-right: 1em;
   background: powderblue;
 }
-span.btn:hover {
+button.menu:hover {
   background: navy;
   color: powderblue;
+}
+[lang="ja"] button {
+  font-family: "筑紫B丸ゴシック", sans-serif;
+}
+[lang="en"] button {
+  font-family: Optima, Skia, sans-serif;
 }
 
 span.note_color.blue {
