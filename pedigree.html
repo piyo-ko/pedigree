@@ -61,7 +61,7 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 <tr class="menu_person">
 <th>人を<wbr>追加する</th>
 <td>
-名前 <input type="text" name="new_personal_name" size="10"> を入力。
+<label for="new_personal_name">名前 <input type="text" name="new_personal_name" id="new_personal_name" size="10"> を入力。</label>
 
 <input type="checkbox" name="verticalize" id="verticalize"> 
 <label for="verticalize">名前を縦書きにする場合</label>はチェック。
@@ -80,7 +80,7 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 <input type="radio" name="position" value="random" id="position_random" checked>
 <label for="position_random">ランダム</label>、あるいは、
 <select id="position_ref" name="position_ref"></select>
-を基準としてその
+を<label for="position_ref">基準として</label>その
 <input type="radio" name="position" value="upper_left" id="position_upper_left">
 <label for="position_upper_left">左上</label>
 <input type="radio" name="position" value="upper_center" id="position_upper_center">
@@ -127,10 +127,9 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 <td>
 <select id="annotation_target" name="annotation_target"></select>
 に対して、
-<input type="text" name="annotation_txt" size="20">
-という注釈の行を
-<input type="button" value="追加する" onclick="annotate()">
-(色は
+<input type="text" name="annotation_txt" id="annotation_txt" size="20">
+という<label for="annotation_txt">注釈の行</label>
+(<label for="note_color">注釈の色</label>は
 <select id="note_color" name="note_color">
 <option value="blue" selected>青</option>
 <option value="sage_green">青緑</option>
@@ -139,7 +138,9 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 <option value="red">赤</option>
 <option value="purple">赤紫</option>
 </select>
-)。
+)
+を
+<input type="button" value="追加する" onclick="annotate()">。
 <br>
 色見本:
 <span class="note_color blue">■</span>
@@ -260,8 +261,8 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 <tr class="menu_vlink">
 <th>縦の関係を<wbr>追加する</th>
 <td>
-親 (祖先) <select id="parent_1" name="parent_1"></select> と
-子 (子孫) <select id="child_1" name="child_1"></select> を
+<label for="parent_1">親 (祖先)</label> <select id="parent_1" name="parent_1"></select> と
+<label for="child_1">子 (子孫)</label> <select id="child_1" name="child_1"></select> を
 
 <input type="radio" name="vertical_link1_type" value="solid" checked id="vertical_link1_type_solid">
 <label for="vertical_link1_type_solid">実線</label>
@@ -437,7 +438,7 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 <th>現状の<wbr>ファイルを<wbr>ダウンロードする</th>
 <td>
 現状の図について SVG 形式のファイルを<input type="button" value="ダウンロードする" onclick="download_svg()">
-(ファイル名の接頭辞: <input type="text" size="10" name="filename_prefix" value="pedigree" onchange="set_prefix()"/>)。
+(<label for="filename_prefix">ファイル名の接頭辞:</label> <input type="text" size="10" name="filename_prefix" id="filename_prefix" value="pedigree" onchange="set_prefix()"/>)。
 <br>
 なお、ダウンロードした SVG ファイルと同じフォルダに、<a href="pedigree_svg.css" download="pedigree_svg.css">このスタイルシートファイル</a>を置いてください。
 </td>
@@ -458,7 +459,7 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 
 <tr class="menu_read">
 <th>作成済みの<wbr>データを<wbr>読み込む</th>
-<td>SVG ファイルを選択して 
+<td><label for="input_svg_file">SVG ファイルを選択して</label>
 (<input type="file" id="input_svg_file" name="input_svg_file" />)、
 その内容を上の枠内に
 <input type="button" value="表示する" onclick="read_in()">。

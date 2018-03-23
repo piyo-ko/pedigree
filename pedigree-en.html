@@ -62,7 +62,7 @@ narrow mode (suitable for Latin characters)
 <th>Add a person</th>
 <td>
 <ul>
-<li>Enter the name of a person to be added: <input type="text" name="new_personal_name" size="10">.</li>
+<li><label for="new_personal_name">Enter the name of a person to be added:</label> <input type="text" name="new_personal_name" id="new_personal_name" size="10"></li>
 
 <li>Check the box
 <input type="checkbox" name="verticalize" id="verticalize"> 
@@ -98,7 +98,9 @@ decide to locate the person
 <label for="position_lower_center">just below</label>, or
 <input type="radio" name="position" value="lower_right" id="position_lower_right">
 <label for="position_lower_right">at the lower right of</label>
-<select id="position_ref" name="position_ref"></select>.
+<label for="position_ref">another person
+<select id="position_ref" name="position_ref"></select>
+as a reference point</label>.
 </li>
 <li><input type="button" value="Add this person as specified above" onclick="add_person()"></li>
 </ul>
@@ -106,12 +108,12 @@ decide to locate the person
 </tr>
 
 <tr class="menu_person">
-<th>Modify a name</th>
+<th>Rename a person</th>
 <td>
 Specify the new name of
 <select id="person_to_rename" name="person_to_rename"></select> as
 <input type="text" name="renamed_as" size="10"> and
-<input type="button" value="modify the name so" onclick="rename_person()">.
+<input type="button" value="rename the person so" onclick="rename_person()">.
 <br>
 (Note: Check the box 
 <input type="checkbox" id="shrink_rect_if_name_shortened" name="shrink_rect_if_name_shortened"> beforehand,
@@ -136,11 +138,11 @@ and
 <li>Select the person to be annotated:
 <select id="annotation_target" name="annotation_target"></select>
 </li>
-<li>Enter the note to be added:
-<input type="text" name="annotation_txt" size="20">
+<li><label for="annotation_txt">Enter the note to be added:</label>
+<input type="text" name="annotation_txt" id="annotation_txt" size="20">
 </li>
 <li>
-Select the color of the note:
+<label for="note_color">Select the color of the note:</label>
 <select id="note_color" name="note_color">
 <option value="blue" selected>blue</option>
 <option value="sage_green">sage green</option>
@@ -313,8 +315,8 @@ and
 <td>
 <ul>
 <li>
-Select a parent (or ancestor) <select id="parent_1" name="parent_1"></select> and
-a child (or descendant) <select id="child_1" name="child_1"></select>, 
+<label for="parent_1">Select a parent (or ancestor)</label> <select id="parent_1" name="parent_1"></select> and
+<label for="child_1">a child (or descendant)</label> <select id="child_1" name="child_1"></select>, 
 specify the type of a new vertical link as
 <input type="radio" name="vertical_link1_type" value="solid" checked id="vertical_link1_type_solid">
 <label for="vertical_link1_type_solid">a solid line</label>
@@ -576,7 +578,7 @@ Note: Enter a negative integer if you want to decrease the width.
 <th>Download the SVG file of the current state</th>
 <td>
 <input type="button" value="Download the SVG file" onclick="download_svg()"> of the current state, using 
-<input type="text" size="10" name="filename_prefix" value="pedigree" onchange="set_prefix()"/> as the prefix of the file name.
+<input type="text" size="10" name="filename_prefix" id="filename_prefix" value="pedigree" onchange="set_prefix()"/> as <label for="filename_prefix">the prefix of the file name</label>.
 <br>
 Note: In order to display the diagram of the downloaded SVG file appropriately, download <a href="pedigree_svg.css" download="pedigree_svg.css">the cascading style sheet (CSS) file</a> and then put the CSS file and the downloaded SVG file on the same folder (i.e., the same directory) on your computer.
 </td>
@@ -601,7 +603,7 @@ Check the box <input type="checkbox" name="output_notes" id="output_notes" check
 
 <tr class="menu_read">
 <th>Read an SVG file created and saved before</th>
-<td>Select your SVG file
+<td><label for="input_svg_file">Select your SVG file</label>
 (<input type="file" id="input_svg_file" name="input_svg_file" />)
 and
 <input type="button" value="display the diagram of the file" onclick="read_in()">.
