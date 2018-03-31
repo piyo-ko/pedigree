@@ -6,11 +6,11 @@
 <script type="text/javascript" src="mode_setting.js"></script>
 <script type="text/javascript" src="pedigree.js"></script>
 <base target="_top">
-<title>Draw a pedigree diagram in SVG format</title>
+<title>Draw a pedigree chart in SVG format</title>
 </head>
 <body>
 
-<h1>Draw a pedigree diagram in SVG format</h1>
+<h1>Draw a pedigree chart in SVG format</h1>
 
 <div id="tree_canvas_div">
 <svg id="pedigree" xmlns="http://www.w3.org/2000/svg" width="600" height="300" viewBox="0 0 600 300">
@@ -217,7 +217,7 @@ Enter the integer number (from 0 to 999 inclusive) which should be written withi
 Select the person to be removed
 <select id="person_to_remove" name="person_to_remove"></select>
 and
-<input type="button" value="remove him/her from the diagram" onclick="remove_person()">.
+<input type="button" value="remove him/her from the chart" onclick="remove_person()">.
 </td>
 </tr>
 
@@ -306,7 +306,7 @@ Then,
 Select the horizontal link to be removed 
 <select id="hlink_to_remove" name="hlink_to_remove"></select>
 and 
-<input type="button" value="remove it from the diagram" onclick="remove_h_link()">.
+<input type="button" value="remove it from the chart" onclick="remove_h_link()">.
 </td>
 </tr>
 
@@ -369,7 +369,7 @@ Or <input type="button" value="reset the position to the middle point" onclick="
 Select the vertical link to be removed
 <select id="vlink_to_remove" name="vlink_to_remove"></select>
 and
-<input type="button" value="remove it from the diagram" onclick="remove_v_link()">.
+<input type="button" value="remove it from the chart" onclick="remove_v_link()">.
 </td>
 </tr>
 
@@ -514,7 +514,7 @@ Specify how much the persons should be moved left:
 </tr>
 
 <tr class="menu_shift_all">
-<th>Shift the whole diagram</th>
+<th>Shift the whole chart</th>
 <td>
 <ul>
 <li>Select the shifting direction:
@@ -532,18 +532,18 @@ Specify how much the persons should be moved left:
 <label for="shift_direction_right">right</label>
 </li>
 <li>
-Specify how much the whole diagram should be shifted:
+Specify how much the whole chart should be shifted:
 <input type="text" name="how_much_shifted" size="3"> px
 </li>
 <li>
-<input type="button" value="Shift the whole diagram as specified above" onclick="shift_all()">
+<input type="button" value="Shift the whole chart as specified above" onclick="shift_all()">
 </li>
 </ul>
 </td>
 </tr>
 
 <tr class="menu_whole_size">
-<th>Modify the height of the whole diagram</th>
+<th>Modify the height of the whole chart</th>
 <td>
 The current height is <span id="current_height"></span> px.
 Enter the amount for increasing the height 
@@ -555,7 +555,7 @@ Note: Enter a negative integer if you want to decrease the height.
 </tr>
 
 <tr class="menu_whole_size">
-<th>Modify the width of the whole diagram</th>
+<th>Modify the width of the whole chart</th>
 <td>
 The current width is <span id="current_width"></span> px.
 Enter the amount for increasing the width 
@@ -580,7 +580,7 @@ Note: Enter a negative integer if you want to decrease the width.
 <input type="button" value="Download the SVG file" onclick="download_svg()"> of the current state, using 
 <input type="text" size="10" name="filename_prefix" id="filename_prefix" value="pedigree" onchange="set_prefix()"/> as <label for="filename_prefix">the prefix of the file name</label>.
 <br>
-Note: In order to display the diagram of the downloaded SVG file appropriately, download <a href="pedigree_svg.css" download="pedigree_svg.css">the cascading style sheet (CSS) file</a> and then put the CSS file and the downloaded SVG file on the same folder (i.e., the same directory) on your computer.
+Note: In order to display the chart of the downloaded SVG file appropriately, download <a href="pedigree_svg.css" download="pedigree_svg.css">the cascading style sheet (CSS) file</a> and then put the CSS file and the downloaded SVG file on the same folder (i.e., the same directory) on your computer.
 </td>
 </tr>
 
@@ -606,14 +606,14 @@ Check the box <input type="checkbox" name="output_notes" id="output_notes" check
 <td><label for="input_svg_file">Select your SVG file</label>
 (<input type="file" id="input_svg_file" name="input_svg_file" />)
 and
-<input type="button" value="display the diagram of the file" onclick="read_in()">.
+<input type="button" value="display the chart of the file" onclick="read_in()">.
 </td>
 </tr>
 
 <tr class="menu_read">
 <th>Read automatically saved SVG data</th>
 <td>If there is automatically saved SVG data, 
-<input type="button" value="read it and display the diagram as read" onclick="read_automatically_saved_data()">.
+<input type="button" value="read it and display the chart as read" onclick="read_automatically_saved_data()">.
 <br>
 Note: It depends on your browser settings whether SVG data can be automatically saved or not.
 The SVG data, if any, will be deleted when you close this tab or quit the browser.

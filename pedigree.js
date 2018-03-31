@@ -1216,7 +1216,7 @@ function annotate() {
     x = rect_info.x_left - (CONFIG.note_font_size + CONFIG.note_margin) * (new_note_No + 1);
     if (x < 0) {
       const a = {ja: '左からはみ出るので注釈をつけられません',
-                 en: 'Annotation failed because this new note would be out of the left edge of the outer frame of the whole diagram.'};
+                 en: 'Annotation failed because this new note would be out of the left edge of the outer frame of the whole chart.'};
       alert(a[LANG]); return;
     }
     dx = Math.floor(CONFIG.note_font_size / 2);
@@ -2409,7 +2409,7 @@ function move_person_horizontally(pid, dx) {
     if (r_linked_persons.length === 0) { // 右側でつながっている相手はいない
       if (P_GRAPH.svg_width < r.x_right + actual_dx) {
         const a = {ja: '右枠からはみ出るので、枠を拡大します。',
-                   en: 'The outer frame of the whole diagram is extended rightwards, since the target person will be moved out of the current frame.'};
+                   en: 'The outer frame of the whole chart is extended rightwards, since the target person will be moved out of the current frame.'};
         alert(a[LANG]);
         // 移動によって本人が右枠にぶつかるので、右枠を拡大する
         modify_width_0(r.x_right + actual_dx - P_GRAPH.svg_width);
@@ -2434,7 +2434,7 @@ function move_person_horizontally(pid, dx) {
         // 移動によって左枠からはみ出るので、はみ出ない範囲の移動にとどめる
         actual_dx = - r.x_left;
         const a = {ja: '左枠からはみ出さないように、移動量を' + actual_dx + 'pxに減らします。',
-                   en: 'The amount for the movement is changed to ' + actual_dx + ' px so as to keep this person inside the left edge of the outer frame of the whole diagram.'};
+                   en: 'The amount for the movement is changed to ' + actual_dx + ' px so as to keep this person inside the left edge of the outer frame of the whole chart.'};
         alert(a[LANG]);
       }
     } else { // 左側でつながっている相手がいる
@@ -2537,7 +2537,7 @@ function move_person_vertically(pid, dy) {
     if (0 < dy) { // 下への移動なので下端をチェックする
       if (P_GRAPH.svg_height < rect.y_bottom + actual_dy) {
         let a = {ja: 'はみ出し防止のため、下の枠を拡大します。',
-                 en: 'The outer frame of the whole diagram is extended downwards, since the target person will be moved out of the current frame.'};
+                 en: 'The outer frame of the whole chart is extended downwards, since the target person will be moved out of the current frame.'};
         alert(a[LANG]);
         modify_height_0(rect.y_bottom + actual_dy - P_GRAPH.svg_height);
       }
@@ -2545,7 +2545,7 @@ function move_person_vertically(pid, dy) {
       if (rect.y_top + actual_dy < 0) {
         actual_dy = - rect.y_top;
         let a = {ja: '上枠からはみ出さないように、移動量を' + actual_dy + 'pxに変更します。',
-                 en: 'The amount for the movement is changed to ' + actual_dy + ' px so as to keep this person inside the upper edge of the outer frame of the whole diagram.'};
+                 en: 'The amount for the movement is changed to ' + actual_dy + ' px so as to keep this person inside the upper edge of the outer frame of the whole chart.'};
         alert(a[LANG]);
       }
     }
@@ -3025,7 +3025,7 @@ function shift_all() {
     default     : dx = 0; dy = 0; break;
   }
   shift_all_0(dx, dy);
-  const b = {ja: '全体をずらす', en: 'shifting the whole diagram'};
+  const b = {ja: '全体をずらす', en: 'shifting the whole chart'};
   backup_svg(b[LANG]);
 }
 /* 「全体をずらす」メニューの実質部分。他のメニューからも利用したいので、
@@ -3114,7 +3114,7 @@ function modify_height() {
   }
   modify_height_0(h);
   const b = {ja: '全体の高さを変える', 
-             en: 'modifying the height of the whole diagram'};
+             en: 'modifying the height of the whole chart'};
   backup_svg(b[LANG]);
 }
 function modify_height_0(h_diff) {
@@ -3134,7 +3134,7 @@ function modify_width() {
   }
   modify_width_0(w);
   const b = {ja: '全体の幅を変える', 
-             en: 'modifying the width of the whole diagram'};
+             en: 'modifying the width of the whole chart'};
   backup_svg(b[LANG]);
 }
 function modify_width_0(w_diff) {

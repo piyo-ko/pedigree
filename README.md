@@ -1,18 +1,18 @@
-# Draw a pedigree diagram in SVG format
+# Draw a pedigree chart in SVG format
 # 系図を描いて SVG データにしてみよう
 
 ## Brief Description
-[This drawing tool](https://piyo-ko.github.io/pedigree/pedigree-en.html) allows you to draw a pedigree diagram (i.e., family tree diagram) free from taking care of the size of the area (or the size of the sheet of paper) where the diagram is to be embedded.  You can draw your diagram as you like (however large the diagram may become), and then scale the diagram as you need.  The scaling does not degrade the diagram's image quality because Scalable Vector Graphics (SVG) format is scalable, of course. 
+[This drawing tool](https://piyo-ko.github.io/pedigree/pedigree-en.html) allows you to draw a pedigree chart (i.e., family tree chart) free from taking care of the size of the area (or the size of the sheet of paper) where the chart is to be embedded.  You can draw your chart as you like (however large the chart may become), and then scale the chart as you need.  The scaling does not degrade the chart's image quality because Scalable Vector Graphics (SVG) format is scalable, of course. 
 
-A pedigree diagram in SVG format is good in that:
+A pedigree chart in SVG format is good in that:
 
 * it can be easily reused in different sizes, 
 * the file size of it is relatively small, 
 * it can be manually edited by using any text editor, 
-* the style applied to the diagram can be easily customized by editing [the Cascading Style Sheet (CSS) file used](https://piyo-ko.github.io/pedigree/pedigree_svg.css), and 
+* the style applied to the chart can be easily customized by editing [the Cascading Style Sheet (CSS) file used](https://piyo-ko.github.io/pedigree/pedigree_svg.css), and 
 * many application programs (including Web browsers) support SVG format.
 
-Two simple example diagrams are shown below (precisely speaking, they are Portable Network Graphics (PNG) images converted from original images in SVG format).  Links to other examples are [listed on another page](https://piyo-ko.github.io/fun/pedigree_examples_index.html).  Although Chinese/Japanese characters (not Latin characters) are used in these diagrams, you will still see that how complex diagram can be created by using [this drawing tool](https://piyo-ko.github.io/pedigree/pedigree-en.html). 
+Two simple example charts are shown below (precisely speaking, they are Portable Network Graphics (PNG) images converted from original images in SVG format).  Links to other examples are [listed on another page](https://piyo-ko.github.io/fun/pedigree_examples_index.html).  Although Chinese/Japanese characters (not Latin characters) are used in these charts, you will still see that how complex chart can be created by using [this drawing tool](https://piyo-ko.github.io/pedigree/pedigree-en.html). 
 
 Please do not hesitate to contact me on GitHub (`@piyo-ko`) or on Twitter (`@pi__yo__ko`).
 
