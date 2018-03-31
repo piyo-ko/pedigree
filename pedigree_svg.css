@@ -15,7 +15,7 @@ rect.masculine {
 }
 text {
   font-size: 24px;
-  font-family: 'ヒラギノ明朝 ProN';
+  font-family: 'ヒラギノ明朝 ProN', serif;
 }
 text.note, text.note.blue {
   font-size: 16px;
@@ -47,7 +47,7 @@ path {
   stroke: hsl(0, 0%, 50%);
 }
 path.dashed {
-  stroke-dasharray: 4,4;  /* "4,4" と指定すると駄目 */
+  stroke-dasharray: 4,4;
 }
 path.exceptional {
   stroke: hsl(330, 100%, 50%);
