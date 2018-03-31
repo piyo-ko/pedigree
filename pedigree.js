@@ -1360,6 +1360,12 @@ function add_num_badge() {
   const badge_pos = selected_radio_choice(document.menu.badge_pos);
   const badge_color = selected_choice(document.menu.badge_color);
   const pid = selected_choice(document.menu.person_to_add_badge);
+  const badge_id = pid + 'b_' + badge_pos;
+  if (document.getElementById(badge_id)) {
+    const a = {ja: '指定箇所には既にバッジがついています',
+               en: 'A badge already exists at the specified position.'};
+    alert(a[LANG]); return;
+  }
 
   // バッジ (円) の中心座標を求める
   const rect_info = get_rect_info(pid);
@@ -1372,7 +1378,7 @@ function add_num_badge() {
 
   // circle 要素を作る
   const circle = document.createElementNS(SVG_NS, 'circle');
-  const circle_attr = new Map([['id', pid + 'b_' + badge_pos],
+  const circle_attr = new Map([['id', badge_id],
     ['cx', center_x], ['cy', center_y], ['r', CONFIG.badge_radius],
     ['fill', badge_color]]);
   circle_attr.forEach(function(val, key) { circle.setAttribute(key, val); });

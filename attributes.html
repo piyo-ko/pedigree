@@ -53,7 +53,7 @@
 
 <p>
 なお、オプションで注釈も付けられるようにしたので、任意の個数の注釈用の <code>text</code> 要素が <code>g</code> 要素の中に含まれる可能性がある。
-また、オプションで番号のバッジを矩形の四隅に付けられるようにしたので、バッジを表す円に相当する <code>circle</code> 要素とその中の番号を表す <code>text</code> 要素が <code>g</code> 要素の中に含まれる可能性がある。今のところ、同じ位置 (たとえば矩形の「右上隅」という位置) に複数回バッジを追加することは許されていて、単にどんどん同じ位置に要素が重ねられてゆくだけである (バッジが不透明色なので見た目では分からない)。しかし ID の一意性が保証されない駄目駄目実装なので😱修正する予定。
+また、オプションで番号のバッジを矩形の四隅に付けられるようにしたので、バッジを表す円に相当する <code>circle</code> 要素とその中の番号を表す <code>text</code> 要素が <code>g</code> 要素の中に含まれる可能性がある。
 </p>
 
 <h3 id="g_element"><code>g</code> 要素</h3>
@@ -301,7 +301,7 @@
 <th><code>id</code></th>
 <td><code>p11b_upper_left</code> など</td>
 <td>バッジの作成時に自動的に割り当てられる。変更されない。</td>
-<td>人物の ID に b という接尾辞をつけ、アンダスコアでつないで、バッジの位置を示す文字列 (<code>upper_left</code>, <code>lower_left</code>, <code>upper_left</code>, <code>upper_right</code> のいずれか) をつなげたもの。あっ、現状のコードだと一意性を保証できていない! 😱</td>
+<td>人物の ID に b という接尾辞をつけ、アンダスコアでつないで、バッジの位置を示す文字列 (<code>upper_left</code>, <code>lower_left</code>, <code>upper_left</code>, <code>upper_right</code> のいずれか) をつなげたもの。</td>
 </tr>
 
 <tr>
@@ -347,7 +347,7 @@
 <th><code>id</code></th>
 <td><code>p11bn_upper_left</code> など</td>
 <td>バッジの作成時に自動的に割り当てられる。変更されない。</td>
-<td>対応する <a href="#circle_element"><code>circle</code> 要素</a>の <code>id</code> における接尾辞の b を bn に置き換えた文字列である……が、これも現状のコードだと一意性を保証できていない! 😱</td>
+<td>対応する <a href="#circle_element"><code>circle</code> 要素</a>の <code>id</code> における接尾辞の b を bn に置き換えた文字列である。</td>
 </tr>
 
 <tr>
