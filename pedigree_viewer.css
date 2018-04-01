@@ -1,0 +1,44 @@
+body {
+  background: hsl(210, 90%, 12%);
+  color: hsl(210, 20%, 90%);
+  font-family: serif;
+  padding-left: 0;
+  padding-right: 0;
+}
+#pedigree_display_area {
+  display: block;
+  border: solid 2px hsl(210, 100%, 60%);
+  text-align: center;
+  margin-left: 1vw;
+  margin-right: 1vw;
+  max-height: 75vh;
+  max-width: 86vw;
+  overflow: auto;
+}
+svg {
+  background: gainsboro;
+}
+
+dl {
+  margin: 1em;
+  border: solid 2px hsl(210, 100%, 60%);
+  max-height: 20vh;
+  overflow: auto;
+}
+dt {
+  float: left;
+  clear: left;
+  padding-right: 0;
+  margin-right: 0;
+  font-family: sans-serif;
+  color: hsl(240, 100%, 80%);
+}
+dd {
+  margin-left: 0;
+  padding-left: 0;
+  text-indent: 1em;
+}
+
+button {
+  background: hsl(210, 60%, 40%);
+}

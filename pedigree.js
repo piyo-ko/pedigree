@@ -3244,6 +3244,160 @@ function list_persons() {
   document.getElementsByTagName('body')[0].removeChild(a);
 }
 
+/* 「人名一覧つき系図をHTML 形式で出力する」メニュー用 */
+function make_html() {
+  let html_str = `<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="pedigree_viewer.css" type="text/css">
+<link rel="stylesheet" href="pedigree_svg.css" type="text/css">
+<script>
+const pedigree_data = `;
+
+  // pedigree_data なる配列を定義するステートメントの文字列を作る。
+  // pedigree_data の各要素は各人物に対応する。その要素は配列であり、その配列の
+  // 最初の要素 (pedigree_data[i][0]) は、その人物の ID であり、それに続く要素は
+  // その人物に関わる縦・横のリンクの ID である。
+  const pedigree_data_arr = new Array();
+  P_GRAPH.persons.map(pid => {
+    const arr = new Array();  // この人物用の配列を用意する
+    arr.push(pid); // 人物の ID
+    const g_dat = document.getElementById(pid + 'g').dataset;
+    id_str_to_arr(g_dat.upper_links).map(vid => {
+      arr.push(vid); // 親からの縦リンクの ID
+      const vlink_dat = document.getElementById(vid).dataset;
+      arr.push(vlink_dat.parent1);
+      if (vlink_dat.parent2 !== undefined && vlink_dat.parent2 !== null &&
+          vlink_dat.parent2 !== '') {
+        arr.push(vlink_dat.parent2);
+      }
+    });
+    const hlinks = g_dat.left_links + g_dat.right_links;
+    apply_to_each_hid_pid_pair(hlinks, function (hid, partner_pid) {
+      arr.push(hid); // 横リンクのID
+      arr.push(partner_pid); // 相手方の ID
+      const vids_str = document.getElementById(hid).dataset.lower_links;
+      id_str_to_arr(vids_str).map(vid => {
+        arr.push(vid); // 横リンクからぶら下がる、子への縦リンクの ID
+        arr.push(document.getElementById(vid).dataset.child);  // 子の ID
+      });
+    });
+    // 子への縦リンクの ID
+    id_str_to_arr(g_dat.lower_links).map(vid => {
+      arr.push(vid);
+      arr.push(document.getElementById(vid).dataset.child);
+    });
+    pedigree_data_arr.push(arr);  // この人物についての配列を登録
+  });
+  html_str += JSON.stringify(pedigree_data_arr) + ';\n';
+
+  const title_str = {en: 'Pedigree Chart', ja: '系図'}
+  html_str += `</script>
+<script type="text/javascript" src="pedigree_viewer.js"></script>
+<base target="_top">
+<title>${title_str[LANG]}</title>
+</head>
+<body>
+<form name="viewer">
+<div id="pedigree_display_area">`;
+
+  // 現状の SVG ソースコードを退避する。
+  const backup_svg_src = document.getElementById('tree_canvas_div').innerHTML;
+  // カスタム属性を削除したものを HTML ソースの中に埋め込む。
+  delete_custom_attributes();
+  html_str += document.getElementById('tree_canvas_div').innerHTML + '</div>\n\n';
+  // SVG コードを元に戻す。
+  document.getElementById('tree_canvas_div').innerHTML = backup_svg_src;
+
+  // dl リストを用意する (dd の中身は、基本的には後でユーザが好みにより手書きで
+  // 埋める想定。ひとまず注釈の内容だけ dd の中に入れておく)。リストの各項目は、
+  // 人物、横リンク、縦リンクのいずれかである。
+  let dl_str = '<dl id="info">\n\n';
+
+  P_GRAPH.persons.map(pid => { // 人物
+    dl_str += '<dt id="' + pid + '_t">' + name_str(pid) + '</dt>\n';
+    dl_str += '<dd id="' + pid + '_d">';
+    const rect = get_rect_info(pid);
+    dl_str += '<button type="button" onclick="look_at(' + rect.x_left + ',' + rect.y_top + ')">👀</button>'
+    const g_elt = document.getElementById(pid + 'g');
+    const txt_elts = g_elt.getElementsByTagName('text');
+    for (let i = 1; i < txt_elts.length; i++) {
+      // i = 0 は名前の text 要素なので i = 1 から始めている。
+      // 注釈以外の要素 (バッジの数字) は無視する。
+      if (get_note_num(txt_elts[i], pid) === -1) { continue; } 
+      dl_str += '\t' + txt_elts[i].textContent; // タブに続けて注釈を出力
+    }
+    dl_str += '</dd>\n\n';
+  });
+
+  P_GRAPH.h_links.map(hid => { // 横リンク
+    dl_str += '<dt id="' + hid + '_t">';
+    const h_dat = document.getElementById(hid).dataset;
+    const lhs = name_str(h_dat.lhs_person), rhs = name_str(h_dat.rhs_person);
+    const h_str = {ja: lhs + 'と' + rhs + ':', 
+                   en: 'The link between ' + lhs + ' and ' + rhs + ':'};
+    dl_str += h_str[LANG] + '</dt>\n<dd id="' + hid + '_d"></dd>\n\n';
+  });
+
+  P_GRAPH.v_links.map(vid => { // 縦リンク
+    dl_str += '<dt id="' + vid + '_t">';
+    const v_dat = document.getElementById(vid).dataset;
+    const p1 = name_str(v_dat.parent1), c = name_str(v_dat.child);
+    const v_str = {ja: '', en: ''};
+    if (v_dat.parent2 === undefined || v_dat.parent2 === null || 
+        v_dat.parent2 === '') {
+      v_str.ja = p1 + 'から' + c + 'へ:';
+      v_str.en = 'The link from ' + p1 + ' to ' + c + ':';
+    } else {
+      const p2 = name_str(v_dat.parent2);
+      v_str.ja = p1 + 'と' + p2 + 'から' + c + 'へ:';
+      v_str.en = 'The link from ' + p1 + ' and ' + p2 + ' to ' + c + ':';
+    }
+    dl_str += v_str[LANG] + '</dt>\n<dd id="' + vid + '_d"></dd>\n\n';
+  });
+
+  dl_str += '</dl>\n\n';
+  html_str += dl_str + '</form>\n</body>\n</html>\n';
+
+  // HTML ファイルをダウンロードする。
+  const b = new Blob([html_str], {type: 'text/html'});
+  const a = document.createElement('a');
+  document.getElementsByTagName('body')[0].appendChild(a);
+  a.download = 'pedigree_viewer.html';  // ファイル名は固定
+  a.href = URL.createObjectURL(b);
+  a.click();
+  document.getElementsByTagName('body')[0].removeChild(a);
+}
+
+/* 「人名一覧つき系図をHTML 形式で出力する」メニューで使う。他にも流用するかも
+しれない。カスタムデータ属性を全削除することによって SVG ソースコードの量を減らす。
+呼び出し側で、現状の SVG ソースコードの退避と復元に責任を持つこと。 */
+function delete_custom_attributes() {
+  const group_att = ['data-right_links', 'data-left_links',
+    'data-upper_links', 'data-lower_links'];
+  P_GRAPH.persons.map(pid => {
+    const g = document.getElementById(pid + 'g');
+    group_att.map(att => { g.removeAttribute(att); });
+  });
+
+  const hlink_att = ['data-connect_pos_x', 'data-connect_pos_y', 
+    'data-start_x', 'data-end_x', 'data-y', 
+    'data-lhs_person', 'data-rhs_person', 'data-lower_links'];
+  P_GRAPH.h_links.map(hid => {
+    const hlink = document.getElementById(hid);
+    hlink_att.map(att => { hlink.removeAttribute(att); });
+  });
+
+  const vlink_att = ['data-from_x', 'data-from_y', 'data-to_x', 'data-to_y',
+    'data-parent1', 'data-parent1_pos_idx', 'data-parent2', 
+    'data-child', 'data-child_pos_idx'];
+  P_GRAPH.v_links.map(vid => {
+    const vlink = document.getElementById(vid);
+    vlink_att.map(att => { vlink.removeAttribute(att); });
+  });
+}
+
 /* 「作成済みのデータを読み込む」メニュー。本当は、読み取った内容が所望の形式か
 どうかを検査した方が良いが、そうしたエラーチェックは省略したままにするかも。 */
 function read_in() {
