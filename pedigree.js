@@ -1903,8 +1903,18 @@ function draw_h_link(h_link, link_start_x, link_end_x, link_y, use_default_conne
     cur_connect_pos_x = parseInt(cur_connect_pos_x);
     cur_start_x = parseInt(h_link.dataset.start_x);
     cur_end_x = parseInt(h_link.dataset.end_x);
-    p = (cur_connect_pos_x - cur_start_x) / (cur_end_x - cur_start_x);
-    connect_pos_x = link_start_x + Math.floor(link_len * p);
+    p = (cur_connect_pos_x - cur_start_x) / (cur_end_x - cur_start_x) * 100;
+    if (p < CONFIG.min_percentage_for_connect_pos_x) {
+      p = CONFIG.min_percentage_for_connect_pos_x;
+    }
+    if (p > CONFIG.max_percentage_for_connect_pos_x) {
+      p = CONFIG.max_percentage_for_connect_pos_x;
+    }
+    connect_pos_x = link_start_x + Math.round(link_len * p / 100);
+    if (MODE.func_draw_h_link > 0) {
+      console.log('[' + cur_start_x + ', ' + cur_end_x + '], cur_connect_pos_x=' + cur_connect_pos_x + ', p=' + p);
+      console.log('new length=' + link_len + ', new connect_pos_x =' + connect_pos_x);
+    }
   }
   let connect_pos_y;
   if (h_link.getAttribute('class') === 'double') { // 二重線
