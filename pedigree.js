@@ -1328,7 +1328,10 @@ function relocate_tb_notes(pid) {
   const txt_elts = g_elt.getElementsByTagName('text');
   for (let i = 1; i < txt_elts.length; i++) {
     if (get_note_num(txt_elts[i], pid) === -1) { continue; } // 注釈以外の要素
-    let note_len = txt_elts[i].textContent.length * CONFIG.note_font_size;
+    const note_len = txt_elts[i].hasAttribute('textLength') ? 
+                     parseInt(txt_elts[i].getAttribute('textLength')) : 
+                     char_str_size(txt_elts[i].textContent, 
+                                   CONFIG.note_font_size, writing_mode);
     txt_elts[i].setAttribute('y', y_of_tb_note(pid, note_len));
   }
 }
@@ -1343,7 +1346,10 @@ function relocate_lr_notes(pid) {
   const txt_elts = g_elt.getElementsByTagName('text');
   for (let i = 1; i < txt_elts.length; i++) {
     if (get_note_num(txt_elts[i], pid) === -1) { continue; } // 注釈以外の要素
-    let note_len = txt_elts[i].textContent.length * CONFIG.note_font_size;
+    const note_len = txt_elts[i].hasAttribute('textLength') ? 
+                     parseInt(txt_elts[i].getAttribute('textLength')) : 
+                     char_str_size(txt_elts[i].textContent, 
+                                   CONFIG.note_font_size, writing_mode);
     txt_elts[i].setAttribute('x', x_of_lr_note(pid, note_len));
   }
 }
