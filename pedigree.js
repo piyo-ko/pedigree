@@ -375,12 +375,18 @@ const VLINK_SELECTORS = new Array();
 /* ページの言語。日本語がデフォルト。英語 (en) のページもある。 */
 let LANG = 'ja';
 
+/* Web Storage の使用可否。初期値は true とする。ページをロードした際に
+ちゃんとした値を設定する。 */
+let LOCAL_STORAGE_AVAILABLE = true;
+let SESSION_STORAGE_AVAILABLE = true;
+
 /* ページのロード (リロードも含む) の際に行う初期化。 */
 window.top.onload = function () {
   // ページの言語を最初に読み込んで設定する。
   if (document.documentElement.hasAttribute('lang')) {
     LANG = document.documentElement.getAttribute('lang');
   }
+
   const m = document.menu;
   P_GRAPH.reset_all();
   m.reset();
@@ -401,6 +407,24 @@ window.top.onload = function () {
   HLINK_SELECTORS.push(m.hlink_to_remove, m.parents_2, 
     m.hlink_to_ajdust_its_connect_pos_x);
   VLINK_SELECTORS.push(m.vlink_to_remove);
+
+  // Web Storage の使用可否を調べる
+  try {
+    window.localStorage.setItem('test', 'pedigree_test');
+    window.localStorage.removeItem('test');
+  } catch(e) {
+    LOCAL_STORAGE_AVAILABLE = false;
+  }
+  try {
+    window.sessionStorage.setItem('test', 'pedigree_test');
+    window.sessionStorage.removeItem('test');
+  } catch(e) {
+    SESSION_STORAGE_AVAILABLE = false;
+  }
+  if (!LOCAL_STORAGE_AVAILABLE && !SESSION_STORAGE_AVAILABLE) {
+    // 両方使用不可なのでメニューを無効化する
+    m.read_automatically_saved_data_button.disabled = true;
+  }
 };
 
 /* 現状の svg 要素の大きさを読み込んで、画面に表示し、かつ、
@@ -3201,10 +3225,16 @@ function backup_svg(description_str, auto_save_on_sessionStorage = true) {
   P_GRAPH.step_No++;
   a.href = URL.createObjectURL(b);  add_text_node(a, description_str);
   li.appendChild(a);
-  // ついでに sessionStorage に自動バックアップ
+  // ついでに (可能なら) localStorage と sessionStorage に自動バックアップ
   if (auto_save_on_sessionStorage) {
-    window.sessionStorage.setItem('pedigree_svg_data', 
-      document.getElementById('tree_canvas_div').innerHTML);
+    if (LOCAL_STORAGE_AVAILABLE) {
+      window.localStorage.setItem('pedigree_svg_data', 
+        document.getElementById('tree_canvas_div').innerHTML);
+    }
+    if (SESSION_STORAGE_AVAILABLE) {
+      window.sessionStorage.setItem('pedigree_svg_data', 
+        document.getElementById('tree_canvas_div').innerHTML);
+    }
   }
 }
 /* 作業の各段階での SVG ファイルのダウンロード用リンク (作成済みのもの) の 
@@ -3608,7 +3638,17 @@ function get_posNo(pid, hid, is_lhs_person) {
 
 /* 「自動保存したデータを読み込む」メニュー。 */
 function read_automatically_saved_data() {
-  const svg_data = window.sessionStorage.getItem('pedigree_svg_data');
+  let svg_data = null;
+  // セッションストレージが使える場合、そこからデータを読み込む
+  if (SESSION_STORAGE_AVAILABLE) {
+    svg_data = window.sessionStorage.getItem('pedigree_svg_data');
+  }
+  // [セッションストレージが使えない、または、使えるがデータがなかった、という
+  // 場合]、かつ、[ローカルストレージが使える場合] に、そこからデータを読み込む
+  if (svg_data === null && LOCAL_STORAGE_AVAILABLE) {
+    svg_data = window.localStorage.getItem('pedigree_svg_data');
+  }
+  // どちらかからデータが読み込めた場合、そのデータを反映する
   if (svg_data !== null) {
     document.getElementById('tree_canvas_div').innerHTML = svg_data;
     set_p_graph_values(); // SVGの各要素を読み取って、変数の設定を行う。

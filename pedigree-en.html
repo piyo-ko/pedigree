@@ -621,11 +621,11 @@ and
 <tr class="menu_read">
 <th>Read automatically saved SVG data</th>
 <td>If there is automatically saved SVG data, 
-<input type="button" value="read it and display the chart as read" onclick="read_automatically_saved_data()">.
+<input type="button" value="read it and display the chart as read" name="read_automatically_saved_data_button" onclick="read_automatically_saved_data()">.
 <br>
-Note: It depends on your browser settings whether SVG data can be automatically saved or not.
-The SVG data, if any, will be deleted when you close this tab or quit the browser.
-This reading menu is only a makeshift measure against disappearance of data due to your unintended actions such as going back/forward to another page in this tab or reloading this page.
+Note: It depends on your browser settings whether SVG data can be automatically saved or not.  If not, the button above is disabled.
+The SVG data, if any, may be deleted when you close this tab or quit the browser, depending on your browser settings.
+This reading menu is only intended to be a makeshift measure against disappearance of data due to your unintended actions such as going back/forward to another page in this tab or reloading this page.
 </td>
 </tr>
 
