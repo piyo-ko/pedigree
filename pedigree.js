@@ -1941,7 +1941,11 @@ function draw_h_link(h_link, link_start_x, link_end_x, link_y, use_default_conne
     }
   }
   let connect_pos_y;
-  if (h_link.getAttribute('class') === 'double') { // 二重線
+  let is_double = false;
+  if (h_link.hasAttribute('class')) {
+    is_double = h_link.getAttribute('class').split(/ +/).includes('double');
+  }
+  if (is_double) { // 二重線
     const upper_line_y = link_y - 2, lower_line_y = link_y + 2;
     connect_pos_y = lower_line_y;
     d_str = 'M ' + link_start_x + ',' + upper_line_y + 
