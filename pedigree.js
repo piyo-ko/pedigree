@@ -2158,10 +2158,18 @@ function add_v_link_2() {
                en: 'Do not select one of the parents as a child.'};
     alert(a[LANG]); return;
   }
-  if (already_v_linked(p1_id, c_id) || already_v_linked(p2_id, c_id)) {
+  const p1_and_c_linked = already_v_linked(p1_id, c_id),
+        p2_and_c_linked = already_v_linked(p2_id, c_id);
+  if (p1_and_c_linked && p2_and_c_linked) {
     const a = {ja: 'すでに親子関係にあります。',
-               en: 'The person selected as the child is already linked from at least one of these parents.'};
-    alert(a[LANG]); return;
+               en: 'The person selected as the child is already specified as a child of these parents.'};
+    alert(a[LANG]);
+    return;
+  } else if (p1_and_c_linked || p2_and_c_linked) {
+    const a = {ja: '子として指定された人物は、すでに一方の親とは親子関係にあります。それでもこの縦リンクの追加を続行したい場合は「OK」を選択してください。',
+               en: 'The person selected as the child is already specified as a child of one of these parents.\nIf you nevertheless intend to add a new vertical link as you specified, please select [OK].'};
+    const ans = confirm(a[LANG]); 
+    if (!ans) { return; }
   }
   // 親同士をつなぐ横リンクの方が、最小の隙間以上の隙間をあけて、
   // 子よりも上にあるのかどうかをチェックする。
