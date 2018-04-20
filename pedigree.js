@@ -286,6 +286,7 @@ class RectMngr {
 var P_GRAPH = P_GRAPH || {
   next_person_id: 0, next_hlink_id: 0, next_vlink_id: 0,
   persons: [], p_free_pos_mngrs: [], h_links: [], v_links: [], 
+  connect_x_percentages: new Map(),
   svg_height: 0, svg_width: 0, step_No: 0,
   reset_all: function () {  // 初期化
     this.next_person_id = this.next_h_link_id = this.next_v_link_id = 0;
@@ -1142,7 +1143,7 @@ function change_width(pid, new_width, width_is_to_be_increased) {
     const y = parseInt(hlink.dataset.y);
     // 現状での縦リンクのぶら下がり位置を、横リンクを再描画する前に退避する。
     const cur_connect_pos_x = parseInt(hlink.dataset.connect_pos_x);
-    draw_h_link(hlink, start_x, end_x, y); // 横リンクを再描画
+    draw_h_link(hid, start_x, end_x, y); // 横リンクを再描画
     // 再描画後の、新たなぶら下がり位置を読み取る。
     const new_connect_pos_x = parseInt(hlink.dataset.connect_pos_x);
     const diff_x = new_connect_pos_x - cur_connect_pos_x;
@@ -1539,6 +1540,9 @@ function add_h_link_0(p1_id, p2_id, link_type) {
     draw_new_h_link(hid, link_start_x, link_end_x, link_y, link_type, p2_id, p1_id);
   }
 
+  // この横リンクから縦リンクをぶら下げる位置の初期値として、50%の位置を登録。
+  P_GRAPH.connect_x_percentages.set(hid, 50);
+
   // 横リンクの削除メニューと縦リンクの追加メニューのプルダウンリストに
   // 選択肢を追加する
   const t_left = r1_is_left ? name_str(p1_id) : name_str(p2_id),
@@ -1549,6 +1553,9 @@ function add_h_link_0(p1_id, p2_id, link_type) {
     add_selector_option(sel, hid, displayed_str[LANG]); 
   });
   select_dummy_options(); // ダミーの人物を明示的に選択しておく
+  // 追加した横リンクからのぶら下がり位置は50%としてあるので、スライダにそれを
+  // 反映しておく。
+  document.menu.connect_pos_x_range.value = 50;
 
   // 右側にある矩形の左辺にある (かもしれない) 縦書き注釈の位置を決め直す。
   if (r1_is_left) { 
@@ -1884,8 +1891,11 @@ function draw_new_h_link(hid, link_start_x, link_end_x, link_y, link_type, pid_l
   let h_link = document.createElementNS(SVG_NS, 'path');
   h_link.setAttribute('id', hid);  // IDを記録
   h_link.setAttribute('class', link_type);  // 線種も記録
+  // この横リンクを svg 要素に追加する
+  const svg_elt = document.getElementById('pedigree');
+  svg_elt.appendChild(h_link);  add_text_node(svg_elt, '\n');
   // その path 要素に対して属性を設定することで横リンクを描画する
-  draw_h_link(h_link, link_start_x, link_end_x, link_y, true);
+  draw_h_link(hid, link_start_x, link_end_x, link_y, true);
   // 左右の人物を表す g 要素の data-* 属性と、このリンクの data-* 属性を設定
   const g_left = document.getElementById(pid_left + 'g');
   const g_right = document.getElementById(pid_right + 'g');
@@ -1894,18 +1904,16 @@ function draw_new_h_link(hid, link_start_x, link_end_x, link_y, link_type, pid_l
   h_link.dataset.rhs_person = pid_right;
   h_link.dataset.lower_links = '';
   g_right.dataset.left_links += hid + ',' + pid_left + ',';
-  // この横リンクを svg 要素に追加する
-  const svg_elt = document.getElementById('pedigree');
-  svg_elt.appendChild(h_link);  add_text_node(svg_elt, '\n');
   // 大域変数の更新
   P_GRAPH.h_links.push(hid);
 }
 
 /* 横リンクの新規描画・再描画の共通部分 */
-function draw_h_link(h_link, link_start_x, link_end_x, link_y, use_default_connect_pos_x = false) {
+function draw_h_link(hid, link_start_x, link_end_x, link_y, use_default_connect_pos_x = false) {
   if (MODE.func_draw_h_link > 0) {
-    console.log('draw_h_link(h_link,' + link_start_x + ',' + link_end_x + ',' + link_y + ')');
+    console.log('draw_h_link(' + hid + ',' + link_start_x + ',' + link_end_x + ',' + link_y + ')');
   }
+  const h_link = document.getElementById(hid);
   // d 属性の値 (文字列) を生成する
   let d_str;
   const link_len = link_end_x - link_start_x;
@@ -1919,21 +1927,12 @@ function draw_h_link(h_link, link_start_x, link_end_x, link_y, use_default_conne
     // 横リンクを新たに作る場合など、デフォルトの位置 (真ん中) にしたい場合。
     // あるいは、なぜか data-connect_pos_x 属性が未設定という想定外の場合。
     connect_pos_x = link_start_x + Math.floor(link_len / 2);
+    P_GRAPH.connect_x_percentages.set(hid, 50);
   } else {
     // 真ん中以外の位置から縦リンクをぶら下げるように調整済みの場合、その
     // 相対位置 (横リンクの長さに対する、左端からぶら下げ位置までの長さの
     // 比率) を維持するように、新たなぶら下げ位置を決める。
-    let cur_start_x, cur_end_x, p;
-    cur_connect_pos_x = parseInt(cur_connect_pos_x);
-    cur_start_x = parseInt(h_link.dataset.start_x);
-    cur_end_x = parseInt(h_link.dataset.end_x);
-    p = (cur_connect_pos_x - cur_start_x) / (cur_end_x - cur_start_x) * 100;
-    if (p < CONFIG.min_percentage_for_connect_pos_x) {
-      p = CONFIG.min_percentage_for_connect_pos_x;
-    }
-    if (p > CONFIG.max_percentage_for_connect_pos_x) {
-      p = CONFIG.max_percentage_for_connect_pos_x;
-    }
+    const p = P_GRAPH.connect_x_percentages.get(hid);
     connect_pos_x = link_start_x + Math.round(link_len * p / 100);
     if (MODE.func_draw_h_link > 0) {
       console.log('[' + cur_start_x + ', ' + cur_end_x + '], cur_connect_pos_x=' + cur_connect_pos_x + ', p=' + p);
@@ -1965,9 +1964,9 @@ function draw_h_link(h_link, link_start_x, link_end_x, link_y, use_default_conne
 
 /* 再描画のときのよくある呼び出しパタンを関数にした。 */
 function redraw_h_link(hid, start_dx, end_dx, dy) {
-  const hlink = document.getElementById(hid), dat = hlink.dataset;
-  draw_h_link(hlink, parseInt(dat.start_x) + start_dx, 
-    parseInt(dat.end_x) + end_dx, parseInt(dat.y) + dy);
+  const dat = document.getElementById(hid).dataset;
+  draw_h_link(hid, parseInt(dat.start_x) + start_dx, 
+              parseInt(dat.end_x) + end_dx, parseInt(dat.y) + dy);
 }
 
 /* 「横方向につなぐことの可能な相手の数を増やす」メニュー。 */
@@ -2062,9 +2061,15 @@ function remove_h_link_0(hlink_id) {
   lhs_mng.right_side.remove_hlink(hlink_id);
   rhs_mng.left_side.remove_hlink(hlink_id);
   HLINK_SELECTORS.map(sel => { remove_choice(sel, hlink_id); });
+  P_GRAPH.connect_x_percentages.delete(hlink_id);
   document.getElementById('pedigree').removeChild(hlink_elt);
 
   select_dummy_options(); // ダミーの人物を明示的に選択しておく
+  // 今回の横リンクの削除によって新たに選択状態となる別の横リンクからの縦リンクの
+  // ぶら下がり位置に合わせて、スライダを調整。
+  const hid = selected_choice(document.menu.hlink_to_ajdust_its_connect_pos_x);
+  document.menu.connect_pos_x_range.value
+    = P_GRAPH.connect_x_percentages.get(hid);
 
   // 右側にある矩形の左辺にある (かもしれない) 縦書き注釈の位置を決め直す。
   relocate_tb_notes(rhs_person);
@@ -2300,18 +2305,7 @@ function set_current_connect_pos_x() {
   // 選択された横リンクの ID
   const hid = selected_choice(document.menu.hlink_to_ajdust_its_connect_pos_x);
   // その横リンクにおける、現状の縦リンクのぶら下げ位置を表す百分率を求める。
-  const hlink_dat = document.getElementById(hid).dataset;
-  const start_x = parseInt(hlink_dat.start_x);
-  const connect_pos_x = parseInt(hlink_dat.connect_pos_x);
-  const end_x = parseInt(hlink_dat.end_x);
-  let p = Math.round( (connect_pos_x - start_x) / (end_x - start_x) * 100);
-  // 一応、下限と上限の範囲内に収まるかを検査して、収まるように保証しておく。
-  if (p < CONFIG.min_percentage_for_connect_pos_x) {
-    p = CONFIG.min_percentage_for_connect_pos_x;
-  }
-  if (CONFIG.max_percentage_for_connect_pos_x < p) {
-    p = CONFIG.max_percentage_for_connect_pos_x;
-  }
+  const p = P_GRAPH.connect_x_percentages.get(hid);
   // 求めた百分率を、範囲指定用のスライダ要素に反映させる。
   document.menu.connect_pos_x_range.value = p;
 }
@@ -2346,6 +2340,13 @@ function apply_connect_pos_x_input() {
 function record_connect_pos_x_adjustment() {
   // 選択されている横リンクの ID
   const hid = selected_choice(document.menu.hlink_to_ajdust_its_connect_pos_x);
+
+  // 範囲指定用のスライダ要素で指定されている百分率
+  const p = parseInt(document.menu.connect_pos_x_range.value);
+  // 今後の横リンクの長さの変更に備えて百分率を記録 (記録するのは値が確定した
+  // 時点で一回だけ行えばよい。変化に追従する必要はない)
+  P_GRAPH.connect_x_percentages.set(hid, p);
+
   const hlink_dat = document.getElementById(hid).dataset;
   const lhs = name_str(hlink_dat.lhs_person);
   const rhs = name_str(hlink_dat.rhs_person);
@@ -2517,7 +2518,7 @@ function move_person_horizontally(pid, dx) {
     // このリンクの左端はこの人物の右端 (moved_r.x_right) であり、ここが動く。
     // 線幅の調整のため、+1 との操作が必要 (end_x は横リンクの属性から読んだ
     // ものだから調整不要)。
-    draw_h_link(h_link, moved_r.x_right + 1, end_x, parseInt(h_link.dataset.y));
+    draw_h_link(hid, moved_r.x_right + 1, end_x, parseInt(h_link.dataset.y));
     // この横リンクから下へ縦リンクがのびている場合は、縦リンクを再描画せねば
     // ならない。縦リンクのぶら下がり位置は、再描画後の横リンクの属性を読めば
     // わかる。
@@ -2534,7 +2535,7 @@ function move_person_horizontally(pid, dx) {
     // このリンクの元々の左端 (これは変更なし)。
     const start_x = parseInt(h_link.dataset.start_x);
     // このリンクの右端はこの人物の左端 (moved_r.x_left) であり、ここが動く。
-    draw_h_link(h_link, start_x, moved_r.x_left - 1, parseInt(h_link.dataset.y));
+    draw_h_link(hid, start_x, moved_r.x_left - 1, parseInt(h_link.dataset.y));
     // この横リンクから下へ縦リンクがのびている場合は、縦リンクを再描画せねば
     // ならない。縦リンクのぶら下がり位置は、再描画後の横リンクの属性を読めば
     // わかる。
@@ -3572,6 +3573,13 @@ function set_p_graph_values() {
           str = {ja: lhs_name + 'と' + rhs_name, 
                  en: 'between ' + lhs_name + ' and ' + rhs_name};
       HLINK_SELECTORS.map(sel => { add_selector_option(sel, path_id, str[LANG]); });
+      // 縦リンクのぶら下げ位置に対応する百分率の計算と登録を行う
+      const connect_pos_x = parseInt(cur_path.dataset.connect_pos_x),
+            start_x = parseInt(cur_path.dataset.start_x),
+            end_x = parseInt(cur_path.dataset.end_x),
+            total_len = end_x - start_x,
+            p = Math.round((connect_pos_x - start_x) / total_len * 100);
+      P_GRAPH.connect_x_percentages.set(path_id, p);
     } else if (m[1] === 'v') {  // 縦リンクを見ている
       //「次の番号」用の変数を更新
       if (P_GRAPH.next_vlink_id <= id_No) { P_GRAPH.next_vlink_id = id_No + 1; }
