@@ -3055,7 +3055,7 @@ function move_left_collectively() {
   });
 
   const n = name_str(base_pid),
-        b = {ja: n + 'から左・下をたどった先をまとめて右に移動する',
+        b = {ja: n + 'から左・下をたどった先をまとめて左に移動する',
              en: 'moving ' + n + ' and related persons cascadingly to the left'};
   backup_svg(b[LANG]);
 }
