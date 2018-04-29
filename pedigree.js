@@ -357,11 +357,8 @@ const CONFIG = {
   // ラテン文字などを使用している際の横書きにおいて、文字の幅をフォントサイズの
   // 何倍とみなすか (この倍率を使って、文字列の占める幅を簡易計算する)。
   narrow_mode_scaling_factor: 0.6,
-  // 横リンクから縦リンクをぶら下げる位置として許される範囲を百分率で示す。
-  // 横リンクの左端を 0% とし、右端を 100% として、上記範囲の下限と上限を
-  // ここで定数として決めておく。
-  min_percentage_for_connect_pos_x: 5,
-  max_percentage_for_connect_pos_x: 95
+  // 横リンクから縦リンクをぶら下げることが許されない左右の余白の幅 (px 単位)
+  margin_for_connect_pos_x: 8
 };
 
 /* SVG 用の名前空間 */
@@ -1933,7 +1930,9 @@ function draw_h_link(hid, link_start_x, link_end_x, link_y, use_default_connect_
     // 相対位置 (横リンクの長さに対する、左端からぶら下げ位置までの長さの
     // 比率) を維持するように、新たなぶら下げ位置を決める。
     const p = P_GRAPH.connect_x_percentages.get(hid);
-    connect_pos_x = link_start_x + Math.round(link_len * p / 100);
+    const available_len = link_len - 2 * CONFIG.margin_for_connect_pos_x;
+    connect_pos_x = link_start_x + CONFIG.margin_for_connect_pos_x + 
+                    Math.round(available_len * p / 100);
     if (MODE.func_draw_h_link > 0) {
       console.log('[' + cur_start_x + ', ' + cur_end_x + '], cur_connect_pos_x=' + cur_connect_pos_x + ', p=' + p);
       console.log('new length=' + link_len + ', new connect_pos_x =' + connect_pos_x);
@@ -2317,12 +2316,14 @@ function apply_connect_pos_x_input() {
   // 選択されている横リンクの ID
   const hid = selected_choice(document.menu.hlink_to_ajdust_its_connect_pos_x);
   // 範囲指定用のスライダ要素で指定されている百分率
-  const p = parseInt(document.menu.connect_pos_x_range.value);
+  const p = parseFloat(document.menu.connect_pos_x_range.value);
   // その百分率に対応する x 座標を求める
   const hlink_dat = document.getElementById(hid).dataset;
   const start_x = parseInt(hlink_dat.start_x);
   const end_x = parseInt(hlink_dat.end_x);
-  const new_connect_pos_x = start_x + Math.round( (end_x - start_x) * p / 100);
+  const len = end_x - start_x - CONFIG.margin_for_connect_pos_x * 2;
+  const new_connect_pos_x = start_x + CONFIG.margin_for_connect_pos_x + 
+                            Math.round(len * p / 100);
   // 現在の位置との差分を求める
   const cur_connect_pos_x = parseInt(hlink_dat.connect_pos_x);
   const diff = new_connect_pos_x - cur_connect_pos_x;
@@ -2342,7 +2343,7 @@ function record_connect_pos_x_adjustment() {
   const hid = selected_choice(document.menu.hlink_to_ajdust_its_connect_pos_x);
 
   // 範囲指定用のスライダ要素で指定されている百分率
-  const p = parseInt(document.menu.connect_pos_x_range.value);
+  const p = parseFloat(document.menu.connect_pos_x_range.value);
   // 今後の横リンクの長さの変更に備えて百分率を記録 (記録するのは値が確定した
   // 時点で一回だけ行えばよい。変化に追従する必要はない)
   P_GRAPH.connect_x_percentages.set(hid, p);
@@ -3578,7 +3579,8 @@ function set_p_graph_values() {
             start_x = parseInt(cur_path.dataset.start_x),
             end_x = parseInt(cur_path.dataset.end_x),
             total_len = end_x - start_x,
-            p = Math.round((connect_pos_x - start_x) / total_len * 100);
+            available_len = total_len - 2 * CONFIG.margin_for_connect_pos_x,
+            p = Math.round((connect_pos_x - start_x - CONFIG.margin_for_connect_pos_x) / available_len * 1000) / 10;
       P_GRAPH.connect_x_percentages.set(path_id, p);
     } else if (m[1] === 'v') {  // 縦リンクを見ている
       //「次の番号」用の変数を更新
