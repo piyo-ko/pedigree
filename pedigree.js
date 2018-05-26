@@ -3304,86 +3304,152 @@ function list_persons() {
   document.getElementsByTagName('body')[0].removeChild(a);
 }
 
-/* 「人名一覧つき系図をHTML 形式で出力する」メニュー用 */
-function make_html() {
-  let html_str = `<!DOCTYPE html>
-<html lang="ja">
-<head>
-<meta charset="UTF-8">
-<link rel="stylesheet" href="pedigree_viewer.css" type="text/css">
-<link rel="stylesheet" href="pedigree_svg.css" type="text/css">
-<script>
-const pedigree_data = `;
+/* 「系図ビューワをダウンロードする」メニュー用。
+JavaScript, SVG, HTML の 3 つのファイルをダウンロードする。 */
+function download_pedigree_viewer() {
+  // とりあえずダウンロードするファイルの名前は全て固定とする。後でユーザが
+  // 自分で書き換えるのは問題ない。
+  const timestamp = get_timestamp_str(), name_prefix = 'pedigree_viewer_',
+    html_filename = name_prefix + timestamp + '.html',
+    data_js_filemane = name_prefix + timestamp + '.js',
+    svg_filename = name_prefix + timestamp + '.svg';
+  // ダウンロード用に一時的に a 要素を追加して、ダウンロード後に削除するのだが、
+  // その追加先の親要素。
+  const body_elt = document.getElementsByTagName('body')[0];
+  
+  // まず最初に SVG ファイルをダウンロードする。
+  const svg_str = document.getElementById('tree_canvas_div').innerHTML,
+        svg_b = new Blob([svg_str], {type :'image/svg+xml'}),
+        svg_a = document.createElement('a');
+  body_elt.appendChild(svg_a);
+  svg_a.download = svg_filename;
+  svg_a.href = URL.createObjectURL(svg_b);
+  svg_a.click();
+  body_elt.removeChild(svg_a);
 
-  // pedigree_data なる配列を定義するステートメントの文字列を作る。
-  // pedigree_data の各要素は各人物に対応する。その要素は配列であり、その配列の
-  // 最初の要素 (pedigree_data[i][0]) は、その人物の ID であり、それに続く要素は
-  // その人物に関わる縦・横のリンクの ID である。
-  const pedigree_data_arr = new Array();
+  // 次に、データを定義するための JavaScript ファイルの中身を生成する。
+  // pedigree_data なる配列を定義するステートメントの文字列を作る
+  // (実際に pedigree_data を作って、JSON.stringify する)。
+  // この配列の各要素は各人物に対応し、2 要素からなる配列である。
+  // 最初の要素 (pedigree_data[i][0]) は、その人物の ID であり、
+  // 次の要素 (pedigree_data[i][1]) は、以下のプロパティを有する
+  // オブジェクトである (現時点では Map オブジェクトを JSON.stringify 
+  // できないので、このようなデータ構造を採用した)。
+  //   * x_left: その人物の矩形の左端の x 座標
+  //   * y_top: その人物の矩形の上端の y 座標
+  //   * hids: その人物に関わる横リンクの ID の配列
+  //   * vids: その人物に関わる縦リンクの ID の配列
+  //   * rel_pids: 縦横のリンク先の人物の ID の配列
+  let pedigree_data = new Array();
   P_GRAPH.persons.map(pid => {
-    const arr = new Array();  // この人物用の配列を用意する
-    arr.push(pid); // 人物の ID
+    const rect = get_rect_info(pid);
+    const info = {x_left: rect.x_left, y_top: rect.y_top, 
+                  hids: [], vids: [], rel_pids: []};
     const g_dat = document.getElementById(pid + 'g').dataset;
     id_str_to_arr(g_dat.upper_links).map(vid => {
-      arr.push(vid); // 親からの縦リンクの ID
+      info.vids.push(vid); // 親からの縦リンクの ID
       const vlink_dat = document.getElementById(vid).dataset;
-      arr.push(vlink_dat.parent1);
+      push_if_not_included(info.rel_pids, vlink_dat.parent1);
       if (vlink_dat.parent2 !== undefined && vlink_dat.parent2 !== null &&
           vlink_dat.parent2 !== '') {
-        arr.push(vlink_dat.parent2);
+        push_if_not_included(info.rel_pids, vlink_dat.parent2);
       }
     });
     const hlinks = g_dat.left_links + g_dat.right_links;
     apply_to_each_hid_pid_pair(hlinks, function (hid, partner_pid) {
-      arr.push(hid); // 横リンクのID
-      arr.push(partner_pid); // 相手方の ID
+      info.hids.push(hid); // 横リンクのID
+      info.rel_pids.push(partner_pid); // 相手方の ID
       const vids_str = document.getElementById(hid).dataset.lower_links;
       id_str_to_arr(vids_str).map(vid => {
-        arr.push(vid); // 横リンクからぶら下がる、子への縦リンクの ID
-        arr.push(document.getElementById(vid).dataset.child);  // 子の ID
+        info.vids.push(vid); // 横リンクからぶら下がる、子への縦リンクの ID
+        const c = document.getElementById(vid).dataset.child;  // 子の ID
+        push_if_not_included(info.rel_pids, c);
       });
     });
-    // 子への縦リンクの ID
     id_str_to_arr(g_dat.lower_links).map(vid => {
-      arr.push(vid);
-      arr.push(document.getElementById(vid).dataset.child);
+      info.vids.push(vid);  // 子への縦リンクの ID
+      const c = document.getElementById(vid).dataset.child;
+      push_if_not_included(info.rel_pids, c);
     });
-    pedigree_data_arr.push(arr);  // この人物についての配列を登録
+    pedigree_data.push([pid, info]);
   });
-  html_str += JSON.stringify(pedigree_data_arr) + ';\n';
 
-  const title_str = {en: 'Pedigree Chart', ja: '系図'}
-  html_str += `</script>
+  const js_dat_str = 
+    'const pedigree_data = ' + JSON.stringify(pedigree_data) + ';\n';
+  // JavaScript ファイルをダウンロードする。
+  const js_b = new Blob([js_dat_str], {type: 'text/javascript'}),
+        js_a = document.createElement('a');
+  body_elt.appendChild(js_a);
+  js_a.download = data_js_filemane;
+  js_a.href = URL.createObjectURL(js_b);
+  js_a.click();
+  body_elt.removeChild(js_a);
+
+  // 次は HTML ファイルの中身を生成する。
+  const title_str = {en: 'Pedigree Chart', ja: '系図'},
+        input_label_str = {en: 'Whom do you want to see?', ja: '見たい人物は?'};
+  let html_str = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="pedigree_viewer.css" type="text/css">
+<link rel="stylesheet" href="pedigree_svg.css" type="text/css">
+<script type="text/javascript" src="${data_js_filemane}"></script>
 <script type="text/javascript" src="pedigree_viewer.js"></script>
-<base target="_top">
+<base target="ref">
 <title>${title_str[LANG]}</title>
 </head>
 <body>
-<form name="viewer">
-<div id="pedigree_display_area">`;
+<h1>${title_str[LANG]}</h1>
+<section id="main">
+<div id="pedigree_display_area"><object id="svg_dat" type="image/svg+xml" data="${svg_filename}" alt=""></object></div>
 
-  // 現状の SVG ソースコードを退避する。
-  const backup_svg_src = document.getElementById('tree_canvas_div').innerHTML;
-  // カスタム属性を削除したものを HTML ソースの中に埋め込む。
-  delete_custom_attributes();
-  html_str += document.getElementById('tree_canvas_div').innerHTML + '</div>\n\n';
-  // SVG コードを元に戻す。
-  document.getElementById('tree_canvas_div').innerHTML = backup_svg_src;
+<div id="person_selector">
+<form name="viewer">
+<label for="list_of_persons">${input_label_str[LANG]}</label><br>
+<select id="list_of_persons" size="15" onchange="see_in_detail()">\n`;
+
+  // select 要素内の option 要素を作る。
+  const p = new Array();
+  P_GRAPH.persons.map(pid => { p.push({ id: pid, name: name_str(pid) }); });
+  p.sort((a, b) => { // 名前順でソートする
+    if (a.name < b.name) { return(-1); }
+    else if (a.name === b.name) { return(0); }
+    else { return(1); }
+  });
+  // 名前順で選択肢を表示。同姓同名がいるかもしれないので、ID も併記する。
+  p.map(id_name_pair => {
+    html_str += `<option value="${id_name_pair.id}">${id_name_pair.name} (${id_name_pair.id})</option>\n`;
+  });
+
+  const para_str = {en: 'Edit this paragraph as you like.', 
+                    ja: 'この段落は、お好きなように編集してください。'};
+  html_str += `</select>
+</form>
+</div>
+
+<div id="detailed_info">
+<dl id="selected_person_info"></dl>
+<dl id="related_info"></dl>
+<p>${para_str[LANG]}</p>
+</div>\n\n`;
 
   // dl リストを用意する (dd の中身は、基本的には後でユーザが好みにより手書きで
   // 埋める想定。ひとまず注釈の内容だけ dd の中に入れておく)。リストの各項目は、
   // 人物、横リンク、縦リンクのいずれかである。
-  let dl_str = '<dl id="info">\n\n';
+  let dl_str = '<dl id="info_all">\n\n';
+  const look_at_str = {en: 'Look at him/her', ja: 'この人を見る'};
+  const re_select_str = {en: 'Select him/her', ja: 'この人を選択する'};
 
   P_GRAPH.persons.map(pid => { // 人物
     dl_str += '<dt id="' + pid + '_t">' + name_str(pid) + '</dt>\n';
     dl_str += '<dd id="' + pid + '_d">';
-    const rect = get_rect_info(pid);
-    dl_str += '<button type="button" onclick="look_at(' + rect.x_left + ',' + rect.y_top + ')">👀</button>'
+    dl_str += `<button type="button" onclick="look_at('${pid}')">${look_at_str[LANG]}</button> `;
+    dl_str += `<button type="button" onclick="reselect('${pid}')">${re_select_str[LANG]}</button> `;
     const g_elt = document.getElementById(pid + 'g');
     const txt_elts = g_elt.getElementsByTagName('text');
     for (let i = 1; i < txt_elts.length; i++) {
-      // i = 0 は名前の text 要素なので i = 1 から始めている。
+      // i == 0 の場合は名前の text 要素に該当するので、i = 1 としている。
       // 注釈以外の要素 (バッジの数字) は無視する。
       if (get_note_num(txt_elts[i], pid) === -1) { continue; } 
       dl_str += '\t' + txt_elts[i].textContent; // タブに続けて注釈を出力
@@ -3418,20 +3484,37 @@ const pedigree_data = `;
   });
 
   dl_str += '</dl>\n\n';
-  html_str += dl_str + '</form>\n</body>\n</html>\n';
+  html_str += dl_str + '</section></body>\n</html>\n';
 
   // HTML ファイルをダウンロードする。
-  const b = new Blob([html_str], {type: 'text/html'});
-  const a = document.createElement('a');
-  document.getElementsByTagName('body')[0].appendChild(a);
-  a.download = 'pedigree_viewer.html';  // ファイル名は固定
-  a.href = URL.createObjectURL(b);
-  a.click();
-  document.getElementsByTagName('body')[0].removeChild(a);
+  const html_b = new Blob([html_str], {type: 'text/html'});
+  const html_a = document.createElement('a');
+  body_elt.appendChild(html_a);
+  html_a.download = html_filename;
+  html_a.href = URL.createObjectURL(html_b);
+  html_a.click();
+  body_elt.removeChild(html_a);
 }
 
-/* 「人名一覧つき系図をHTML 形式で出力する」メニューで使う。他にも流用するかも
-しれない。カスタムデータ属性を全削除することによって SVG ソースコードの量を減らす。
+/* yyyy-mm-dd_hhmmss.mmm */
+function get_timestamp_str() {
+  const d = new Date(),
+    yyyy = d.getFullYear(), mm_month = d.getMonth() + 1, dd = d.getDate(),
+    hh = d.getHours(), mm_min = d.getMinutes(), ss = d.getSeconds(),
+    ms = d.getMilliseconds();
+  let s = yyyy + "-";
+  s += ((mm_month < 10) ? "0" + mm_month : mm_month);
+  s += ((dd < 10) ? "-0" + dd : "-" + dd);
+  s += ((hh < 10) ? "_0" + hh : "_" + hh);
+  s += ((mm_min < 10) ? "0" + mm_min : mm_min);
+  s += ((ss < 10) ? "0" + ss : ss);
+  s += ((ms < 10) ? ".00" + ms : ((ms < 100) ? ".0" + ms : "." + ms));
+  return(s);
+}
+
+/* 「人名一覧つき系図をHTML 形式で出力する」メニューで使っていた。
+他にも流用するかもしれないので、とりあえず残してある。
+カスタムデータ属性を全削除することによって SVG ソースコードの量を減らす。
 呼び出し側で、現状の SVG ソースコードの退避と復元に責任を持つこと。 */
 function delete_custom_attributes() {
   const group_att = ['data-right_links', 'data-left_links',

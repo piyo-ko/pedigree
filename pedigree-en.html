@@ -602,10 +602,12 @@ Check the box <input type="checkbox" name="output_notes" id="output_notes" check
 </tr>
 
 <tr class="menu_output">
-<th>Download a pedigree chart with a list of persons' names (in HTML format)</th>
-<td><input type="button" value="Download the HTML file" onclick="make_html()">
+<th>Download a pedigree chart viewer</th>
+<td>A pedigree chart viewer fully customized to the chart you have created is downloadable.
+The viewer includes three customized files: an HTML file, an SVG file, and a JavaScript file.
+<input type="button" value="Download the files for the viewer" onclick="download_pedigree_viewer()">
 <br>
-Note: The dd elements in the downloaded HTML file are editable.  Please download <a href="pedigree_svg.css" download="pedigree_svg.css">the cascading style sheet (CSS) file for the SVG code</a>, <a href="pedigree_viewer.css" download="pedigree_viewer.css">the CSS file for the HTML code</a>, and <a href="pedigree_viewer.js" download="pedigree_viewer.js">the JavaScript file</a>, and put these files and the HTML file on the same folder (i.e., the same directory) on your computer.
+Note: The dd elements in the downloaded HTML file are editable.  Please also download three common files (<a href="pedigree_svg.css" download="pedigree_svg.css">a cascading style sheet (CSS) file for the SVG code</a>, <a href="pedigree_viewer.css" download="pedigree_viewer.css">a CSS file for the HTML code</a>, and <a href="pedigree_viewer.js" download="pedigree_viewer.js">a JavaScript file</a>), and put these common files and the three customized files on the same folder (i.e., the same directory) on your computer.
 </td>
 </tr>
 

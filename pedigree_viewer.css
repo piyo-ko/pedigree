@@ -1,29 +1,72 @@
 body {
-  background: hsl(210, 90%, 12%);
-  color: hsl(210, 20%, 90%);
+  background: hsl(210, 20%, 12%);
+  color: hsl(210, 20%, 70%);
   font-family: serif;
   padding-left: 0;
   padding-right: 0;
 }
-#pedigree_display_area {
-  display: block;
-  border: solid 2px hsl(210, 100%, 60%);
-  text-align: center;
-  margin-left: 1vw;
-  margin-right: 1vw;
-  max-height: 75vh;
-  max-width: 86vw;
-  overflow: auto;
+button {
+  background: hsl(170, 50%, 12%);
+  font-family: serif;
+  border: 2px solid hsl(170, 80%, 50%);
+  border-radius: 6pt;
 }
-svg {
-  background: gainsboro;
+a, button {
+  color: hsl(170, 70%, 70%);
+}
+a:hover, button:hover {
+  color: hsl(170, 50%, 12%);
+  background: hsl(170, 70%, 70%);
+}
+h1 {
+  font-size: large;
+  font-family: sans-serif;
+  font-weight: bold;
+  text-align: center;
+  color: hsl(240, 100%, 80%);
+  padding: 0;
+  margin: 0;
+}
+p {
+  text-indent: 1em;
+  clear: left;
 }
 
-dl {
-  margin: 1em;
+#main {
+  display: grid;
+  grid-template-columns: 14em auto;
+  grid-template-rows: 74vh 24vh;
+}
+
+#pedigree_display_area {
+  grid-column-start: 1;
+  grid-column-end: 3;
+  grid-row-start: 1;
+  grid-row-end: 2;
+  background: white;
   border: solid 2px hsl(210, 100%, 60%);
-  max-height: 20vh;
   overflow: auto;
+}
+#person_selector, #detailed_info {
+  grid-row-start: 2;
+  grid-row-end: 3;
+  margin-left: 1em;
+  overflow: auto;
+}
+#person_selector {
+  grid-column-start: 1;
+  grid-column-end: 2;
+}
+#detailed_info {
+  grid-column-start: 2;
+  grid-column-end: 3;
+}
+#selected_person_info {
+  border-bottom: solid 2px hsl(210, 100%, 60%);;
+}
+
+#info_all {
+  display: none;
 }
 dt {
   float: left;
@@ -38,7 +81,7 @@ dd {
   padding-left: 0;
   text-indent: 1em;
 }
-
-button {
-  background: hsl(210, 60%, 40%);
+em {
+  color: hsl(210, 100%, 70%);
+  font-style: normal;
 }
