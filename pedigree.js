@@ -396,7 +396,7 @@ window.top.onload = function () {
   // 設定する。
   PERSON_SELECTORS.push(m.position_ref, m.person_to_be_extended, 
     m.person_to_rename, m.annotation_target, m.person_to_add_badge, 
-    m.person_to_remove, 
+    m.person_to_look_at, m.person_to_remove, 
     m.partner_1, m.partner_2, m.lhs_person, m.rhs_person, 
     m.target_of_increase_of_hlinks, 
     m.parent_1, m.child_1, m.child_2, 
@@ -1440,6 +1440,19 @@ function add_num_badge() {
   const b = {ja: name_str(pid) + 'にバッジをつける', 
              en: 'badging ' + name_str(pid)};
   backup_svg(b[LANG]);
+}
+
+/* 「人を見る」メニュー。 */
+function look_at_person() {
+  const svg_container = document.getElementById('tree_canvas_div'),
+    container_rect = svg_container.getBoundingClientRect(),
+    x_offset = Math.floor(container_rect.width / 2),
+    y_offset = Math.floor(container_rect.height / 2),
+    pid = selected_choice(document.menu.person_to_look_at),
+    person_rect = get_rect_info(pid);
+
+  svg_container.scrollLeft = person_rect.x_left - x_offset;
+  svg_container.scrollTop = person_rect.y_top - y_offset;
 }
 
 /* 「横の関係を追加する」メニュー。 */
