@@ -484,7 +484,11 @@ function remove_choice(sel_elt, id) {
   for (i = 0; i < sel_elt.options.length; i++) {
     if (sel_elt.options[i].value === id) { break; }
   }
-  sel_elt.removeChild(sel_elt.options[i]);  sel_elt.selectedIndex = 0;
+  sel_elt.removeChild(sel_elt.options[i]);
+  // 削除した選択肢の直後の選択肢を選択する (削除したのが最後のものだった場合は
+  // 新たに最後になったもの (削除したものの直前のもの) を選択し、削除により何も
+  // 選択肢がなくなった場合は何も選択しない)。
+  sel_elt.selectedIndex = Math.min(i, sel_elt.options.length - 1);
 }
 /* [汎用モジュール] プルダウンリストの選択肢の表示名を変更する */
 function rename_choice(sel_elt, id, new_str) {
