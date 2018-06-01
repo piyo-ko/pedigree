@@ -3216,7 +3216,7 @@ function modify_width_0(w_diff) {
   document.getElementById('current_width').textContent = P_GRAPH.svg_width;
 }
 
-/* 「SVG コードを出力する」メニューの上半分。
+/* 「SVG コードを見る」メニュー。
 <div id="tree_canvas_div"> ... </div> の中身 (sgv 要素) を書き出すだけ。
 innerHTML を使うと <![CDATA[ @import url(pedigree_svg.css); ]]> が
 単なる @import url(pedigree_svg.css); となるようだが、実害がなさそうなので
@@ -3227,16 +3227,28 @@ function output_svg_src() {
     document.getElementById('tree_canvas_div').innerHTML;
 }
 
-/* 「SVG コードを出力する」メニューの下半分。
-<div id="tree_canvas_div"> ... </div> の中身 (sgv 要素) を有する Blob
-オブジェクトを作り、それへのリンク URL を生成し、その URL を a タグの 
-href 要素に設定する。 */
+/* 「現状のファイルをダウンロードする」メニュー。 */
 function download_svg() {
+  // カスタムデータ属性を削除するかどうか
+  const delete_or_not =
+    selected_radio_choice(document.menu.delete_custom_data_attributes);
+
   const s = document.getElementById('tree_canvas_div').innerHTML;
-  const b = new Blob([s], {type :'image/svg+xml'});
+  let b;
+  if (delete_or_not === 'yes') {
+    delete_custom_attributes(); // 一時的にカスタムデータ属性を削除
+    b = new Blob([document.getElementById('tree_canvas_div').innerHTML],
+                 {type :'image/svg+xml'});
+    document.getElementById('tree_canvas_div').innerHTML = s; // 復元
+  } else { // 'no' がデフォルト
+    b = new Blob([s], {type :'image/svg+xml'});
+  }
+
+  // ダウンロード用リンクを作る。
   const a = document.createElement('a');
   document.getElementsByTagName('body')[0].appendChild(a);
   a.download = document.menu.filename_prefix.value + '.svg';
+  // Blob 要素へのリンク URL を生成し、それを a タグの href 要素に設定する。
   a.href = URL.createObjectURL(b);
   a.click();
 }
@@ -3529,9 +3541,7 @@ function get_timestamp_str() {
   return(s);
 }
 
-/* 「人名一覧つき系図をHTML 形式で出力する」メニューで使っていた。
-他にも流用するかもしれないので、とりあえず残してある。
-カスタムデータ属性を全削除することによって SVG ソースコードの量を減らす。
+/* カスタムデータ属性を全削除することによって SVG ソースコードの量を減らす。
 呼び出し側で、現状の SVG ソースコードの退避と復元に責任を持つこと。 */
 function delete_custom_attributes() {
   const group_att = ['data-right_links', 'data-left_links',

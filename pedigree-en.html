@@ -586,8 +586,20 @@ Note: Enter a negative integer if you want to decrease the width.
 <tr class="menu_output">
 <th>Download the SVG file of the current state</th>
 <td>
-<input type="button" value="Download the SVG file" onclick="download_svg()"> of the current state, using 
-<input type="text" size="10" name="filename_prefix" id="filename_prefix" value="pedigree" onchange="set_prefix()"/> as <label for="filename_prefix">the prefix of the file name</label>.
+<ul>
+<li>Decide whether 
+<label for="delete_custom_data_attributes_yes"><input type="radio" name="delete_custom_data_attributes" value="yes" id="delete_custom_data_attributes_yes">to delete the custom data attributes from the SVG data</label>
+or
+<label for="delete_custom_data_attributes_no"><input type="radio" name="delete_custom_data_attributes" value="no" id="delete_custom_data_attributes_no" aria-label="to let the custom data attributes remain" checked>to let them remain</label>.
+<br>
+Note: The file size will be considerably reduced by deleting the custom data attributes, but this app does not support the SVG file without those attributes (and thus you will not be able to re-edit such an SVG file by this app).
+</li>
+<li><label for="filename_prefix">Specify the prefix of the file name</label> as
+<input type="text" size="10" name="filename_prefix" id="filename_prefix" value="pedigree" onchange="set_prefix()"/>.
+</li>
+<li><input type="button" value="Download the SVG file" onclick="download_svg()"> of the current state.
+</li>
+</ul>
 <br>
 Note: In order to display the chart of the downloaded SVG file appropriately, download <a href="pedigree_svg.css" download="pedigree_svg.css">the cascading style sheet (CSS) file</a> and then put the CSS file and the downloaded SVG file on the same folder (i.e., the same directory) on your computer.
 </td>

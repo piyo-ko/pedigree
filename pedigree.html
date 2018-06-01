@@ -445,10 +445,16 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 <tr class="menu_output">
 <th>現状の<wbr>ファイルを<wbr>ダウンロードする</th>
 <td>
-現状の図について SVG 形式のファイルを<input type="button" value="ダウンロードする" onclick="download_svg()">
-(<label for="filename_prefix">ファイル名の接頭辞:</label> <input type="text" size="10" name="filename_prefix" id="filename_prefix" value="pedigree" onchange="set_prefix()"/>)。
+カスタムデータ属性を
+<label for="delete_custom_data_attributes_yes"><input type="radio" name="delete_custom_data_attributes" value="yes" id="delete_custom_data_attributes_yes" aria-label="カスタムデータ属性を削除する (ファイルサイズを削減できますが当アプリでの再編集はできなくなります)">削除する (ファイルサイズを削減できますが当アプリでの再編集はできなくなります)</label>
+<label for="delete_custom_data_attributes_no"><input type="radio" name="delete_custom_data_attributes" value="no" id="delete_custom_data_attributes_no" aria-label="カスタムデータ属性を残す" checked>残す</label>
+ことにして、<br>
+<label for="filename_prefix">ファイル名の接頭辞</label>を
+<input type="text" size="10" name="filename_prefix" id="filename_prefix" value="pedigree" onchange="set_prefix()"/>
+とし、<br>
+現状の図について SVG 形式のファイルを<input type="button" value="ダウンロードする" onclick="download_svg()" aria-label="現状の図について SVG 形式のファイルをダウンロードする">。
 <br>
-なお、ダウンロードした SVG ファイルと同じフォルダに、<a href="pedigree_svg.css" download="pedigree_svg.css">このスタイルシートファイル</a>を置いてください。
+※ ダウンロードした SVG ファイルと同じフォルダに、<a href="pedigree_svg.css" download="pedigree_svg.css">SVG 用のスタイルシートファイル</a>を置いてください。
 </td>
 </tr>
 
