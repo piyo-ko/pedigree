@@ -224,3 +224,10 @@ span.badge_color.purple {
 span.badge_color.darkgreen {
   color: darkgreen;
 }
+
+label {
+  white-space: nowrap;
+}
+label.wrappable {
+  white-space: normal;
+}

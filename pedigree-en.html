@@ -49,12 +49,10 @@ the range of his/her rectangle's Y coordinate is <span class="info">[<span id="i
 <td>
 <label for="character_spacing_mode_wide_mode">
 <input type="radio" name="character_spacing_mode" id="character_spacing_mode_wide_mode" value="wide_mode">
-wide mode (suitable for Han characters, Kana characters, etc.)
-</label>
+wide mode</label> (suitable for Han characters, Kana characters, etc.)
 <label for="character_spacing_mode_narrow_mode">
 <input type="radio" name="character_spacing_mode" id="character_spacing_mode_narrow_mode" value="narrow_mode" checked>
-narrow mode (suitable for Latin characters)
-</label>
+narrow mode</label> (suitable for Latin characters)
 </td>
 </tr>
 
@@ -64,40 +62,52 @@ narrow mode (suitable for Latin characters)
 <ul>
 <li><label for="new_personal_name">Enter the name of a person to be added:</label> <input type="text" name="new_personal_name" id="new_personal_name" size="10"></li>
 
-<li>Check the box
+<li><label for="verticalize" class="wrappable">Check the box
 <input type="checkbox" name="verticalize" id="verticalize"> 
-<label for="verticalize">if the name should be displayed vertically (e.g., in the case where the name is written in Han characters)</label>.</li>
+if the name should be displayed vertically (e.g., in the case where the name is written in Han characters)</label>.</li>
 
 <li>Specify the style to be applied as
+<label for="new_personal_gender_neutral">
 <input type="radio" name="new_personal_gender" value="neutral" checked id="new_personal_gender_neutral">
-<label for="new_personal_gender_neutral">neutral</label>,
+neutral</label>,
 
+<label for="new_personal_gender_feminine">
 <input type="radio" name="new_personal_gender" value="feminine" id="new_personal_gender_feminine">
-<label for="new_personal_gender_feminine">feminine</label>, or
+feminine</label>, or
 
+<label for="new_personal_gender_masculine">
 <input type="radio" name="new_personal_gender" value="masculine" id="new_personal_gender_masculine">
-<label for="new_personal_gender_masculine">masculine</label>.</li>
+masculine</label>.</li>
 
 <li>Decide to locate the person
+<label for="position_random">
 <input type="radio" name="position" value="random" id="position_random" checked>
-<label for="position_random">at random</label>, or<br>
+at random</label>, or<br>
 decide to locate the person
+<label for="position_upper_left">
 <input type="radio" name="position" value="upper_left" id="position_upper_left">
-<label for="position_upper_left">at the upper left of</label>, 
+at the upper left of</label>, 
+<label for="position_upper_center">
 <input type="radio" name="position" value="upper_center" id="position_upper_center">
-<label for="position_upper_center">just above</label>, 
+just above</label>, 
+<label for="position_upper_right">
 <input type="radio" name="position" value="upper_right" id="position_upper_right">
-<label for="position_upper_right">at the upper right of</label>,
+at the upper right of</label>,
+<label for="position_left">
 <input type="radio" name="position" value="left" id="position_left">
-<label for="position_left">on the left-hand side of</label>,
+on the left-hand side of</label>,
+<label for="position_right">
 <input type="radio" name="position" value="right" id="position_right">
-<label for="position_right">on the right-hand side of</label>,
+on the right-hand side of</label>,
+<label for="position_lower_left">
 <input type="radio" name="position" value="lower_left" id="position_lower_left">
-<label for="position_lower_left">at the lower left of</label>,
+at the lower left of</label>,
+<label for="position_lower_center">
 <input type="radio" name="position" value="lower_center" id="position_lower_center">
-<label for="position_lower_center">just below</label>, or
+just below</label>, or
+<label for="position_lower_right">
 <input type="radio" name="position" value="lower_right" id="position_lower_right">
-<label for="position_lower_right">at the lower right of</label>
+at the lower right of</label>
 <label for="position_ref">another person
 <select id="position_ref" name="position_ref"></select>
 as a reference point</label>.
@@ -115,9 +125,9 @@ Specify the new name of
 <input type="text" name="renamed_as" size="10"> and
 <input type="button" value="rename the person so" onclick="rename_person()">.
 <br>
-(Note: Check the box 
+(Note: <label for="shrink_rect_if_name_shortened" class="wrappable">Check the box 
 <input type="checkbox" id="shrink_rect_if_name_shortened" name="shrink_rect_if_name_shortened"> beforehand,
-<label for="shrink_rect_if_name_shortened">in the case where you want to shrink the rectangle of this person as his/her name become shorter</label>.)
+in the case where you want to shrink the rectangle of this person as his/her name becomes shorter</label>.)
 </td>
 </tr>
 
@@ -173,16 +183,20 @@ and
 <select id="person_to_add_badge" name="person_to_add_badge"></select>
 </li>
 <li>Select the position where the badge should be attached:
+<label for="badge_pos_upper_left">
 <input type="radio" name="badge_pos" id="badge_pos_upper_left" value="upper_left">
-<label for="badge_pos_upper_left">the upper left corner</label>
+the upper left corner</label>
+<label for="badge_pos_upper_right">
 <input type="radio" name="badge_pos" id="badge_pos_upper_right" value="upper_right" checked>
-<label for="badge_pos_upper_right">the upper right corner</label>
+the upper right corner</label>
+<label for="badge_pos_lower_left">
 <input type="radio" name="badge_pos" id="badge_pos_lower_left" value="lower_left">
-<label for="badge_pos_lower_left">the lower left corner</label>
+the lower left corner</label>
+<label for="badge_pos_lower_right">
 <input type="radio" name="badge_pos" id="badge_pos_lower_right" value="lower_right">
-<label for="badge_pos_lower_right">the lower right corner</label>
+the lower right corner</label>
 </li>
-<li>Select the background color of the badge:
+<li><label for="badge_color">Select the background color of the badge:</label>
 <select name="badge_color" id="badge_color">
 <option value="black">black</option>
 <option value="dimgray">gray</option>
@@ -237,11 +251,13 @@ Select two persons
 (<select id="partner_1" name="partner_1"></select> and
 <select id="partner_2" name="partner_2"></select>),
 select the type of the horizontal link 
-(<input type="radio" name="horizontal_link_type" value="single" id="horizontal_link_type_single">
-<label for="horizontal_link_type_single">single-line link</label>
+(<label for="horizontal_link_type_single">
+<input type="radio" name="horizontal_link_type" value="single" id="horizontal_link_type_single">
+single-line link</label>
 or
+<label for="horizontal_link_type_double">
 <input type="radio" name="horizontal_link_type" value="double" checked id="horizontal_link_type_double">
-<label for="horizontal_link_type_double">double-line link</label>),
+double-line link</label>),
 and then,
 <input type="button" value="add a new link as specified" onclick="add_h_link()">.
 </td>
@@ -279,10 +295,12 @@ from the top of the edge
 </li>
 <li>
 Select the type of the new horizontal link: 
+<label for="horizontal_link_type2_single">
 <input type="radio" name="horizontal_link_type2" value="single" id="horizontal_link_type2_single">
-<label for="horizontal_link_type2_single">single-line link</label>
+single-line link</label>
+<label for="horizontal_link_type2_double">
 <input type="radio" name="horizontal_link_type2" value="double" checked id="horizontal_link_type2_double">
-<label for="horizontal_link_type2_double">double-line link</label>
+double-line link</label>
 </li>
 <li><input type="button" value="Add the new link as specified above" onclick="add_h_link_2()"></li>
 </ul>
@@ -295,11 +313,13 @@ Select the type of the new horizontal link:
 Select the target person
 <select id="target_of_increase_of_hlinks" name="target_of_increase_of_hlinks"></select>,
 and select the 
+<label for="target_side_lhs">
 <input type="radio" name="target_side" value="lhs" id="target_side_lhs" checked>
-<label for="target_side_lhs">left edge</label>
+left edge</label>
 or
+<label for="target_side_rhs">
 <input type="radio" name="target_side" value="rhs" id="target_side_rhs">
-<label for="target_side_rhs">right edge</label>.
+right edge</label>.
 Then,
 <input type="button" value="increase the allowable number of partners" onclick="increase_num_of_hlinks()"> connectable to the selected edge of the rectangle of the target person.
 <br>
@@ -324,14 +344,16 @@ and
 <td>
 <ul>
 <li>
-<label for="parent_1">Select a parent (or ancestor)</label> <select id="parent_1" name="parent_1"></select> and
-<label for="child_1">a child (or descendant)</label> <select id="child_1" name="child_1"></select>, 
+<label for="parent_1">Select a parent (or ancestor) <select id="parent_1" name="parent_1"></select></label> and
+<label for="child_1">a child (or descendant) <select id="child_1" name="child_1"></select></label>, 
 specify the type of a new vertical link as
+<label for="vertical_link1_type_solid">
 <input type="radio" name="vertical_link1_type" value="solid" checked id="vertical_link1_type_solid">
-<label for="vertical_link1_type_solid">a solid line</label>
+a solid line</label>
 or
+<label for="vertical_link1_type_dashed">
 <input type="radio" name="vertical_link1_type" value="dashed" id="vertical_link1_type_dashed">
-<label for="vertical_link1_type_dashed">a dashed line</label>,
+a dashed line</label>,
 and
 <input type="button" value="add the vertical link as specified" onclick="add_v_link_1()">.
 </li>
@@ -342,11 +364,13 @@ select a horizontal link
 select a child
 <select id="child_2" name="child_2"></select>,
 specify the type of a new vertical link as
+<label for="vertical_link2_type_solid">
 <input type="radio" name="vertical_link2_type" value="solid" checked id="vertical_link2_type_solid">
-<label for="vertical_link2_type_solid">a solid line</label>
+a solid line</label>
 or
+<label for="vertical_link2_type_dashed">
 <input type="radio" name="vertical_link2_type" value="dashed" id="vertical_link2_type_dashed">
-<label for="vertical_link2_type_dashed">a dashed line</label>,
+a dashed line</label>,
 and
 <input type="button" value="add the vertical link as specified" onclick="add_v_link_2()">.
 </li>
@@ -392,17 +416,21 @@ Select a person to be moved:
 </li>
 <li>
 Select the moving direction:
+<label for="moving_direction_up">
 <input type="radio" name="moving_direction" value="up" checked id="moving_direction_up">
-<label for="moving_direction_up">up</label>
+up</label>
 
+<label for="moving_direction_down">
 <input type="radio" name="moving_direction" value="down" id="moving_direction_down">
-<label for="moving_direction_down">down</label>
+down</label>
 
+<label for="moving_direction_left">
 <input type="radio" name="moving_direction" value="left" id="moving_direction_left">
-<label for="moving_direction_left">left</label>
+left</label>
 
+<label for="moving_direction_right">
 <input type="radio" name="moving_direction" value="right" id="moving_direction_right">
-<label for="moving_direction_right">right</label>
+right</label>
 </li>
 <li>
 Specify how much this person should be moved: 
@@ -528,17 +556,21 @@ Specify how much the persons should be moved left:
 <ul>
 <li>Select the shifting direction:
 
+<label for="shift_direction_up">
 <input type="radio" name="shift_direction" value="up" checked id="shift_direction_up">
-<label for="shift_direction_up">up</label>
+up</label>
 
+<label for="shift_direction_down">
 <input type="radio" name="shift_direction" value="down" id="shift_direction_down">
-<label for="shift_direction_down">down</label>
+down</label>
 
+<label for="shift_direction_left">
 <input type="radio" name="shift_direction" value="left" id="shift_direction_left">
-<label for="shift_direction_left">left</label>
+left</label>
 
+<label for="shift_direction_right">
 <input type="radio" name="shift_direction" value="right" id="shift_direction_right">
-<label for="shift_direction_right">right</label>
+right</label>
 </li>
 <li>
 Specify how much the whole chart should be shifted:
@@ -615,8 +647,9 @@ Note: In order to display the chart of the downloaded SVG file appropriately, do
 <tr class="menu_output">
 <th>Output the list of names</th>
 <td>
+<label for="output_notes" class="wrappable">
 Check the box <input type="checkbox" name="output_notes" id="output_notes" checked>
-<label for="output_notes">if notes should also be output</label>.
+if notes should also be output</label>.
 
 <input type="button" value="Download" onclick="list_persons()"> a text file of the list of names in ascending order.
 </td>
