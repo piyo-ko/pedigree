@@ -3181,7 +3181,7 @@ function download_svg() {
   const a = document.createElement('a');
   document.getElementsByTagName('body')[0].appendChild(a);
   a.download = document.menu.filename_prefix.value + '.svg';
-  // Blob 要素へのリンク URL を生成し、それを a タグの href 要素に設定する。
+  // Blob へのリンク URL を生成し、それを a 要素の href 属性に設定する。
   a.href = URL.createObjectURL(b);
   a.click();
 }
@@ -3506,7 +3506,7 @@ function delete_custom_attributes() {
 function read_in() {
   const reader = new FileReader();
   reader.onload = function (e) {
-    // 読み込んだテキストの内容を、divタグ (IDは 'display_test') の中身
+    // 読み込んだテキストの内容を、div 要素 (IDは 'display_test') の中身
     // として書き出す。
     document.getElementById('tree_canvas_div').innerHTML = e.target.result;
     set_p_graph_values(); // SVGの各要素を読み取って、変数の設定を行う。
