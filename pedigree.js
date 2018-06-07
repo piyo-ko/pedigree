@@ -3180,11 +3180,18 @@ function download_svg() {
   // ダウンロード用リンクを作る。
   const a = document.createElement('a');
   document.getElementsByTagName('body')[0].appendChild(a);
-  a.download = document.menu.filename_prefix.value + '.svg';
+  a.download = get_filename_prefix() + '.svg';
   // Blob へのリンク URL を生成し、それを a 要素の href 属性に設定する。
   a.href = URL.createObjectURL(b);
   a.click();
 }
+
+/* ダウンロード用のファイル名の接頭辞として入力された文字列を (最小限だが一応)
+エスケープする。 */
+function get_filename_prefix() {
+  return(document.menu.filename_prefix.value.replace(/[\\:/\s]/g, '_'));
+}
+
 /* 作業の各段階での SVG ファイルをダウンロードするためのリンクを生成・追加する。
 各メニューに相当する関数の最後から呼び出す。
 description_str は、リンクテキストとして表示したい文字列。
@@ -3197,7 +3204,7 @@ function backup_svg(description_str, auto_save_on_sessionStorage = true) {
   const li = document.createElement('li');
   ul.appendChild(li);
   const a = document.createElement('a');
-  a.download = document.menu.filename_prefix.value + '_step_' + P_GRAPH.step_No + '.svg';
+  a.download = get_filename_prefix() + '_step_' + P_GRAPH.step_No + '.svg';
   P_GRAPH.step_No++;
   a.href = URL.createObjectURL(b);  add_text_node(a, description_str);
   li.appendChild(a);
@@ -3217,7 +3224,7 @@ function backup_svg(description_str, auto_save_on_sessionStorage = true) {
 download 属性の値を、入力された接頭辞に置換する。
 接頭辞の入力欄の内容が変化したときに呼ばれる。 */
 function set_prefix() {
-  const prefix_str = document.menu.filename_prefix.value;
+  const prefix_str = get_filename_prefix();
   const backup_links = document.getElementById('svg_backup').getElementsByTagName('a');
   const L = backup_links.length;
   for (let i = 0; i < L; i++) {
