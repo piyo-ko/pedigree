@@ -575,9 +575,9 @@ function add_person() {
 
   // 矩形を作る
   const r = document.createElementNS(SVG_NS, 'rect');
-  const r_attr = new Map([['id', new_personal_id + 'r'], ['class', gender], 
-    ['x', x], ['y', y], ['width', box_w], ['height', box_h]]);
-  r_attr.forEach(function(val, key) { r.setAttribute(key, val); });
+  const r_attr = [['id', new_personal_id + 'r'], ['class', gender], 
+    ['x', x], ['y', y], ['width', box_w], ['height', box_h]];
+  r_attr.forEach(k_v => { r.setAttribute(k_v[0], k_v[1]); });
   r.onmouseover = function() {show_info(new_personal_id, new_personal_name);};
   // グループに矩形要素を追加。
   add_text_node(g, '\n  ');  g.appendChild(r);  add_text_node(g, '\n  ');
@@ -585,14 +585,14 @@ function add_person() {
   const t = document.createElementNS(SVG_NS, 'text');
   add_text_node(t, new_personal_name);
   const t_attr = (verticalize) ?
-    ( new Map([['id', new_personal_id + 't'], ['x', x], ['y', y],
+    [ ['id', new_personal_id + 't'], ['x', x], ['y', y],
       ['textLength', txtlen_val], ['lengthAdjust', 'spacing'], 
       ['writing-mode', 'tb'],
-      ['dx', CONFIG.v_text_dx], ['dy', CONFIG.v_text_dy]]) ) :
-    ( new Map([['id', new_personal_id + 't'], ['x', x], ['y', y],
+      ['dx', CONFIG.v_text_dx], ['dy', CONFIG.v_text_dy] ] :
+    [ ['id', new_personal_id + 't'], ['x', x], ['y', y],
       ['textLength', txtlen_val], ['lengthAdjust', 'spacingAndGlyphs'], 
-      ['dx', CONFIG.h_text_dx], ['dy', CONFIG.h_text_dy]]) );
-  t_attr.forEach(function(val, key) { t.setAttribute(key, val); });
+      ['dx', CONFIG.h_text_dx], ['dy', CONFIG.h_text_dy] ];
+  t_attr.forEach(k_v => { t.setAttribute(k_v[0], k_v[1]); });
   g.appendChild(t);  add_text_node(g, '\n');
   // data-* 属性の設定。左右上下にくっついているリンクについての情報である。
   g.dataset.right_links = g.dataset.left_links = 
@@ -1203,11 +1203,11 @@ function annotate() {
       modify_width_0(x + note_length - P_GRAPH.svg_width);
     }
   }
-  const att = new Map([['id', pid + 'n' + new_note_No], ['x', x], ['y', y], 
-                       ['textLength', note_length], 
-                       ['lengthAdjust', lengthAdjust], 
-                       ['dx', dx], ['dy', dy], ['class', 'note ' + note_color]]);
-  att.forEach(function(val, key) { note_elt.setAttribute(key, val); });
+  const att = [['id', pid + 'n' + new_note_No], ['x', x], ['y', y], 
+               ['textLength', note_length], 
+               ['lengthAdjust', lengthAdjust], 
+               ['dx', dx], ['dy', dy], ['class', 'note ' + note_color]];
+  att.forEach(k_v => { note_elt.setAttribute(k_v[0], k_v[1]); });
   add_text_node(g_elt, '  ');
   g_elt.appendChild(note_elt);
   add_text_node(g_elt, '\n');
@@ -1343,10 +1343,10 @@ function add_num_badge() {
 
   // circle 要素を作る
   const circle = document.createElementNS(SVG_NS, 'circle');
-  const circle_attr = new Map([['id', badge_id],
+  const circle_attr = [['id', badge_id],
     ['cx', center_x], ['cy', center_y], ['r', CONFIG.badge_radius],
-    ['fill', badge_color]]);
-  circle_attr.forEach(function(val, key) { circle.setAttribute(key, val); });
+    ['fill', badge_color]];
+  circle_attr.forEach(k_v => { circle.setAttribute(k_v[0], k_v[1]); });
   // circle 要素を追加する
   const g = document.getElementById(pid + 'g');
   add_text_node(g, '  ');  g.appendChild(circle);  add_text_node(g, '\n');
@@ -1366,11 +1366,11 @@ function add_num_badge() {
   const txt_len = num_of_digits * digit_width;
   // 上記正方形の左右に等しく設けられる余白の幅 (3 桁の場合は余白は 0)
   const dx = Math.floor((3 - num_of_digits) * digit_width / 2);
-  const txt_attr = new Map([['id', pid + 'bn_' + badge_pos],
+  const txt_attr = [['id', pid + 'bn_' + badge_pos],
     ['x', center_x - half_size_of_suqare_for_digits], 
     ['y', center_y + digit_half_height],
-    ['textLength', txt_len], ['dx', dx], ['dy', 0], ['class', 'num_badge']]);
-  txt_attr.forEach(function(val, key) { txt.setAttribute(key, val); });
+    ['textLength', txt_len], ['dx', dx], ['dy', 0], ['class', 'num_badge']];
+  txt_attr.forEach(k_v => { txt.setAttribute(k_v[0], k_v[1]); });
   // text 要素を追加する
   add_text_node(g, '  ');  g.appendChild(txt);  add_text_node(g, '\n');
 
@@ -3738,12 +3738,12 @@ function read_automatically_saved_data() {
 したら、座標情報を表示する。 */
 function show_info(pid, pname) {
   const rect = get_rect_info(pid);
-  const id_val_map = new Map([['info_pid', pid], ['info_name', pname], 
+  const id_val = [['info_pid', pid], ['info_name', pname], 
     ['info_x_start', rect.x_left], ['info_x_end', rect.x_right], 
     ['info_x_mid', rect.x_center], 
-    ['info_y_start', rect.y_top], ['info_y_end', rect.y_bottom]]);
-  id_val_map.forEach(function(val, elt_id) { 
-    document.getElementById(elt_id).textContent = val;
+    ['info_y_start', rect.y_top], ['info_y_end', rect.y_bottom]];
+  id_val.forEach(eltID_val => {
+    document.getElementById(eltID_val[0]).textContent = eltID_val[1];
   });
 }
 
