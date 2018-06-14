@@ -681,6 +681,27 @@ function increase_height(pid, new_height) {
   move_down_in_rect_height_change(pid, true, diff_height);
   // 左辺にある (かもしれない) 縦書き注釈の位置を決め直す。
   relocate_tb_notes(pid);
+  // 下辺の右端・左端にある (かもしれない) バッジも下に移動させる。
+  const lower_right_badge = document.getElementById(pid + 'b_lower_right'),
+    lower_right_badge_num = document.getElementById(pid + 'bn_lower_right'),
+    lower_left_badge = document.getElementById(pid + 'b_lower_left'),
+    lower_left_badge_num = document.getElementById(pid + 'bn_lower_left');
+  if (lower_right_badge !== null) {
+    const cur_y = parseInt(lower_right_badge.getAttribute('cy'));
+    lower_right_badge.setAttribute('cy', cur_y + diff_height);
+  }
+  if (lower_right_badge_num !== null) {
+    const cur_y = parseInt(lower_right_badge_num.getAttribute('y'));
+    lower_right_badge_num.setAttribute('y', cur_y + diff_height);
+  }
+  if (lower_left_badge !== null) {
+    const cur_y = parseInt(lower_left_badge.getAttribute('cy'));
+    lower_left_badge.setAttribute('cy', cur_y + diff_height);
+  }
+  if (lower_left_badge_num !== null) {
+    const cur_y = parseInt(lower_left_badge_num.getAttribute('y'));
+    lower_left_badge_num.setAttribute('y', cur_y + diff_height);
+  }
 }
 
 /* 下辺は固定して上辺を下にずらすことで、矩形の高さを減らす。
@@ -711,6 +732,27 @@ function decrease_height(pid, new_height) {
   move_down_in_rect_height_change(pid, false, diff_height);
   // 左辺にある (かもしれない) 縦書き注釈の位置を決め直す。
   relocate_tb_notes(pid);
+  // 上辺の右端・左端にある (かもしれない) バッジも下に移動させる。
+  const upper_right_badge = document.getElementById(pid + 'b_upper_right'),
+    upper_right_badge_num = document.getElementById(pid + 'bn_upper_right'),
+    upper_left_badge = document.getElementById(pid + 'b_upper_left'),
+    upper_left_badge_num = document.getElementById(pid + 'bn_upper_left');
+  if (upper_right_badge !== null) {
+    const cur_y = parseInt(upper_right_badge.getAttribute('cy'));
+    upper_right_badge.setAttribute('cy', cur_y - diff_height);
+  }
+  if (upper_right_badge_num !== null) {
+    const cur_y = parseInt(upper_right_badge_num.getAttribute('y'));
+    upper_right_badge_num.setAttribute('y', cur_y - diff_height);
+  }
+  if (upper_left_badge !== null) {
+    const cur_y = parseInt(upper_left_badge.getAttribute('cy'));
+    upper_left_badge.setAttribute('cy', cur_y - diff_height);
+  }
+  if (upper_left_badge_num !== null) {
+    const cur_y = parseInt(upper_left_badge_num.getAttribute('y'));
+    upper_left_badge_num.setAttribute('y', cur_y - diff_height);
+  }
 }
 
 /* 矩形の高さを変えたいときに呼び出される関数。
