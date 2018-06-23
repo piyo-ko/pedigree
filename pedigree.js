@@ -136,6 +136,7 @@ class EndPointsMngr_RL {
   find_posNo(rel_y) {
     let found_pos_No = -1; // 初期化
     let num_div, unit_len;
+    let err_msg = 'find_posNo:\n  rel_y = ' + rel_y + ', this.edge_length=' + this.edge_length + '\n';
     // 分割数の上限は、辺の長さをその分割数で割った商が 
     // CONFIG.min_interval_between_h_links 以上の範囲、と定める
     // (横リンク同士が近すぎるのは駄目、ということ)。その上限の分割数までの範囲で
@@ -143,16 +144,19 @@ class EndPointsMngr_RL {
     // ただし、next_position(hid) で位置を求めた際の端数切り捨ての影響を考慮する
     // 必要がある。綺麗な式では表せないので、冗長だが原始的に全探索する。
     for (num_div = this.positions.length + 1, 
-         unit_len = Math.floor(this.edge_length / num_div);
+         unit_len = this.edge_length / num_div;
          unit_len >= CONFIG.min_interval_between_h_links;
-         num_div *= 2, unit_len = Math.floor(this.edge_length / num_div) ) {
+         num_div *= 2, unit_len = this.edge_length / num_div) {
+      err_msg += '  num_div=' + num_div + ', unit_len=' + unit_len + '\n';
       for (let p = 1; p < num_div; p++) { // あり得る位置番号を順に試してみる
         let tmp_pos = Math.floor( this.edge_length * p / num_div );
+        err_msg += '    p=' + p + ', tmp_pos=' + tmp_pos + '\n';
         if (tmp_pos === rel_y) { found_pos_No = p; break; }
       }
       if (-1 < found_pos_No) { break; }
     }
     if (found_pos_No === -1) { // あり得ないはず。不測のエラーである。
+      console.log(err_msg);
       return({found: false, num_of_divisions: this.positions.length + 1,
               pos_No: -1 } );
     } else { 
@@ -678,7 +682,7 @@ function increase_height(pid, new_height) {
     }
   });
   // 右辺・左辺とその先の子孫たちを適宜下に移動させる。
-  move_down_in_rect_height_change(pid, true, diff_height);
+  move_down_in_rect_height_change(pid, true, cur_rect_info.y_height, new_height);
   // 左辺にある (かもしれない) 縦書き注釈の位置を決め直す。
   relocate_tb_notes(pid);
   // 下辺の右端・左端にある (かもしれない) バッジも下に移動させる。
@@ -729,7 +733,7 @@ function decrease_height(pid, new_height) {
   });
 
   // 右辺・左辺とその先の子孫たちを適宜下に移動させる。
-  move_down_in_rect_height_change(pid, false, diff_height);
+  move_down_in_rect_height_change(pid, false, cur_rect_info.y_height, new_height);
   // 左辺にある (かもしれない) 縦書き注釈の位置を決め直す。
   relocate_tb_notes(pid);
   // 上辺の右端・左端にある (かもしれない) バッジも下に移動させる。
@@ -774,7 +778,7 @@ C 自身に対応する量、D 自身に対応する量だけ、それぞれさ�
 事態) を防ぐため、move_down_collectively のオプション引数をうまく指定する必要が
 ある。
  */
-function move_down_in_rect_height_change(pid_for_this_rect, rect_is_to_be_extended, diff_height) {
+function move_down_in_rect_height_change(pid_for_this_rect, rect_is_to_be_extended, old_height, new_height) {
   // 矩形の高さを変える対象となる人物に対応する g 要素と、その矩形の管理
   // オブジェクトを求める。
   const g = document.getElementById(pid_for_this_rect + 'g');
@@ -791,26 +795,38 @@ function move_down_in_rect_height_change(pid_for_this_rect, rect_is_to_be_extend
   // 関数 diff_y を定義する。なお、右辺と左辺で分割数が違う場合があることに注意
   // (on_rhs はそのために必要な引数)。
   const diff_y = rect_is_to_be_extended ?
-    // 上辺を固定して下に矩形を拡大する場合、分割数 d のうちで位置番号 p の
-    // 横リンクの下がり幅は (矩形の高さが h1 から h2 に変化するものとして)、
-    // h2 * p/d - h1 * p/d = (h2 - h1) * p/d
-    // である。
+    // 上辺を固定して下に矩形を拡大する場合、分割数 num_div のうちで
+    // 位置番号 pos のリンクの下がり幅は、
+    // (a) Math.floor(new_height * pos / num_div) つまり、拡大後の高さの矩形に
+    //     おける、上辺からその横リンクまでの長さから、
+    // (b) Math.floor(old_height * pos / num_div) つまり、拡大前の高さの矩形に
+    //     おける、上辺からその横リンクまでの長さを
+    // 引いた値 (正の値) である。他の箇所との整合性を保つために、引き算する前に
+    // (a) と (b) の双方で Math.floor を使っていることに注意。
     function(hid, on_rhs) {
       const m = on_rhs ? mng.right_side : mng.left_side,
             num_div = m.positions.length + 1, pos = m.which_pos_No(hid);
-      return(Math.floor(diff_height * pos / num_div));
+      return(Math.floor(new_height * pos / num_div) - 
+             Math.floor(old_height * pos / num_div));
     } :
     // 一方、下辺を固定して上辺を下に動かすことで矩形を縮小する場合、
-    // top1 + h1 = top2 + h2 より top1 - top2 = h2 - h1 (= diff_height)
-    // なので、分割数 d のうちで位置番号 p の横リンクの下がり幅は
-    // (top2 + h2 * p/d) - (top1 + h1 * p/d)
-    // = (top2 - top1) + (h2 - h1) * p/d
-    // = (h2 - h1) * (-1 + p/d)
-    // = - (h2 - h1) * ((d - p)/d)
+    // 縮小前と縮小後の上辺の位置をそれぞれ old_top, new_top とすると、
+    //      old_top + old_height = new_top + new_height
+    // - new_height + old_height = new_top - old_top
+    // である (※)。分割数 num_div のうちで位置番号 pos のリンクの下がり幅は、
+    // (a) new_top + Math.floor(new_height * pos / num_div) つまり、縮小後の
+    //     その横リンクの y 座標から、
+    // (b) old_top + Math.floor(old_height * pos / num_div) つまり、縮小前の
+    //     その横リンクの y 座標を
+    // 引いた値 (正の値) であるが、ここでの計算には (※) を用いる。
+    // 他の箇所との整合性を保つために、引き算する前に (a) と (b) の双方で 
+    // Math.floor を使っていることに注意。
     function(hid, on_rhs) {
       const m = on_rhs ? mng.right_side : mng.left_side,
             num_div = m.positions.length + 1, pos = m.which_pos_No(hid);
-      return(Math.floor(-diff_height * (num_div - pos) / num_div));
+      return(- new_height + old_height +
+             Math.floor(new_height * pos / num_div) - 
+             Math.floor(old_height * pos / num_div));
     };
 
   // 右辺につながっている相手に関する情報を記録してゆく。
