@@ -3523,22 +3523,6 @@ function download_pedigree_viewer() {
   body_elt.removeChild(html_a);
 }
 
-/* yyyy-mm-dd_hhmmss.mmm */
-function get_timestamp_str() {
-  const d = new Date(),
-    yyyy = d.getFullYear(), mm_month = d.getMonth() + 1, dd = d.getDate(),
-    hh = d.getHours(), mm_min = d.getMinutes(), ss = d.getSeconds(),
-    ms = d.getMilliseconds();
-  let s = yyyy + "-";
-  s += ((mm_month < 10) ? "0" + mm_month : mm_month);
-  s += ((dd < 10) ? "-0" + dd : "-" + dd);
-  s += ((hh < 10) ? "_0" + hh : "_" + hh);
-  s += ((mm_min < 10) ? "0" + mm_min : mm_min);
-  s += ((ss < 10) ? "0" + ss : ss);
-  s += ((ms < 10) ? ".00" + ms : ((ms < 100) ? ".0" + ms : "." + ms));
-  return(s);
-}
-
 /* カスタムデータ属性を全削除することによって SVG ソースコードの量を減らす。
 呼び出し側で、現状の SVG ソースコードの退避と復元に責任を持つこと。 */
 function delete_custom_attributes() {
