@@ -210,7 +210,7 @@ class EndPointsMngr_UL {
   }
 
   print() { // デバッグ用の印字関数
-    this.points.map(function(pt, i) {
+    this.points.forEach((pt, i) => {
       console.log('   points[' + i + '] is { idx: ' + pt.idx + ', status: ' + pt.status + ', dx: ' + pt.dx + ', count: ' + pt.count + '}\n');
     });
   }
@@ -307,7 +307,7 @@ var P_GRAPH = P_GRAPH || {
       '\n  svg_height: ' + this.svg_height + '\n  svg_width : ' + this.svg_width + 
       '\n  persons: ' + this.persons + '\n  v_links: ' + this.v_links + 
       '\n  p_free_pos_mngrs: [');
-    this.p_free_pos_mngrs.map(mng => { mng.print(); });
+    this.p_free_pos_mngrs.forEach(mng => { mng.print(); });
     console.log(']\n  step_No: ' + this.step_No + '\n');
   },
   find_mng: function(pid) {
@@ -608,7 +608,7 @@ function add_person() {
   P_GRAPH.persons.push(new_personal_id);
   P_GRAPH.p_free_pos_mngrs.push(new RectMngr(new_personal_id, box_h, box_w));
   // プルダウンリストへの反映
-  PERSON_SELECTORS.map(s => { 
+  PERSON_SELECTORS.forEach(s => { 
     add_selector_option(s, new_personal_id, new_personal_name);
   });
 
@@ -636,14 +636,14 @@ function remove_person() {
     const ok = confirm(m[LANG]);
     if (!ok) { return; }
   }
-  id_str_to_arr(v_links).map(vid => { remove_v_link_0(vid); });
+  id_str_to_arr(v_links).forEach(vid => { remove_v_link_0(vid); });
   apply_to_each_hid_pid_pair(h_links, (hid, partner_pid) => {
     const vids = document.getElementById(hid).dataset.lower_links;
-    id_str_to_arr(vids).map(vid => { remove_v_link_0(vid); });
+    id_str_to_arr(vids).forEach(vid => { remove_v_link_0(vid); });
     remove_h_link_0(hid);
   });
   document.getElementById('pedigree').removeChild(g);
-  PERSON_SELECTORS.map(sel => { remove_choice(sel, pid); });
+  PERSON_SELECTORS.forEach(sel => { remove_choice(sel, pid); });
   remove_val_from_array(P_GRAPH.persons, pid);
   const b = {ja: name_of_this_person + 'を削除', 
              en: 'removing ' + name_of_this_person};
@@ -666,7 +666,7 @@ function increase_height(pid, new_height) {
   const diff_height = new_height - cur_rect_info.y_height;
   const new_rect_bottom = cur_rect_info.y_top + new_height;
   const g = document.getElementById(pid + 'g');
-  id_str_to_arr(g.dataset.lower_links).map(vid => {
+  id_str_to_arr(g.dataset.lower_links).forEach(vid => {
     // 縦リンクの上端が下がることは確定しているので、そのように再描画する。
     redraw_v_link(vid, 0, diff_height, 0, 0);
     // 子の位置によっては縦リンクの下端も移動するかもしれない。
@@ -726,7 +726,7 @@ function decrease_height(pid, new_height) {
   const g = document.getElementById(pid + 'g');
   const upper_links = g.dataset.upper_links;
   const diff_height = new_height - cur_rect_info.y_height; // 負数になるはず
-  id_str_to_arr(upper_links).map(vid => {
+  id_str_to_arr(upper_links).forEach(vid => {
     // 縦リンクの上端は変わらない。下端のみ下へ移動する。
     // diff_height < 0 なので、意図通りリンクの下端を下に移動するために符号を反転。
     redraw_v_link(vid, 0, 0, 0, -diff_height);
@@ -852,7 +852,7 @@ function move_down_in_rect_height_change(pid_for_this_rect, rect_is_to_be_extend
   // ましょう。そしてそこから先は、もうたどらないでおきましょう」と指定したい。
   // そういう除外リストを指定するための配列。
   const excluded_pids = []; // 配列の中身は後で増やしてゆく
-  targets_to_move.map(t => {
+  targets_to_move.forEach(t => {
     if (MODE.func_move_down_in_rect_height_change > 0) {
       console.log('move_down_collectively(' + pid_for_this_rect + ', ' + 
         t.pid + ' (' + name_str(t.pid) + '), ' + t.diff + ', ' + t.hid + 
@@ -873,7 +873,7 @@ function move_down_in_rect_height_change(pid_for_this_rect, rect_is_to_be_extend
     // 以下は、その横リンクからぶら下がっている縦リンクについての処理
     const hlink = document.getElementById(t.hid), 
           new_connect_pos_y = parseInt(hlink.dataset.connect_pos_y);
-    id_str_to_arr(hlink.dataset.lower_links).map(vid => {
+    id_str_to_arr(hlink.dataset.lower_links).forEach(vid => {
       // 縦リンクの上端が下がることは確定しているので、そのように再描画する。
       redraw_v_link(vid, 0, t.diff, 0, 0);
       // 子の位置によっては縦リンクの下端も移動するかもしれない。
@@ -1022,7 +1022,7 @@ function rename_person() {
   }
   // ここにくるのは、エラー発生で return したりせず、無事に諸々の処理ができた
   // とき。人物を選択するためのセレクタの表示名を変更する必要がある。
-  PERSON_SELECTORS.map(sel => { rename_choice(sel, pid, new_name); });
+  PERSON_SELECTORS.forEach(sel => { rename_choice(sel, pid, new_name); });
   // この人物の矩形にマウスオーバしたときに表示される名前も、新たな名前に変える。
   const rect = document.getElementById(pid + 'r');
   rect.onmouseover = function() { show_info(pid, new_name); };
@@ -1037,11 +1037,13 @@ function rename_person() {
               'between ' + new_name + ' and ' + name_str(partner) : 
               'between ' + name_str(partner) + ' and ' + new_name;
       const parents_str = {ja: parents_str_ja, en: parents_str_en};
-      HLINK_SELECTORS.map(sel => { rename_choice(sel, hid, parents_str[LANG]); });
+      HLINK_SELECTORS.forEach(sel => { 
+        rename_choice(sel, hid, parents_str[LANG]);
+      });
       const vids = id_str_to_arr(document.getElementById(hid).dataset.lower_links);
-      vids.map(function (vid) { // 横リンクにぶら下がっている縦リンクのそれぞれ
+      vids.forEach(vid => { // 横リンクにぶら下がっている縦リンクのそれぞれ
         const child_str = name_str(document.getElementById(vid).dataset.child);
-        VLINK_SELECTORS.map(sel => { 
+        VLINK_SELECTORS.forEach(sel => { 
           let op_str = {ja: parents_str + 'から' + child_str + 'へ',
                         en: 'from ' + parents_str + ' to ' + child_str};
           rename_choice(sel, vid, op_str[LANG]);
@@ -1054,7 +1056,7 @@ function rename_person() {
   // 自分と左側の人との間の横リンクを選択するための表示名も変更
   rename_hlink_choice(false);
   // 自分と親との間の縦リンクを選択するための表示名も変更
-  id_str_to_arr(g_dat.upper_links).map(function(vid) {
+  id_str_to_arr(g_dat.upper_links).forEach(vid => {
     const v_elt_dat = document.getElementById(vid).dataset;
     const parent1 = v_elt_dat.parent1, parent2 = v_elt_dat.parent2;
     const str = (parent2 === undefined || parent2 === null || parent2 === '') ?
@@ -1062,14 +1064,14 @@ function rename_person() {
        en: 'from ' + name_str(parent1) + ' to ' + new_name } :
       {ja: name_str(parent1) + 'と' + name_str(parent2) + 'から' + new_name + 'へ',
        en: 'from ' + name_str(parent1) + ' and ' + name_str(parent2) + ' to ' + new_name};
-    VLINK_SELECTORS.map(sel => { rename_choice(sel, vid, str[LANG]); });
+    VLINK_SELECTORS.forEach(sel => { rename_choice(sel, vid, str[LANG]); });
   });
   // 自分と子との間の縦リンクを選択するための表示名も変更
-  id_str_to_arr(g_dat.lower_links).map(function(vid) {
+  id_str_to_arr(g_dat.lower_links).forEach(vid => {
     const child = document.getElementById(vid).dataset.child;
     const str = {ja: new_name + 'から' + name_str(child) + 'へ',
                  en: 'from ' + new_name + ' to ' + name_str(child)};
-    VLINK_SELECTORS.map(sel => { rename_choice(sel, vid, str[LANG]); });
+    VLINK_SELECTORS.forEach(sel => { rename_choice(sel, vid, str[LANG]); });
   });
 
   const b = {ja: new_name + 'に改名', en: 'renaming to ' + new_name };
@@ -1139,13 +1141,13 @@ function change_width(pid, new_width, width_is_to_be_increased) {
     // 再描画後の、新たなぶら下がり位置を読み取る。
     const new_connect_pos_x = parseInt(hlink.dataset.connect_pos_x);
     const diff_x = new_connect_pos_x - cur_connect_pos_x;
-    id_str_to_arr(hlink.dataset.lower_links).map(function(vid) {
+    id_str_to_arr(hlink.dataset.lower_links).forEach(vid => {
       redraw_v_link(vid, diff_x, 0, 0, 0);
     });
   });
   // 自身の上辺につながる縦リンクを再描画する。
   // 上端の位置は変わらず、下端の x 座標のみ変わる。
-  id_str_to_arr(g.dataset.upper_links).map(function (vid) {
+  id_str_to_arr(g.dataset.upper_links).forEach(vid => {
     const pos_idx = parseInt(document.getElementById(vid).dataset.child_pos_idx);
     const cur_pos = Math.floor(cur_rect_info.x_width * (pos_idx + 1)/4);
     const diff_x = mng.upper_side.points[pos_idx].dx - cur_pos;
@@ -1153,7 +1155,7 @@ function change_width(pid, new_width, width_is_to_be_increased) {
   });
   // 自身の下辺につながる縦リンクを再描画する。
   // 上端の x 座標のみ変わり、下端の位置は変わらない。
-  id_str_to_arr(g.dataset.lower_links).map(function (vid) {
+  id_str_to_arr(g.dataset.lower_links).forEach(vid => {
     const pos_idx = parseInt(document.getElementById(vid).dataset.parent1_pos_idx);
     const cur_pos = Math.floor(cur_rect_info.x_width * (pos_idx + 1)/4);
     const diff_x = mng.lower_side.points[pos_idx].dx - cur_pos;
@@ -1554,7 +1556,7 @@ function add_h_link_0(p1_id, p2_id, link_type) {
         t_right = r1_is_left ? name_str(p2_id) : name_str(p1_id),
         displayed_str = {ja: t_left + 'と' + t_right, 
                          en: 'between ' + t_left + ' and ' + t_right};
-  HLINK_SELECTORS.map(sel => { 
+  HLINK_SELECTORS.forEach(sel => { 
     add_selector_option(sel, hid, displayed_str[LANG]); 
   });
   select_dummy_options(); // ダミーの人物を明示的に選択しておく
@@ -1682,7 +1684,7 @@ function move_down_collectively(pid_fixed, pid_moved, amount, hid_to_ignore = ''
         // この例外的横リンクから下に伸びている縦リンクがあるかもしれない
         const vids = document.getElementById(cur_hid).dataset.lower_links;
         // もしあれば、その縦リンクも「(d) に該当する例外的な場合」として扱う。
-        id_str_to_arr(vids).map(function(v) {
+        id_str_to_arr(vids).forEach(v => {
           exceptional_vlinks.push({ vlink_id: v, 
             type: 'vlink_from_exceptional_hlink', from_which_hlink: cur_hid, 
             parent_to_move: cur_person });
@@ -1702,7 +1704,7 @@ function move_down_collectively(pid_fixed, pid_moved, amount, hid_to_ignore = ''
       hlinks_to_move_down.push(cur_hid);  // 横リンクが未登録なのでまず登録。
       // この横リンクから下に伸びている縦リンクがあるかもしれない
       const vids = document.getElementById(cur_hid).dataset.lower_links;
-      id_str_to_arr(vids).map(function(v) {
+      id_str_to_arr(vids).forEach(v => {
         const child_id = document.getElementById(v).dataset.child;
         if (child_id === pid_fixed) { // (d) に該当する例外的な場合
           exceptional_vlinks.push({ vlink_id: v,
@@ -1721,7 +1723,7 @@ function move_down_collectively(pid_fixed, pid_moved, amount, hid_to_ignore = ''
     });
     // cur_person という ID の人物について、次は、上辺につながる縦リンクを
     // 調べる。gr.dataset.upper_links は、'v1,v3,' のような文字列。
-    id_str_to_arr(gr.dataset.upper_links).map(function(v) {
+    id_str_to_arr(gr.dataset.upper_links).forEach(v => {
       // この縦リンクの接続先 (一人の親、または、親同士の間の横リンク) について
       // この段階では深く調べず、最低限のチェックでの場合分けのみ行う。
       const vlink_dat = document.getElementById(v).dataset;
@@ -1735,7 +1737,7 @@ function move_down_collectively(pid_fixed, pid_moved, amount, hid_to_ignore = ''
     });
     // cur_person という ID の人物について、次は、下辺につながる縦リンクを
     // 調べる。gr.dataset.lower_links は、'v1,v3,' のような文字列。
-    id_str_to_arr(gr.dataset.lower_links).map(function(v) {
+    id_str_to_arr(gr.dataset.lower_links).forEach(v => {
       const child_id = document.getElementById(v).dataset.child;
       if (child_id === pid_fixed) { // (d) に該当する例外的な場合
         exceptional_vlinks.push({ vlink_id: v, 
@@ -1763,11 +1765,11 @@ function move_down_collectively(pid_fixed, pid_moved, amount, hid_to_ignore = ''
               '\nvlinks_to_move_down is [' + vlinks_to_move_down + ']' + 
               '\nvlinks_to_extend is [' + vlinks_to_extend + ']' + 
               '\nexceptional_hlinks is [';
-    exceptional_hlinks.map(function(h, idx) { 
+    exceptional_hlinks.forEach((h, idx) => { 
       if (0 < idx) { msg +=','; }  msg += h.hlink_id;
     });
     msg += ']\nexceptional_vlinks is [';
-    exceptional_vlinks.map(function(v, idx) { 
+    exceptional_vlinks.forEach((v, idx) => { 
       if (0 < idx) { msg += ','; }  msg += JSON.stringify(v);
     });
     msg += ']\n';
@@ -1775,19 +1777,19 @@ function move_down_collectively(pid_fixed, pid_moved, amount, hid_to_ignore = ''
   }
 
   //最後に移動・再描画
-  persons_to_move_down.map(pid => { move_rect_and_txt(pid, 0, amount); });
-  hlinks_to_move_down.map(hid => { move_link(hid, 0, amount, true); });
-  vlinks_to_move_down.map(vid => { move_link(vid, 0, amount, false); });
-  vlinks_to_extend.map(vid => {
+  persons_to_move_down.forEach(pid => { move_rect_and_txt(pid, 0, amount); });
+  hlinks_to_move_down.forEach(hid => { move_link(hid, 0, amount, true); });
+  vlinks_to_move_down.forEach(vid => { move_link(vid, 0, amount, false); });
+  vlinks_to_extend.forEach(vid => {
     if (vlinks_to_move_down.includes(vid)) { return; }
     redraw_v_link(vid, 0, 0, 0, amount);
   });
-  exceptional_hlinks.map(hlink_info => {
+  exceptional_hlinks.forEach(hlink_info => {
     const hlink = document.getElementById(hlink_info.hlink_id);
     // TO DO: どうやって再描画するか
     hlink.setAttribute('class', hlink.getAttribute('class') + ' exceptional');
   });
-  exceptional_vlinks.map(vlink_info => {
+  exceptional_vlinks.forEach(vlink_info => {
     const vlink = document.getElementById(vlink_info.vlink_id);
     // TO DO: どうやって再描画するか。一応 vlinks_to_extend と同様にしておく。
     vlink.setAttribute('class', vlink.getAttribute('class') + ' exceptional');
@@ -2038,7 +2040,7 @@ function remove_h_link_0(hlink_id) {
                en: 'One or more children are connected to this horizontal link.  Select [OK] only when you want to remove this horizontal link and the vertical link(s) connecting the child(ren) to this horizontal link.'};
     const ok = confirm(msg[LANG]);
     if (!ok) { return; }
-    id_str_to_arr(lower_links).map(vid => { remove_v_link_0(vid); });
+    id_str_to_arr(lower_links).forEach(vid => { remove_v_link_0(vid); });
   }
   const lhs_person = hlink_elt.dataset.lhs_person;
   const rhs_person = hlink_elt.dataset.rhs_person;
@@ -2067,7 +2069,7 @@ function remove_h_link_0(hlink_id) {
   remove_val_from_array(P_GRAPH.h_links, hlink_id);
   lhs_mng.right_side.remove_hlink(hlink_id);
   rhs_mng.left_side.remove_hlink(hlink_id);
-  HLINK_SELECTORS.map(sel => { remove_choice(sel, hlink_id); });
+  HLINK_SELECTORS.forEach(sel => { remove_choice(sel, hlink_id); });
   P_GRAPH.connect_x_percentages.delete(hlink_id);
   document.getElementById('pedigree').removeChild(hlink_elt);
 
@@ -2146,9 +2148,7 @@ function add_v_link_1() {
   const p_txt = name_str(p_id), c_txt = name_str(c_id);
   const op = {ja: p_txt + 'から' + c_txt + 'へ', 
               en: 'from ' + p_txt + ' to ' + c_txt};
-  VLINK_SELECTORS.map(sel => { 
-    add_selector_option(sel, vid, op[LANG]);
-  });
+  VLINK_SELECTORS.forEach(sel => { add_selector_option(sel, vid, op[LANG]); });
   const b = {ja: p_txt + 'と' + c_txt + 'の間の縦の関係を追加',
              en: 'adding a vertical link between ' + p_txt + ' and ' + c_txt};
   backup_svg(b[LANG]);
@@ -2223,9 +2223,7 @@ function add_v_link_2() {
   const p1_txt = name_str(p1_id), p2_txt = name_str(p2_id), c_txt = name_str(c_id);
   const op = {ja: p1_txt + 'と' + p2_txt + 'から' + c_txt + 'へ',
               en: 'from ' + p1_txt + ' and ' + p2_txt + ' to ' + c_txt};
-  VLINK_SELECTORS.map(sel => {
-    add_selector_option(sel, vid, op[LANG]);
-  });
+  VLINK_SELECTORS.forEach(sel => { add_selector_option(sel, vid, op[LANG]); });
   const b = {ja: p1_txt + 'と' + p2_txt + 'を結ぶ横線から' + 
                  c_txt + 'への縦の関係を追加',
              en: 'adding a vertical link from the horizontal link between ' + 
@@ -2338,7 +2336,7 @@ function apply_connect_pos_x_input() {
   // 横リンクの属性を書き換える
   hlink_dat.connect_pos_x = new_connect_pos_x;
   // 子への縦リンクがあれば再描画する
-  id_str_to_arr(hlink_dat.lower_links).map(vid => {
+  id_str_to_arr(hlink_dat.lower_links).forEach(vid => {
     redraw_v_link(vid, diff, 0, 0, 0);
   });
 }
@@ -2394,7 +2392,7 @@ function remove_v_link_0(vlink_id) {
     // 親の下辺の下にある (かもしれない) 横書き注釈の位置を決め直す。
     relocate_lr_notes(parent1_id);
   } else { // 親同士をつなぐ横リンクから延びている縦リンクの場合
-    P_GRAPH.h_links.map(function(hid) {
+    P_GRAPH.h_links.forEach(hid => {
       const hlink_dat = document.getElementById(hid).dataset;
       if (hlink_dat.lhs_person === parent1_id && 
           hlink_dat.rhs_person === parent2_id) {
@@ -2410,7 +2408,7 @@ function remove_v_link_0(vlink_id) {
   const child_pos_idx = vlink_elt.dataset.child_pos_idx;
   child_mng.upper_side.remove_vlink(child_pos_idx);
   remove_val_from_array(P_GRAPH.v_links, vlink_id);
-  VLINK_SELECTORS.map(sel => { remove_choice(sel, vlink_id); });
+  VLINK_SELECTORS.forEach(sel => { remove_choice(sel, vlink_id); });
   document.getElementById('pedigree').removeChild(vlink_elt);
 }
 
@@ -2477,7 +2475,7 @@ function move_person_horizontally(pid, dx) {
         modify_width_0(r.x_right + actual_dx - P_GRAPH.svg_width);
       }
     } else { // 右側でつながっている相手がいる
-      r_linked_persons.map(function(r_linked) {
+      r_linked_persons.forEach(r_linked => {
         // 右側でつながっている相手との間の間隔を求める
         const gap = get_rect_info(r_linked).x_left - r.x_right;
         // 必要最低限以上に間隔を保てるように、必要に応じて移動量を少なくする。
@@ -2500,7 +2498,7 @@ function move_person_horizontally(pid, dx) {
         alert(a[LANG]);
       }
     } else { // 左側でつながっている相手がいる
-      l_linked_persons.map(function(l_linked) {
+      l_linked_persons.forEach(l_linked => {
         // 左側でつながっている相手との間の間隔を求める
         const gap = r.x_left - get_rect_info(l_linked).x_right;
         if (gap + actual_dx < CONFIG.min_h_link_len) {
@@ -2520,7 +2518,7 @@ function move_person_horizontally(pid, dx) {
   move_rect_and_txt(pid, actual_dx, 0);  // まず本人を動かす。
   const moved_r = get_rect_info(pid);
 
-  r_links.map(function (hid) {
+  r_links.forEach(hid => {
     const h_link = document.getElementById(hid);
     // このリンクの元々の右端 (これは変更なし)。
     const end_x = parseInt(h_link.dataset.end_x);
@@ -2532,14 +2530,14 @@ function move_person_horizontally(pid, dx) {
     // ならない。縦リンクのぶら下がり位置は、再描画後の横リンクの属性を読めば
     // わかる。
     const connect_pos_x = parseInt(h_link.dataset.connect_pos_x);
-    id_str_to_arr(h_link.dataset.lower_links).map(function(v) {
+    id_str_to_arr(h_link.dataset.lower_links).forEach(v => {
       const v_elt = document.getElementById(v);
       draw_v_link(v_elt, connect_pos_x, parseInt(h_link.dataset.connect_pos_y),
         parseInt(v_elt.dataset.to_x), parseInt(v_elt.dataset.to_y));
     });
   });
 
-  l_links.map(function (hid) {
+  l_links.forEach(hid => {
     const h_link = document.getElementById(hid);
     // このリンクの元々の左端 (これは変更なし)。
     const start_x = parseInt(h_link.dataset.start_x);
@@ -2549,7 +2547,7 @@ function move_person_horizontally(pid, dx) {
     // ならない。縦リンクのぶら下がり位置は、再描画後の横リンクの属性を読めば
     // わかる。
     const connect_pos_x = parseInt(h_link.dataset.connect_pos_x);
-    id_str_to_arr(h_link.dataset.lower_links).map(function(v) {
+    id_str_to_arr(h_link.dataset.lower_links).forEach(v => {
       const v_elt = document.getElementById(v);
       draw_v_link(v_elt, connect_pos_x, parseInt(h_link.dataset.connect_pos_y),
         parseInt(v_elt.dataset.to_x), parseInt(v_elt.dataset.to_y));
@@ -2557,10 +2555,10 @@ function move_person_horizontally(pid, dx) {
   });
 
   // 左右の移動方向によらず、上下のリンク相手を調べる
-  id_str_to_arr(dataset.upper_links).map(function (vid) {
+  id_str_to_arr(dataset.upper_links).forEach(vid => {
     redraw_v_link(vid, 0, 0, actual_dx, 0);
   });
-  id_str_to_arr(dataset.lower_links).map(function (vid) {
+  id_str_to_arr(dataset.lower_links).forEach(vid => {
     redraw_v_link(vid, actual_dx, 0, 0, 0);
   });
 }
@@ -2626,11 +2624,12 @@ function move_person_vertically(pid, dy) {
       target_h_links.push(cur_hid); // 初めて見る横リンクなので追加する
       const vids = id_str_to_arr(document.getElementById(cur_hid).dataset.lower_links); // 横リンクからぶら下がる縦リンクのID
       if (dy < 0) { // 上への移動なら単に子への縦リンクを追加するだけ
-        vids.map(v => { push_if_not_included(target_l_links, v); });
+        vids.forEach(v => { push_if_not_included(target_l_links, v); });
       } else { // 下への移動の場合 (dy > 0)、子に近づきすぎる可能性がある
         err_msg(0, 'now at Check Point (A)');
         let hlink_connect_pos_y = parseInt(document.getElementById(cur_hid).dataset.connect_pos_y);
-        vids.map(v => { // まず、子たちと最小間隔を保つように actual_dy を調整
+        // まず、子たちと最小間隔を保つように actual_dy を調整
+        vids.forEach(v => {
           const c_rect = get_rect_info(document.getElementById(v).dataset.child);
           const gap = c_rect.y_top - (hlink_connect_pos_y + actual_dy);
           err_msg(0, '  * c_rect.y_top=' + c_rect.y_top + ', gap = ' + gap);
@@ -2642,7 +2641,7 @@ function move_person_vertically(pid, dy) {
         });
         // 調整後もなお下への移動が可能な場合のみ、子たちへのリンクを記録
         if (actual_dy > 0) {
-          vids.map(v => { push_if_not_included(target_l_links, v); });
+          vids.forEach(v => { push_if_not_included(target_l_links, v); });
         }
       }
     });
@@ -2652,7 +2651,7 @@ function move_person_vertically(pid, dy) {
     let u_side = gr.dataset.upper_links;
     err_msg(0, 'u_side=[' + u_side + ']');
     // u_side は、たとえば、'v1,v3,' のような文字列
-    id_str_to_arr(u_side).map(function(cur_vid) {
+    id_str_to_arr(u_side).forEach(cur_vid => {
       // (! target_u_links.includes(cur_vid) ) かどうかのチェックは不要の筈。
       target_u_links.push(cur_vid);
       if (dy >= 0) { return; } // 下への移動なら以下の処理は無用。
@@ -2684,7 +2683,7 @@ function move_person_vertically(pid, dy) {
     // 下辺
     let l_side = gr.dataset.lower_links;
     err_msg(0, 'l_side=[' + l_side + ']');
-    id_str_to_arr(l_side).map(function(cur_vid) {
+    id_str_to_arr(l_side).forEach(cur_vid => {
       // (! target_l_links.includes(cur_vid) ) かどうかのチェックは不要の筈。
       target_l_links.push(cur_vid);
       if (dy <= 0) { return; } // 上への移動なら以下の処理は無用。
@@ -2716,16 +2715,16 @@ function move_person_vertically(pid, dy) {
     ']\ntarget_u_links=[' + target_u_links + ']\ntarget_l_links=[' + 
     target_l_links + ']');
 
-  target_persons.map(pid => { move_rect_and_txt(pid, 0, actual_dy); });
-  target_h_links.map(hid => { redraw_h_link(hid, 0, 0, actual_dy); });
+  target_persons.forEach(pid => { move_rect_and_txt(pid, 0, actual_dy); });
+  target_h_links.forEach(hid => { redraw_h_link(hid, 0, 0, actual_dy); });
 
   // 上辺に接続しているリンクなので、そのリンクの上端は動かない。
   // リンクの下端 (上辺上の点) のみが動く。
-  target_u_links.map(vid => { redraw_v_link(vid, 0, 0, 0, actual_dy); });
+  target_u_links.forEach(vid => { redraw_v_link(vid, 0, 0, 0, actual_dy); });
 
   // 下辺に接続しているリンクなので、そのリンクの下端は動かない。
   // リンクの上端 (下辺上の点) のみが動く。
-  target_l_links.map(vid => { redraw_v_link(vid, 0, actual_dy, 0, 0); });
+  target_l_links.forEach(vid => { redraw_v_link(vid, 0, actual_dy, 0, 0); });
 }
 
 /* 「人の位置を揃える」メニュー。 */
@@ -2819,7 +2818,7 @@ function center_person_wrt_lower_links() {
     return;
   }
   let min_x = P_GRAPH.svg_width, max_x = 0; // 初期化
-  id_str_to_arr(lower_links).map(vid => {
+  id_str_to_arr(lower_links).forEach(vid => {
     const to_x = parseInt(document.getElementById(vid).dataset.to_x);
     if (to_x < min_x) { min_x = to_x; }
     if (to_x > max_x) { max_x = to_x; }
@@ -2880,7 +2879,7 @@ function move_right_collectively() {
       // その横リンクからぶら下がる縦リンクと、その下端につながった子も、
       // 右に移動する対象である。
       const vids = document.getElementById(hid).dataset.lower_links;
-      id_str_to_arr(vids).map(function(vid) {
+      id_str_to_arr(vids).forEach(vid => {
         push_if_not_included(target_vlinks, vid);
         const c = document.getElementById(vid).dataset.child;
         push_if_not_included(target_persons, c);
@@ -2898,21 +2897,21 @@ function move_right_collectively() {
       // その横リンクからぶら下がっている縦リンクは、横リンクが延びるのに連れて、
       // 上端の位置が (ぶら下げ位置に応じて決まる長さだけ) 右へずれることになる。
       const hlink = document.getElementById(hid);
-      id_str_to_arr(hlink.dataset.lower_links).map(function(vid) {
+      id_str_to_arr(hlink.dataset.lower_links).forEach(vid => {
         vlinks_to_move_their_upper_ends.push({vid: vid, hid: hid});
       });
     });
 
     // 今見ている人物の上辺につながる縦リンクは、この人物の移動に連れて、下端の
     // 位置が右へずれることになる。
-    id_str_to_arr(gr.dataset.upper_links).map(function(vid) {
+    id_str_to_arr(gr.dataset.upper_links).forEach(vid => {
       vlinks_to_move_their_lower_ends.push(vid);
     });
 
     // 今見ている人物の下辺につながる縦リンクは、この人物の移動に連れて、全体が
     // 右に移動することになる (なぜなら下端につながっている子も右へ移動させる対象
     // だから)。
-    id_str_to_arr(gr.dataset.lower_links).map(function(vid) {
+    id_str_to_arr(gr.dataset.lower_links).forEach(vid => {
       push_if_not_included(target_vlinks, vid);
       const c = document.getElementById(vid).dataset.child;
       push_if_not_included(target_persons, c);
@@ -2920,18 +2919,18 @@ function move_right_collectively() {
   }
 
   // 右への単純な移動。
-  target_persons.map(pid => { move_rect_and_txt(pid, amount, 0); });
-  target_hlinks.map(hid => { redraw_h_link(hid, amount, amount, 0); });
-  target_vlinks.map(vid => { redraw_v_link(vid, amount, 0, amount, 0); });
+  target_persons.forEach(pid => { move_rect_and_txt(pid, amount, 0); });
+  target_hlinks.forEach(hid => { redraw_h_link(hid, amount, amount, 0); });
+  target_vlinks.forEach(vid => { redraw_v_link(vid, amount, 0, amount, 0); });
   // 右端のみ右へ移動させるべき横リンク。
-  hlinks_to_extend_right.map(hid => {
+  hlinks_to_extend_right.forEach(hid => {
     // 全体を移動させる対象として重複して登録されている可能性があるかもしれない
     // ので、一応チェックする。
     if (target_hlinks.includes(hid)) { return; }
     redraw_h_link(hid, 0, amount, 0);
   });
   // 上端のみを右へ (ぶら下げ位置に応じて決まる長さだけ) 移動させるべき縦リンク。
-  vlinks_to_move_their_upper_ends.map(vid_hid_pair => {
+  vlinks_to_move_their_upper_ends.forEach(vid_hid_pair => {
     const vid = vid_hid_pair.vid, hid = vid_hid_pair.hid;
     // 全体を移動させる対象として重複して登録されている可能性があるかもしれない
     // ので、一応チェックする。
@@ -2946,7 +2945,7 @@ function move_right_collectively() {
     redraw_v_link(vid, diff, 0, 0, 0);
   });
   // 下端のみを右へ移動させるべき縦リンク。
-  vlinks_to_move_their_lower_ends.map(vid => {
+  vlinks_to_move_their_lower_ends.forEach(vid => {
     // 全体を移動させる対象として重複して登録されている可能性があるかもしれない
     // ので、一応チェックする。
     if (target_vlinks.includes(vid)) { return; }
@@ -2990,7 +2989,7 @@ function move_left_collectively() {
       // その横リンクからぶら下がっている縦リンクと、その下端につながった子も、
       // 左に移動する対象である。
       const hlink = document.getElementById(hid);
-      id_str_to_arr(hlink.dataset.lower_links).map(function(vid) {
+      id_str_to_arr(hlink.dataset.lower_links).forEach(vid => {
         push_if_not_included(target_vlinks, vid);
         const c = document.getElementById(vid).dataset.child;
         push_if_not_included(target_persons, c);
@@ -3007,19 +3006,19 @@ function move_left_collectively() {
       // その横リンクからぶら下がっている縦リンクは、横リンクが延びるのに連れて、
       // 上端の位置が (ぶら下げ位置に応じて決まる長さだけ) 左へずれることになる。
       const hlink = document.getElementById(hid);
-      id_str_to_arr(hlink.dataset.lower_links).map(function(vid) {
+      id_str_to_arr(hlink.dataset.lower_links).forEach(vid => {
         vlinks_to_move_their_upper_ends.push({vid: vid, hid: hid});
       });
     });
     // 今見ている人物の上辺につながる縦リンクは、この人物の移動に連れて、下端の
     // 位置が左へずれることになる。
-    id_str_to_arr(gr.dataset.upper_links).map(function(vid) {
+    id_str_to_arr(gr.dataset.upper_links).forEach(vid => {
       vlinks_to_move_their_lower_ends.push(vid);
     });
     // 今見ている人物の下辺につながる縦リンクは、この人物の移動に連れて、全体が
     // 左に移動することになる (なぜなら下端につながっている子も左へ移動させる対象
     // だから)。
-    id_str_to_arr(gr.dataset.lower_links).map(function(vid) {
+    id_str_to_arr(gr.dataset.lower_links).forEach(vid => {
       push_if_not_included(target_vlinks, vid);
       const c = document.getElementById(vid).dataset.child;
       push_if_not_included(target_persons, c);
@@ -3030,18 +3029,18 @@ function move_left_collectively() {
   // 右へ移動させておく。
   if (min_x < 0) { modify_width_0(-min_x);  shift_all_0(-min_x, 0); }
   // 左への単純な移動。
-  target_persons.map(pid => { move_rect_and_txt(pid, -amount, 0); });
-  target_hlinks.map(hid => { redraw_h_link(hid, -amount, -amount, 0); });
-  target_vlinks.map(vid => { redraw_v_link(vid, -amount, 0, -amount, 0); });
+  target_persons.forEach(pid => { move_rect_and_txt(pid, -amount, 0); });
+  target_hlinks.forEach(hid => { redraw_h_link(hid, -amount, -amount, 0); });
+  target_vlinks.forEach(vid => { redraw_v_link(vid, -amount, 0, -amount, 0); });
   // 左端のみ左へ移動させるべき横リンク。
-  hlinks_to_extend_left.map(hid => {
+  hlinks_to_extend_left.forEach(hid => {
     // 全体を移動させる対象として重複して登録されている可能性があるかもしれない
     // ので、一応チェックする。
     if (target_hlinks.includes(hid)) { return; }
     redraw_h_link(hid, -amount, 0, 0);
   });
   // 上端のみを左へ (ぶら下げ位置に応じて決まる長さだけ) 移動させるべき縦リンク。
-  vlinks_to_move_their_upper_ends.map(vid_hid_pair => {
+  vlinks_to_move_their_upper_ends.forEach(vid_hid_pair => {
     const vid = vid_hid_pair.vid, hid = vid_hid_pair.hid;
     // 全体を移動させる対象として重複して登録されている可能性があるかもしれない
     // ので、一応チェックする。
@@ -3056,7 +3055,7 @@ function move_left_collectively() {
     redraw_v_link(vid, diff, 0, 0, 0);
   });
   // 下端のみを左へ移動させるべき縦リンク。
-  vlinks_to_move_their_lower_ends.map(vid => {
+  vlinks_to_move_their_lower_ends.forEach(vid => {
     // 全体を移動させる対象として重複して登録されている可能性があるかもしれない
     // ので、一応チェックする。
     if (target_vlinks.includes(vid)) { return; }
@@ -3096,7 +3095,7 @@ function shift_all_0(dx, dy) {
   // 現状位置の各矩形の範囲を見て、全体としての上下左右の端を求める
   let min_x = P_GRAPH.svg_width, max_x = 0;  // 初期化
   let min_y = P_GRAPH.svg_height, max_y = 0;  // 初期化
-  P_GRAPH.persons.map(pid => {
+  P_GRAPH.persons.forEach(pid => {
     const rect = get_rect_info(pid);
     if (rect.x_left < min_x) { min_x = rect.x_left; }
     if (max_x < rect.x_right) { max_x = rect.x_right; }
@@ -3111,9 +3110,9 @@ function shift_all_0(dx, dy) {
   if (P_GRAPH.svg_width < new_max_x) { modify_width_0(new_max_x - P_GRAPH.svg_width); }
   if (P_GRAPH.svg_height < new_max_y) { modify_height_0(new_max_y - P_GRAPH.svg_height); }
   // 移動させる
-  P_GRAPH.persons.map(pid => { move_rect_and_txt(pid, new_dx, new_dy); });
-  P_GRAPH.h_links.map(hid => { move_link(hid, new_dx, new_dy, true); });
-  P_GRAPH.v_links.map(vid => { move_link(vid, new_dx, new_dy, false); });
+  P_GRAPH.persons.forEach(pid => { move_rect_and_txt(pid, new_dx, new_dy); });
+  P_GRAPH.h_links.forEach(hid => { move_link(hid, new_dx, new_dy, true); });
+  P_GRAPH.v_links.forEach(vid => { move_link(vid, new_dx, new_dy, false); });
 }
 
 /* [汎用モジュール]
@@ -3297,7 +3296,7 @@ function set_prefix() {
 /* 「人物一覧を出力する」メニュー。 */
 function list_persons() {
   const p = new Array();
-  P_GRAPH.persons.map(pid => { p.push({ id: pid, name: name_str(pid) }); });
+  P_GRAPH.persons.forEach(pid => { p.push({ id: pid, name: name_str(pid) }); });
   p.sort((a, b) => { // 名前順でソートする
     if (a.name < b.name) { return(-1); }
     else if (a.name === b.name) { return(0); }
@@ -3306,7 +3305,7 @@ function list_persons() {
 
   let s = ''; // 出力する文字列
   if (document.menu.output_notes.checked) { // 注釈も出力する場合
-    p.map(x => {
+    p.forEach(x => {
       s += x.id + ',' + x.name;
       const g_elt = document.getElementById(x.id + 'g');
       const txt_elts = g_elt.getElementsByTagName('text');
@@ -3319,7 +3318,7 @@ function list_persons() {
       s += '\n';
     });
   } else { // 注釈は出力しない場合 (ID と名前のみ出力する)
-    p.map(x => { s += x.id + ',' + x.name + '\n'; });
+    p.forEach(x => { s += x.id + ',' + x.name + '\n'; });
   }
 
   const b = new Blob([s], {type :'text/plain'});
@@ -3368,12 +3367,12 @@ function download_pedigree_viewer() {
   //   * vids: その人物に関わる縦リンクの ID の配列
   //   * rel_pids: 縦横のリンク先の人物の ID の配列
   let pedigree_data = new Array();
-  P_GRAPH.persons.map(pid => {
+  P_GRAPH.persons.forEach(pid => {
     const rect = get_rect_info(pid);
     const info = {x_left: rect.x_left, y_top: rect.y_top, 
                   hids: [], vids: [], rel_pids: []};
     const g_dat = document.getElementById(pid + 'g').dataset;
-    id_str_to_arr(g_dat.upper_links).map(vid => {
+    id_str_to_arr(g_dat.upper_links).forEach(vid => {
       info.vids.push(vid); // 親からの縦リンクの ID
       const vlink_dat = document.getElementById(vid).dataset;
       push_if_not_included(info.rel_pids, vlink_dat.parent1);
@@ -3387,13 +3386,13 @@ function download_pedigree_viewer() {
       info.hids.push(hid); // 横リンクのID
       info.rel_pids.push(partner_pid); // 相手方の ID
       const vids_str = document.getElementById(hid).dataset.lower_links;
-      id_str_to_arr(vids_str).map(vid => {
+      id_str_to_arr(vids_str).forEach(vid => {
         info.vids.push(vid); // 横リンクからぶら下がる、子への縦リンクの ID
         const c = document.getElementById(vid).dataset.child;  // 子の ID
         push_if_not_included(info.rel_pids, c);
       });
     });
-    id_str_to_arr(g_dat.lower_links).map(vid => {
+    id_str_to_arr(g_dat.lower_links).forEach(vid => {
       info.vids.push(vid);  // 子への縦リンクの ID
       const c = document.getElementById(vid).dataset.child;
       push_if_not_included(info.rel_pids, c);
@@ -3438,14 +3437,14 @@ function download_pedigree_viewer() {
 
   // select 要素内の option 要素を作る。
   const p = new Array();
-  P_GRAPH.persons.map(pid => { p.push({ id: pid, name: name_str(pid) }); });
+  P_GRAPH.persons.forEach(pid => { p.push({ id: pid, name: name_str(pid) }); });
   p.sort((a, b) => { // 名前順でソートする
     if (a.name < b.name) { return(-1); }
     else if (a.name === b.name) { return(0); }
     else { return(1); }
   });
   // 名前順で選択肢を表示。同姓同名がいるかもしれないので、ID も併記する。
-  p.map(id_name_pair => {
+  p.forEach(id_name_pair => {
     html_str += `<option value="${id_name_pair.id}">${id_name_pair.name} (${id_name_pair.id})</option>\n`;
   });
 
@@ -3468,7 +3467,7 @@ function download_pedigree_viewer() {
   const look_at_str = {en: 'Look at him/her', ja: 'この人を見る'};
   const re_select_str = {en: 'Select him/her', ja: 'この人を選択する'};
 
-  P_GRAPH.persons.map(pid => { // 人物
+  P_GRAPH.persons.forEach(pid => { // 人物
     dl_str += '<dt id="' + pid + '_t">' + name_str(pid) + '</dt>\n';
     dl_str += '<dd id="' + pid + '_d">';
     dl_str += `<button type="button" onclick="look_at('${pid}')">${look_at_str[LANG]}</button> `;
@@ -3484,7 +3483,7 @@ function download_pedigree_viewer() {
     dl_str += '</dd>\n\n';
   });
 
-  P_GRAPH.h_links.map(hid => { // 横リンク
+  P_GRAPH.h_links.forEach(hid => { // 横リンク
     dl_str += '<dt id="' + hid + '_t">';
     const h_dat = document.getElementById(hid).dataset;
     const lhs = name_str(h_dat.lhs_person), rhs = name_str(h_dat.rhs_person);
@@ -3493,7 +3492,7 @@ function download_pedigree_viewer() {
     dl_str += h_str[LANG] + '</dt>\n<dd id="' + hid + '_d"></dd>\n\n';
   });
 
-  P_GRAPH.v_links.map(vid => { // 縦リンク
+  P_GRAPH.v_links.forEach(vid => { // 縦リンク
     dl_str += '<dt id="' + vid + '_t">';
     const v_dat = document.getElementById(vid).dataset;
     const p1 = name_str(v_dat.parent1), c = name_str(v_dat.child);
@@ -3528,25 +3527,25 @@ function download_pedigree_viewer() {
 function delete_custom_attributes() {
   const group_att = ['data-right_links', 'data-left_links',
     'data-upper_links', 'data-lower_links'];
-  P_GRAPH.persons.map(pid => {
+  P_GRAPH.persons.forEach(pid => {
     const g = document.getElementById(pid + 'g');
-    group_att.map(att => { g.removeAttribute(att); });
+    group_att.forEach(att => { g.removeAttribute(att); });
   });
 
   const hlink_att = ['data-connect_pos_x', 'data-connect_pos_y', 
     'data-start_x', 'data-end_x', 'data-y', 
     'data-lhs_person', 'data-rhs_person', 'data-lower_links'];
-  P_GRAPH.h_links.map(hid => {
+  P_GRAPH.h_links.forEach(hid => {
     const hlink = document.getElementById(hid);
-    hlink_att.map(att => { hlink.removeAttribute(att); });
+    hlink_att.forEach(att => { hlink.removeAttribute(att); });
   });
 
   const vlink_att = ['data-from_x', 'data-from_y', 'data-to_x', 'data-to_y',
     'data-parent1', 'data-parent1_pos_idx', 'data-parent2', 
     'data-child', 'data-child_pos_idx'];
-  P_GRAPH.v_links.map(vid => {
+  P_GRAPH.v_links.forEach(vid => {
     const vlink = document.getElementById(vid);
-    vlink_att.map(att => { vlink.removeAttribute(att); });
+    vlink_att.forEach(att => { vlink.removeAttribute(att); });
   });
 }
 
@@ -3574,7 +3573,7 @@ function set_p_graph_values() {
   // 現在のデータに基づくセレクタ選択肢をすべて削除する。
   let sel = PERSON_SELECTORS.concat(HLINK_SELECTORS, VLINK_SELECTORS,
     document.getElementById('svg_backup'));
-  sel.map(elt => { 
+  sel.forEach(elt => { 
     while (elt.firstChild) { elt.removeChild(elt.firstChild); }
   });
 
@@ -3622,7 +3621,7 @@ function set_p_graph_values() {
 
     // プルダウンリストへの反映
     let txt = name_str(pid);
-    PERSON_SELECTORS.map( s => { add_selector_option(s, pid, txt); } );
+    PERSON_SELECTORS.forEach( s => { add_selector_option(s, pid, txt); } );
     // 座標情報の表示用
     rect.onmouseover = function() {show_info(pid, txt);};
   }
@@ -3665,7 +3664,7 @@ function set_p_graph_values() {
           rhs_name = name_str(rhs_person_id),
           str = {ja: lhs_name + 'と' + rhs_name, 
                  en: 'between ' + lhs_name + ' and ' + rhs_name};
-      HLINK_SELECTORS.map(sel => { add_selector_option(sel, path_id, str[LANG]); });
+      HLINK_SELECTORS.forEach(sel => { add_selector_option(sel, path_id, str[LANG]); });
       // 縦リンクのぶら下げ位置に対応する百分率の計算と登録を行う
       const connect_pos_x = parseInt(cur_path.dataset.connect_pos_x),
             start_x = parseInt(cur_path.dataset.start_x),
@@ -3696,7 +3695,7 @@ function set_p_graph_values() {
                en: 'from ' + p1_txt + ' and ' + p2_txt + ' to ' + c_txt};
       }
       // 縦リンクの削除メニューのプルダウンリストに選択肢を追加する。
-      VLINK_SELECTORS.map(sel => { add_selector_option(sel, path_id, str[LANG]); });
+      VLINK_SELECTORS.forEach(sel => { add_selector_option(sel, path_id, str[LANG]); });
       // 子の上辺については、リンクのつなぎ方によらず、その使用状況を設定する。
       set_EndPointsMngr_UL(cur_path.dataset.child, 'upper', link_type,
                            parseInt(cur_path.dataset.child_pos_idx));
@@ -3707,7 +3706,7 @@ function set_p_graph_values() {
   }
 
   if (MODE.func_set_p_graph_values > 0) {
-    P_GRAPH.h_links.map(hid => {
+    P_GRAPH.h_links.forEach(hid => {
       let str = '[' + hid + ']:';
       const lhs_id = document.getElementById(hid).dataset.lhs_person;
       const pos_info_lhs = get_posNo(lhs_id, hid, true);
@@ -3827,7 +3826,7 @@ function show_detailed_info_about_links() {
       hlink_info[LANG] += get_opt_txt(HLINK_SELECTORS[0], hid);
       const vids = document.getElementById(hid).dataset.lower_links;
       if (vids === '') { return; }
-      id_str_to_arr(vids).map(vid => {
+      id_str_to_arr(vids).forEach(vid => {
         child_info_txt[LANG] += get_opt_txt(VLINK_SELECTORS[0], vid);
       });
     });
@@ -3839,7 +3838,7 @@ function show_detailed_info_about_links() {
     parent_info.ja += '<dd>なし</dd>\n';
     parent_info.en += '<dd>None</dd>\n';
   } else {
-    id_str_to_arr(upper_vids).map(vid => {
+    id_str_to_arr(upper_vids).forEach(vid => {
       parent_info[LANG] += get_opt_txt(VLINK_SELECTORS[0], vid);
     });
   }
@@ -3851,7 +3850,7 @@ function show_detailed_info_about_links() {
     child_info.en += '<dd>None</dd>\n';
   } else {
     child_info[LANG] += child_info_txt[LANG];
-    id_str_to_arr(lower_vids).map(vid => {
+    id_str_to_arr(lower_vids).forEach(vid => {
       child_info[LANG] += get_opt_txt(VLINK_SELECTORS[0], vid);
     });
   }
