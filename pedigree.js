@@ -3472,20 +3472,22 @@ function download_pedigree_viewer() {
   // 埋める想定。ひとまず注釈の内容だけ dd の中に入れておく)。リストの各項目は、
   // 人物、横リンク、縦リンクのいずれかである。
   let dl_str = '<dl>\n\n';
-  const look_at_str = {en: 'Look at him/her', ja: 'この人を見る'};
-  const re_select_str = {en: 'Select him/her', ja: 'この人を選択する'};
 
-  P_GRAPH.persons.forEach(pid => { // 人物
-    dl_str += '<dt id="' + pid + '_t">' + name_str(pid) + '</dt>\n';
-    dl_str += '<dd id="' + pid + '_d">';
-    dl_str += `<button type="button" onclick="look_at('${pid}')">${look_at_str[LANG]}</button> `;
-    dl_str += `<button type="button" onclick="reselect('${pid}')">${re_select_str[LANG]}</button> `;
-    const g_elt = document.getElementById(pid + 'g');
+  p.forEach(id_name_pair => { // 人物
+    const look_at_str = {en: 'Look at ' + id_name_pair.name,
+                         ja: id_name_pair.name + 'を見る'},
+          re_select_str = {en: 'Select ' + id_name_pair.name,
+                           ja: id_name_pair.name + 'を選択する'};
+    dl_str += '<dt id="' + id_name_pair.id + '_t">' + id_name_pair.name + '</dt>\n';
+    dl_str += '<dd id="' + id_name_pair.id + '_d">';
+    dl_str += `<button type="button" onclick="look_at('${id_name_pair.id}')">${look_at_str[LANG]}</button> `;
+    dl_str += `<button type="button" onclick="reselect('${id_name_pair.id}')">${re_select_str[LANG]}</button> `;
+    const g_elt = document.getElementById(id_name_pair.id + 'g');
     const txt_elts = g_elt.getElementsByTagName('text');
     for (let i = 1; i < txt_elts.length; i++) {
       // i == 0 の場合は名前の text 要素に該当するので、i = 1 としている。
       // 注釈以外の要素 (バッジの数字) は無視する。
-      if (get_note_num(txt_elts[i], pid) === -1) { continue; } 
+      if (get_note_num(txt_elts[i], id_name_pair.id) === -1) { continue; } 
       dl_str += '\t' + txt_elts[i].textContent; // タブに続けて注釈を出力
     }
     dl_str += '</dd>\n\n';
