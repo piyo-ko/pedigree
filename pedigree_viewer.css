@@ -18,6 +18,15 @@ a:hover, button:hover {
   color: hsl(170, 50%, 12%);
   background: hsl(170, 70%, 70%);
 }
+button.toggle {
+  background: hsl(240, 50%, 80%);
+  color: hsl(240, 50%, 12%);
+  border-color: hsl(240, 80%, 50%);
+}
+button.toggle:hover {
+  background: hsl(240, 50%, 12%);
+  color: hsl(240, 50%, 80%);
+}
 h1 {
   font-size: large;
   font-family: sans-serif;
@@ -34,39 +43,72 @@ p {
 
 #main {
   display: grid;
-  grid-template-columns: 14em auto;
-  grid-template-rows: 74vh 24vh;
+  grid-template-columns: auto 14em;
+  grid-template-rows: 2em minmax(15em, 70vh) 20em;
+}
+
+#headline {
+  grid-column-start: 1;
+  grid-column-end: 2;
+  grid-row-start: 1;
+  grid-row-end: 2;
+  z-index: 0;
+}
+#toggle {
+  grid-column-start: 2;
+  grid-column-end: 3;
+  grid-row-start: 1;
+  grid-row-end: 2;
+  text-align: center;
+  z-index: 0;
 }
 
 #pedigree_display_area {
   grid-column-start: 1;
   grid-column-end: 3;
-  grid-row-start: 1;
-  grid-row-end: 2;
+  grid-row-start: 2;
+  grid-row-end: 3;
   background: white;
   border: solid 2px hsl(210, 100%, 60%);
   overflow: auto;
+  z-index: 0;
 }
 #person_selector, #detailed_info {
-  grid-row-start: 2;
-  grid-row-end: 3;
-  margin-left: 1em;
+  grid-row-start: 3;
+  grid-row-end: 4;
+  padding-left: 1em;
+  background: hsl(210, 20%, 12%);
+  color: hsl(210, 20%, 70%);
   overflow: auto;
+  z-index: 0;
 }
 #person_selector {
-  grid-column-start: 1;
-  grid-column-end: 2;
-}
-#detailed_info {
   grid-column-start: 2;
   grid-column-end: 3;
+  z-index: 0;
+}
+#detailed_info {
+  grid-column-start: 1;
+  grid-column-end: 2;
+  z-index: 0;
 }
 #selected_person_info {
-  border-bottom: solid 2px hsl(210, 100%, 60%);;
+  border-bottom: solid 2px hsl(210, 100%, 60%);
 }
 
 #info_all {
-  display: none;
+  z-index: -1;
+  /* When only 'z-index: -1' is specified, Safari does not
+     render the HTML code as intended.  To cope with this
+     situation, 'transform: translateZ(-1px)' is specified. */
+  transform: translateZ(-1px);
+  grid-row-start: 2;
+  grid-row-end: 4;
+  grid-column-start: 1;
+  grid-column-end: 3;
+  overflow: auto;
+  background: hsl(210, 30%, 17%);
+  color: hsl(210, 20%, 70%);
 }
 dt {
   float: left;

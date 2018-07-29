@@ -50,3 +50,11 @@ function reselect(pid) {
   sel.selectedIndex = i;
   see_in_detail();
 }
+
+function show_chart() {
+  document.getElementById('info_all').style.zIndex = -1;
+}
+
+function show_list() {
+  document.getElementById('info_all').style.zIndex = 2;
+}

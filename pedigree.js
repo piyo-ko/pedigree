@@ -3413,6 +3413,8 @@ function download_pedigree_viewer() {
 
   // 次は HTML ファイルの中身を生成する。
   const title_str = {en: 'Pedigree Chart', ja: '系図'},
+        show_chart_btn_str = {en: 'Chart', ja: '系図'},
+        show_list_btn_str = {en: 'List', ja: '一覧'},
         input_label_str = {en: 'Whom do you want to see?', ja: '見たい人物は?'};
   let html_str = `<!DOCTYPE html>
 <html>
@@ -3426,8 +3428,12 @@ function download_pedigree_viewer() {
 <title>${title_str[LANG]}</title>
 </head>
 <body>
-<h1>${title_str[LANG]}</h1>
 <section id="main">
+<h1 id="headline">${title_str[LANG]}</h1>
+<div id="toggle">
+<button id="view_chart" onclick="show_chart()" class="toggle">${show_chart_btn_str[LANG]}</button>
+<button id="view_list" onclick="show_list()" class="toggle">${show_list_btn_str[LANG]}</button>
+</div>
 <div id="pedigree_display_area"><object id="svg_dat" type="image/svg+xml" data="${svg_filename}" alt=""></object></div>
 
 <div id="person_selector">
@@ -3457,13 +3463,15 @@ function download_pedigree_viewer() {
 <div id="detailed_info">
 <dl id="selected_person_info"></dl>
 <dl id="related_info"></dl>
-<p>${para_str[LANG]}</p>
-</div>\n\n`;
+</div>
+
+<div id="info_all">
+<p>${para_str[LANG]}</p>\n\n`;
 
   // dl リストを用意する (dd の中身は、基本的には後でユーザが好みにより手書きで
   // 埋める想定。ひとまず注釈の内容だけ dd の中に入れておく)。リストの各項目は、
   // 人物、横リンク、縦リンクのいずれかである。
-  let dl_str = '<dl id="info_all">\n\n';
+  let dl_str = '<dl>\n\n';
   const look_at_str = {en: 'Look at him/her', ja: 'この人を見る'};
   const re_select_str = {en: 'Select him/her', ja: 'この人を選択する'};
 
@@ -3509,7 +3517,7 @@ function download_pedigree_viewer() {
     dl_str += v_str[LANG] + '</dt>\n<dd id="' + vid + '_d"></dd>\n\n';
   });
 
-  dl_str += '</dl>\n\n';
+  dl_str += '</dl>\n</div>\n';
   html_str += dl_str + '</section></body>\n</html>\n';
 
   // HTML ファイルをダウンロードする。
