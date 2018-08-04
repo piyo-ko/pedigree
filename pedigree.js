@@ -3568,6 +3568,7 @@ function read_in() {
     // として書き出す。
     document.getElementById('tree_canvas_div').innerHTML = e.target.result;
     set_p_graph_values(); // SVGの各要素を読み取って、変数の設定を行う。
+    update_data_format(); // 古い形式のデータを最新形式に修正する。
     const b = {ja: '作成済みのデータを読み込む', 
                en: 'reading data saved before'};
     backup_svg(b[LANG]); // バックアップ用リンクも一応作る
@@ -3757,6 +3758,55 @@ function get_posNo(pid, hid, is_lhs_person) {
   const rect_info = get_rect_info(pid);
   const hlink_y = parseInt(document.getElementById(hid).dataset.y);
   return(mng.find_posNo(hlink_y - rect_info.y_top));
+}
+
+/* read_in から呼ばれる。古い版で作ったデータだと属性を指定していなかったり
+するので、最新版で作ったのと同じように属性を足す。 */
+function update_data_format() {
+  P_GRAPH.persons.forEach(pid => {
+    // 人物の名前を表す text 要素
+    const name_txt = document.getElementById(pid + 't');
+    // その名前の書字方向
+    const name_writing_mode = 
+      (name_txt.getAttribute('writing-mode') === 'tb') ? 'tb' : 'lr';
+    // その書字方向での、lengthAdjust 属性のデフォルト値
+    const default_lengthAdjust_val = 
+      (name_writing_mode === 'tb') ? 'spacing' : 'spacingAndGlyphs';
+
+    if (! name_txt.hasAttribute('textLength')) {
+      const len = name_txt.textContent.length * CONFIG.font_size;
+      name_txt.setAttribute('textLength', len);
+    }
+    if (! name_txt.hasAttribute('lengthAdjust')) {
+      name_txt.setAttribute('lengthAdjust', default_lengthAdjust_val);
+    }
+
+    const g_elt = document.getElementById(pid + 'g');
+    for (let cur_elt = g_elt.firstChild; cur_elt !== null; 
+         cur_elt = cur_elt.nextSibling) {
+      // 注釈以外の要素は無視 (特に修正すべきことがないので)
+      if (cur_elt.tagName === undefined) { continue; }  // 文字ベタ打ちとか
+      if (cur_elt.tagName === null) { continue; }  // 一応エラー避け
+      if (cur_elt.tagName.toLowerCase() !== 'text') { continue; }
+      if (get_note_num(cur_elt, pid) === -1) { continue; }
+
+      // ここに来るのは注釈用の text 要素を見ている場合。
+
+      if (cur_elt.getAttribute('class') === 'note') { // デフォルトの色は青
+        cur_elt.setAttribute('class', 'note blue');
+      }
+      if (! cur_elt.hasAttribute('textLength')) {
+        const len = cur_elt.textContent.length * CONFIG.note_font_size;
+        cur_elt.setAttribute('textLength', len);
+      }
+      if (! cur_elt.hasAttribute('lengthAdjust')) {
+        cur_elt.setAttribute('lengthAdjust', default_lengthAdjust_val);
+      }
+    }
+  });
+
+  // 横リンク、縦リンクに関しては、今のところ足すべき属性はない (はず)。
+  // つまり、最初期のバージョンから特に属性は足していない (はず)。
 }
 
 /* 「自動保存したデータを読み込む」メニュー。 */
