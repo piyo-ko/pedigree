@@ -1044,8 +1044,8 @@ function rename_person() {
       vids.forEach(vid => { // 横リンクにぶら下がっている縦リンクのそれぞれ
         const child_str = name_str(document.getElementById(vid).dataset.child);
         VLINK_SELECTORS.forEach(sel => { 
-          let op_str = {ja: parents_str + 'から' + child_str + 'へ',
-                        en: 'from ' + parents_str + ' to ' + child_str};
+          let op_str = {ja: parents_str_ja + 'から' + child_str + 'へ',
+                        en: 'from ' + parents_str_en + ' to ' + child_str};
           rename_choice(sel, vid, op_str[LANG]);
         });
       });
