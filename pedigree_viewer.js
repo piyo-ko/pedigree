@@ -5,8 +5,9 @@ function look_at(pid) {
     rect = svg_container.getBoundingClientRect(),
     x_offset = Math.floor(rect.width / 2),
     y_offset = Math.floor(rect.height / 2),
-    info = pedigree_data.find(arr => { return(arr[0] === pid); }),
-    x = parseInt(info[1].x_left),
+    info = pedigree_data.find(arr => { return(arr[0] === pid); });
+  if (info === undefined) { return; }
+  const  x = parseInt(info[1].x_left),
     y = parseInt(info[1].y_top);
   svg_container.scrollLeft = x - x_offset;
   svg_container.scrollTop = y - y_offset;
@@ -58,3 +59,15 @@ function show_chart() {
 function show_list() {
   document.getElementById('info_all').style.zIndex = 2;
 }
+
+window.top.onload = function() {
+  const pid_param = (new URL(document.location)).searchParams.get('pid'),
+    pid = ((/^p\d+$/).test(pid_param)) ? pid_param : pedigree_data[0][0],
+    sel = document.viewer.list_of_persons, L = sel.options.length;
+  for (let i = 0; i < L; i++) {
+    if (sel.options[i].value === pid) {
+      sel.selectedIndex = i;  see_in_detail();  return;
+    }
+  }
+};
+
