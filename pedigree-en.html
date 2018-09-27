@@ -37,8 +37,7 @@ the range of his/her rectangle's Y coordinate is <span class="info">[<span id="i
 <button class="menu" type="button" onclick="show_menu('menu_hlink')">Horizontal links</button>
 <button class="menu" type="button" onclick="show_menu('menu_vlink')">Vertical links</button>
 <button class="menu" type="button" onclick="show_menu('menu_move_person')">Moving persons</button>
-<button class="menu" type="button" onclick="show_menu('menu_shift_all')">Overall shifting</button>
-<button class="menu" type="button" onclick="show_menu('menu_whole_size')">Resizing</button>
+<button class="menu" type="button" onclick="show_menu('menu_whole')">Whole chart</button>
 <button class="menu" type="button" onclick="show_menu('menu_output')">Output</button>
 <button class="menu" type="button" onclick="show_menu('menu_read')">Read-in</button>
 </p>
@@ -551,7 +550,7 @@ Specify how much the persons should be moved left:
 </td>
 </tr>
 
-<tr class="menu_shift_all">
+<tr class="menu_whole">
 <th>Shift the whole chart</th>
 <td>
 <ul>
@@ -584,7 +583,7 @@ Specify how much the whole chart should be shifted:
 </td>
 </tr>
 
-<tr class="menu_whole_size">
+<tr class="menu_whole">
 <th>Modify the height of the whole chart</th>
 <td>
 The current height is <span id="current_height"></span> px.
@@ -596,7 +595,7 @@ Note: Enter a negative integer if you want to decrease the height.
 </td>
 </tr>
 
-<tr class="menu_whole_size">
+<tr class="menu_whole">
 <th>Modify the width of the whole chart</th>
 <td>
 The current width is <span id="current_width"></span> px.
