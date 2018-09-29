@@ -14,7 +14,9 @@
 <h1>系図を描いて SVG データにしてみよう</h1>
 
 <div id="tree_canvas_div">
-<svg id="pedigree" xmlns="http://www.w3.org/2000/svg" width="600" height="300" viewBox="0 0 600 300">
+<svg id="pedigree" xmlns="http://www.w3.org/2000/svg" width="600" height="300" viewBox="0 0 600 300" role="img" aria-labelledby="chart_description">
+<title id="chart_title"></title>
+<desc id="chart_description"></desc>
 <style><![CDATA[ @import url(pedigree_svg.css); ]]></style>
 </svg>
 </div>
@@ -468,6 +470,38 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 これを <input type="text" name="width_diff" size="3"> px 
 <input type="button" value="増やす" onclick="modify_width()">
 (減らす場合は負数を指定)。
+</td>
+</tr>
+
+<tr class="menu_whole">
+<th>タイトルを変更する</th>
+<td>
+タイトルは、(環境にもよりますが) マウスホバーに応じてツールチップとして表示されます。
+<br>
+現在のタイトル:<br>
+<code id="cur_chart_title"></code>
+<br>
+<label for="new_chart_title">新たなタイトル:<br>
+<textarea cols="40" rows="1" name="new_chart_title" id="new_chart_title"></textarea>
+</label>
+<br>
+<input type="button" value="新たなタイトルを設定する" onclick="modify_title()">
+</td>
+</tr>
+
+<tr class="menu_whole">
+<th>説明文を変更する</th>
+<td>
+説明文は、系図上には表示されませんが、アクセシビリティ向上のために使われます。
+<br>
+現在の説明文:<br>
+<code id="cur_chart_desc"></code>
+<br>
+<label for="new_chart_desc">新たな説明文:<br>
+<textarea cols="40" rows="4" name="new_chart_desc" id="new_chart_desc"></textarea>
+</label>
+<br>
+<input type="button" value="新たな説明文を設定する" onclick="modify_description()">
 </td>
 </tr>
 

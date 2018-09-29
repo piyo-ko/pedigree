@@ -14,7 +14,9 @@
 <h1>Draw a pedigree chart in SVG format</h1>
 
 <div id="tree_canvas_div">
-<svg id="pedigree" xmlns="http://www.w3.org/2000/svg" width="600" height="300" viewBox="0 0 600 300">
+<svg id="pedigree" xmlns="http://www.w3.org/2000/svg" width="600" height="300" viewBox="0 0 600 300" role="img" aria-labelledby="chart_description">
+<title id="chart_title"></title>
+<desc id="chart_description"></desc>
 <style><![CDATA[ @import url(pedigree_svg.css); ]]></style>
 </svg>
 </div>
@@ -604,6 +606,38 @@ Enter the amount for increasing the width
 <input type="button" value="modify the width as specified" onclick="modify_width()">.
 <br>
 Note: Enter a negative integer if you want to decrease the width.
+</td>
+</tr>
+
+<tr class="menu_whole">
+<th>Modify the title of the chart</th>
+<td>
+The title of the chart may be (perhaps in many environments) displayed as tooltip text when the cursor hovers over the chart.
+<br>
+The current title:<br>
+<code id="cur_chart_title"></code>
+<br>
+<label for="new_chart_title">Enter the new title:<br>
+<textarea cols="40" rows="1" name="new_chart_title" id="new_chart_title"></textarea>
+</label>
+<br>
+<input type="button" value="Set this new title" onclick="modify_title()">
+</td>
+</tr>
+
+<tr class="menu_whole">
+<th>Modify the description of the chart</th>
+<td>
+The description of the chart is invisible, but will be used to enhance the accessibility of the chart.
+<br>
+The current description:<br>
+<code id="cur_chart_desc"></code>
+<br>
+<label for="new_chart_desc">Enter the new description:<br>
+<textarea cols="40" rows="4" name="new_chart_desc" id="new_chart_desc"></textarea>
+</label>
+<br>
+<input type="button" value="Set this new description" onclick="modify_description()">
 </td>
 </tr>
 

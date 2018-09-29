@@ -33,8 +33,8 @@ code {
   white-space: pre;
   margin: 4pt;
 }
-#svg_code, #list_of_persons {
-  height: 5em;
+#svg_code, #list_of_persons, #cur_chart_title, #cur_chart_desc {
+  max-height: 5em;
   width: 50em;
   display: inline-block;
   overflow: auto;

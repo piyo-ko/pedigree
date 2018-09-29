@@ -364,7 +364,11 @@ const CONFIG = {
   // 何倍とみなすか (この倍率を使って、文字列の占める幅を簡易計算する)。
   narrow_mode_scaling_factor: 0.6,
   // 横リンクから縦リンクをぶら下げることが許されない左右の余白の幅 (px 単位)
-  margin_for_connect_pos_x: 8
+  margin_for_connect_pos_x: 8,
+  // title 要素の ID
+  title_id: 'chart_title',
+  // desc 要素の ID
+  desc_id: 'chart_description'
 };
 
 /* SVG 用の名前空間 */
@@ -3206,6 +3210,32 @@ function modify_width_0(w_diff) {
   document.getElementById('current_width').textContent = P_GRAPH.svg_width;
 }
 
+/* 「タイトルを変更する」メニュー。 */
+function modify_title() {
+  const svg_title_elt = document.getElementById(CONFIG.title_id),
+    new_title_str = document.menu.new_chart_title.value,
+    title_display_elt = document.getElementById('cur_chart_title');
+  svg_title_elt.textContent = new_title_str;
+  title_display_elt.textContent = new_title_str;
+
+  const b = {ja: 'タイトルを変更する',
+             en: 'modifying the title of the chart'};
+  backup_svg(b[LANG]);
+}
+
+/* 「説明文を変更する」メニュー。 */
+function modify_description() {
+  const svg_desc_elt = document.getElementById(CONFIG.desc_id),
+    new_desc_str = document.menu.new_chart_desc.value,
+    desc_display_elt = document.getElementById('cur_chart_desc');
+  svg_desc_elt.textContent = new_desc_str;
+  desc_display_elt.textContent = new_desc_str;
+
+  const b = {ja: '説明文を変更する',
+             en: 'modifying the description of the chart'};
+  backup_svg(b[LANG]);
+}
+
 /* 「SVG コードを見る」メニュー。
 <div id="tree_canvas_div"> ... </div> の中身 (sgv 要素) を書き出すだけ。
 innerHTML を使うと <![CDATA[ @import url(pedigree_svg.css); ]]> が
@@ -3763,6 +3793,33 @@ function get_posNo(pid, hid, is_lhs_person) {
 /* read_in から呼ばれる。古い版で作ったデータだと属性を指定していなかったり
 するので、最新版で作ったのと同じように属性を足す。 */
 function update_data_format() {
+  // desc 要素の中身をスクリーンリーダで読み上げるための設定を行う。
+  const svg = document.getElementById('pedigree');
+  svg.setAttribute('role', 'img');
+  svg.setAttribute('aria-labelledby', CONFIG.desc_id);
+  // title 要素の存在を保証する。
+  let title = document.getElementById(CONFIG.title_id);
+  if (title === undefined || title === null) {
+    const new_title = document.createElementNS(SVG_NS, 'title');
+    new_title.setAttribute('id', CONFIG.title_id);
+    svg.insertBefore(new_title, svg.firstChild);
+    svg.insertBefore(document.createTextNode('\n'), new_title);
+    title = new_title;
+  } else { // 現在のタイトルを表示する。
+    document.getElementById('cur_chart_title').textContent = title.textContent;
+  }
+
+  // desc 要素の存在を保証する。
+  const desc = document.getElementById(CONFIG.desc_id);
+  if (desc === undefined || desc === null) {
+    const new_desc = document.createElementNS(SVG_NS, 'desc');
+    new_desc.setAttribute('id', CONFIG.desc_id);
+    svg.insertBefore(new_desc, title.nextSibling);
+    svg.insertBefore(document.createTextNode('\n'), new_desc);
+  } else { // 現在の説明文を表示する。
+    document.getElementById('cur_chart_desc').textContent = desc.textContent;
+  }
+
   P_GRAPH.persons.forEach(pid => {
     // 人物の名前を表す text 要素
     const name_txt = document.getElementById(pid + 't');
