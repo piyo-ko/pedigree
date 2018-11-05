@@ -38,11 +38,33 @@ h1, h2, h3 {
   color: white;
   background: teal;
 }
+h2.man {
+  text-align: left;
+  text-indent: 2em;
+}
+h3.man {
+  text-align: left;
+  text-indent: 4em;
+}
 code {
   display: inline;
   white-space: keep-all;
   font-family: "Ricty Discord", "Courier New", monospace;
   padding: 2pt;
+}
+code.multiline {
+  display: block;
+  white-space: pre;
+  padding-left: 1em;
+  padding-right: 1em;
+  border: 1px royalblue solid;
+  background: lavender;
+  overflow: auto;
+}
+code.multiline > em {
+  background: lavender;
+  color: teal;
+  font-style: italic;
 }
 
 a {
@@ -52,6 +74,9 @@ a:hover {
   background: royalblue;
   color: white;
   font-weight: bold;
+}
+h1 > a {
+  color: lime;
 }
 
 table {
@@ -68,4 +93,8 @@ th {
 }
 p {
   text-indent: 1em;
+}
+em {
+  font-style: normal;
+  background: linear-gradient(to bottom, silver, lavender, lightcyan);
 }
