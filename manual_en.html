@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="pedigree_doc.css" type="text/css">
+<base target="_top">
+<title>How to use the drawing tool titled "Draw a pedigree chart in SVG format"</title>
+</head>
+<body>
+
+<div class="toc">
+<nav>
+<ul>
+<li><a href="#top">Top of this page</a></li>
+<li><a href="#outline">Outline</a></li>
+<li><a href="#menu_1">[Individuals]</a>
+  <ul>
+  <li><a href="#menu_1_1">[Mode for character spacing]</a></li>
+  <li><a href="#menu_1_2">[Add a person]</a></li>
+  <li><a href="#menu_1_3">[Rename a person]</a></li>
+  <li><a href="#menu_1_4">[Increase the height of a rectangle]</a></li>
+  <li><a href="#menu_1_5">[Annotate a person] </a></li>
+  <li><a href="#menu_1_6">[Add a circular badge (in which a number is written) to a person]</a></li>
+  <li><a href="#menu_1_7">[Look at a selected person]</a></li>
+  <li><a href="#menu_1_8">[Remove a person]</a></li>
+  </ul>
+</li>
+<li><a href="#menu_2">[Horizontal links]</a>
+  <ul>
+  <li><a href="#menu_2_1">[Add a horizontal link]</a></li>
+  <li><a href="#menu_2_2">[Add a horizontal link with details specified]</a></li>
+  <li><a href="#menu_2_3">[Increase the allowable number of horizontally connectable partners]</a></li>
+  <li><a href="#menu_2_4">[Remove a horizontal link]</a></li>
+  </ul>
+</li>
+<li><a href="#menu_3">[Vertical links]</a>
+  <ul>
+  <li><a href="#menu_3_1">[Add a vertical link]</a></li>
+  <li><a href="#menu_3_2">[On a horizontal link, adjust the position from which vertical links are to run down]</a></li>
+  <li><a href="#menu_3_3">[Remove a vertical link]</a></li>
+  </ul>
+</li>
+<li><a href="#menu_4">[Moving persons]</a>
+  <ul>
+  <li><a href="#menu_4_1">[Move a person]</a></li>
+  <li><a href="#menu_4_2">[Align a person with another]</a></li>
+  <li><a href="#menu_4_3">[Move a person with reference to his/her parent(s) or child(ren)]</a></li>
+  <li><a href="#menu_4_4">[Move down a person and his/her descendants]</a></li>
+  <li><a href="#menu_4_5">[Move persons cascadingly to the right]</a></li>
+  <li><a href="#menu_4_6">[Move persons cascadingly to the left]</a></li>
+  </ul>
+</li>
+<li><a href="#menu_5">[Whole chart]</a>
+  <ul>
+  <li><a href="#menu_5_1">[Shift the whole chart]</a></li>
+  <li><a href="#menu_5_2">[Modify the height of the whole chart]</a></li>
+  <li><a href="#menu_5_3">[Modify the width of the whole chart]</a></li>
+  <li><a href="#menu_5_4">[Modify the title of the chart]</a></li>
+  <li><a href="#menu_5_5">[Modify the description of the chart]</a></li>
+  </ul>
+</li>
+<li><a href="#menu_6">[Output]</a>
+  <ul>
+  <li><a href="#menu_6_1">[See the SVG code]</a></li>
+  <li><a href="#menu_6_2">[Download the SVG file of the current state]</a></li>
+  <li><a href="#menu_6_3">[Download the SVG file of any preferable step]</a></li>
+  <li><a href="#menu_6_4">[Output the list of names]</a></li>
+  <li><a href="#menu_6_5">[Download a pedigree chart viewer]</a></li>
+  </ul>
+</li>
+<li><a href="#menu_7">[Read-in]</a>
+  <ul>
+  <li><a href="#menu_7_1">[Read an SVG file created and saved before]</a></li>
+  <li><a href="#menu_7_2">[Read automatically saved SVG data]</a></li>
+  </ul>
+</li>
+<li><a href="#edit">Editing saved data manually</a>
+  <ul>
+  <li><a href="#edit_1">the SVG file of the pedigree chart</a></li>
+  <li><a href="#edit_2">the HTML file of the viewer</a></li>
+  <li><a href="#edit_3">the CSS file for the SVG file</a></li>
+  <li><a href="#edit_4">the CSS file for the HTML file</a></li>
+  </ul>
+</li>
+</ul>
+</nav>
+</div>
+
+<div class="main">
+<h1 id="top">How to use <a href="pedigree-en.html">the drawing tool titled &quot;Draw a pedigree chart in SVG format&quot;</a></h1>
+
+<p>
+<a href="pedigree-en.html">The drawing tool</a> is easy to use; so it may be unnecessary to read this manual before using the tool.
+If you feel that the tool is somewhat awkward to use, please read <a href="#outline">the outline</a>.
+When you need more detailed information, please read other sections as necessary.
+</p>
+
+<h2 class="man" id="outline">(0) Outline</h2>
+<p>
+<a href="pedigree-en.html">The tool's page</a> includes: a region for displaying <em>the pedigree chart</em> (family tree chart); a region for indicating <em>the information about the person at the mouse pointer</em>; <em>menu buttons</em>; and <em>submenus</em>.
+When you click a menu button for the type of the operation you want to do, the input forms of the submenus belonging to that type will be displayed.
+Enter necessary data to the input form and thereby build a pedigree chart step by step.
+</p>
+
+<ul>
+<li>To <em>add an individual person</em>, use <a href="#menu_1">[Individuals]</a> - <a href="#menu_1_2">[Add a person]</a> submenu.</li>
+<li>To <em>connect persons by a horizontal line (horizontal link)</em> to indicate marriage or the like, use <a href="#menu_2">[Horizontal links]</a> menu.</li>
+<li>To <em>connect persons by a vertical line (vertical link)</em> to indicate parent-and-child relation or the like, use <a href="#menu_3">[Vertical links]</a> menu.</li>
+<li>To <em>move one or more persons</em>, use <a href="#menu_4">[Moving persons]</a> menu.</li>
+<li>To <em>shift the whole chart</em> or <em>increase or decrease a margin</em>, use <a href="#menu_5">[Whole chart]</a> menu.</li>
+<li>To <em>save</em> a pedigree chart, either finished or in progress, use <a href="#menu_6">[Output]</a> menu.
+Several subsubmenus belong to <a href="#menu_6">[Output]</a> menu.
+You can save the pedigree chart in SVG format, and also can <em>download a set of files constituting a pedigree chart viewer</em>.</li>
+<li>To <em>read data that has been created</em>, use <a href="#menu_7">[Read-in]</a> menu.</li>
+<li>As the pedigree chart becomes larger (i.e., as persons and links increase), <em>finding your target person from a pull-down list will be more difficult</em>.
+When you feel such difficulty, <em>hover the mouse pointer over the target person in the chart</em>.
+<em>The information (such as the ID and coordinates) about the person will be displayed</em> in the region just below the pedigree chart.
+Some browser may fail to quickly react to such mouse hovering, but will react if you shake the mouse pointer over the target person for a while.
+The pull-down lists are sorted by the ID; and <em>in the pull-down lists, each person is indicated by his/her ID and name</em>.
+So, indication of the target person's ID will help you to search a pull-down list for the target person.</li>
+</ul>
+
+
+<p>
+Do not hesitate to contact me <a href="https://twitter.com/pi__yo__ko">on Twitter</a>.
+</p>
+
+<h2 class="man" id="menu_1">(1) [Individuals] menu</h2>
+<p>
+To <em>add an individual person</em>, use <a href="#menu_1_2">[Add a person] submenu</a>.
+Other submenus are not always necessary.
+</p>
+
+<h3 class="man" id="menu_1_1">(1-1) [Mode for character spacing] submenu</h3>
+<p>
+[Wide mode] is recommended when you intend to write the name of (and/or an annotation for) a person <em>in Han characters, Kana characters, etc.</em>
+On the other hand, [narrow mode] is recommended when you intend to write the name of (and/or an annotation for) a person <em>in Latin characters etc.</em>
+The mode selected by this submenu affects the width occupied by character strings of the names and annotations of persons written in horizontal direction.
+</p>
+<p>
+I'm sorry that this tool might fail to support other writing systems, especially, right-to-left writing systems such as Arabic script.
+</p>
+
+<h3 class="man" id="menu_1_2">(1-2) [Add a person] submenu</h3>
+<p>
+</p>
+
+<ul>
+<li>Enter <em>the name</em> of the person you want to add.</li>
+<li>Mark the checkbox if the name should be <em>displayed vertically</em>.</li>
+<li>Select the style to be applied to the rectangle indicating the person:
+<em>&ldquo;neutral&rdquo; for gray, &ldquo;feminine&rdquo; for orange, and &ldquo;masculine&rdquo; for green</em>.
+You can change the style later by manually editing <a href="#edit_3">the CSS file</a> and/or <a href="#edit_1">SVG file</a>.</li>
+<li>Specify <em>where the newly added person should be located</em>.
+You can specify that the person should be located at random.
+Instead, you can specify an existing person as a reference point and specify that the newly added person should be located at the upper left of the reference point person, just above him/her, at the upper right of him/her, on the left-hand side of him/her, on the right-hand side of him/her, at the lower left of him/her, just below him/her, or at the lower right of him/her.</li>
+<li>Click [add this person as specified above] button after specifying the above details.</li>
+</ul>
+
+<h3 class="man" id="menu_1_3">(1-3) [Rename a person] submenu</h3>
+<p>
+Select a person you want to rename, from the pull-down list.
+Then, enter the new name.
+</p>
+
+<p>
+If the new name is longer than the current name, the rectangle of the renamed person will be expanded automatically.
+Conversely, if the new name is shorter than the current name, you can choose whether to shrink the rectangle so that it will fit the new name or to let the rectangle's size remain as it is.
+</p>
+
+<h3 class="man" id="menu_1_4">(1-4) [Increase the height of a rectangle] submenu</h3>
+<p>
+To draw a person having many horizontal links (e.g., an emperor having many concubines) and the linked many persons, and arrange them neatly and comprehensibly, the rectangle of the former person should have a sufficient height.
+Use this submenu in such a case in order to increase, as needed, the height of the rectangle of the person who have (or is intended to have) many horizontal links.
+</p>
+
+<h3 class="man" id="menu_1_5">(1-5) [Annotate a person] submenu</h3>
+<p>
+You can annotate a person as you like.
+The annotation can be any text, such as <em>the posthumous name, temple name, courtesy name, pseudonym, alias, year of birth, year of death, etc.</em>
+The color of the annotation is selectable from the predefined choices.
+You can change the color later by manually editing <a href="#edit_3">the CSS file</a> and/or <a href="#edit_1">SVG file</a>.
+</p>
+
+<p>
+There is no feature for modifying or removing annotations.
+Please <a href="#edit_1">manually edit SVG file</a> to modify or remove an annotation.
+</p>
+
+<h3 class="man" id="menu_1_6">(1-6) [Add a circular badge (in which a number is written) to a person] submenu</h3>
+<p>
+Use this submenu in order to <em>indicate figures indicating a numerical order such as the order of siblings, order of emperors of a dynasty, order of succession to the throne at a certain point in time, etc.</em>
+</p>
+
+<ul>
+<li>The integers from 0 to 999 can be used.</li>
+<li>The badge has the shape of a circle.
+The color of the badge is selectable from the predefined choices.
+You can change the color later by manually editing <a href="#edit_3">the CSS file</a> and/or <a href="#edit_1">SVG file</a>.</li>
+<li>You can select which of the four corners of the rectangle the badge should be put at.
+In other words, you can put four badges at maximum to one person.</li>
+</ul>
+
+<p>
+This submenu can be used for other purposes than indication of the numerical order.
+For example, this submenu can be used to (temporarily or permanently) <em>mark a certain person</em>.
+The mark might be, for example, a black badge of No. 0 that is put on the lower right corner of him/her.
+</p>
+<p>
+For example, a badge as a mark may mean that (1) you suspended the drawing operations, (2) you leaved the marked person unsettled, and (3) you intend to study his/her descendants and to add them to the pedigree chart later.
+</p>
+<p>
+As another example, two or more badges of the same number (and the same color) may be used as marks to mean that two or more rectangles indicate the same single person.
+Such usage will be helpful when the pedigree chart is highly complicated, where arranging multiple rectangles for the single person separately may be helpful in simplifying the chart and making the chart easier to understand at a glance.
+</p>
+
+
+<p>
+There is no feature for modifying or removing a badge.
+Please <a href="#edit_1">manually edit SVG file</a> to modify or remove a badge.
+</p>
+
+<h3 class="man" id="menu_1_7">(1-7) [Look at a selected person] submenu</h3>
+<p>
+When a person is selected from the pull-down list, <em>the selected person will be displayed at the center of the region for the pedigree chart</em>.
+This submenu is provided for a case where so many persons (e.g., hundreds or more) are included in the pedigree chart that you cannot remember the location of each person in the chart and you have to look around the whole chart for a person you want to see.
+</p>
+
+<p>
+There may be room for improvement.
+Sometimes, finding a target person from the pull-down list seems to be difficult, too.
+</p>
+
+<h3 class="man" id="menu_1_8">(1-8) [Remove a person] submenu</h3>
+<p>
+Select a person to remove, and then remove him/her.
+</p>
+
+<h2 class="man" id="menu_2">(2) [Horizontal links] menu</h3>
+<p>
+Use [Horizontal links] menu in order to <em>connect two persons by a horizontal line (horizontal link) to indicate marriage or the like</em>.
+In many cases, <a href="#menu_2_1">[Add a horizontal link] submenu</a> will suffice.
+</p>
+
+<h3 class="man" id="menu_2_1">(2-1) [Add a horizontal link] submenu</h3>
+<p>
+Select <em>two persons that you want to connect by a horizontal link</em>, from the two pull-down lists; and select <em>the type of the horizontal link (i.e., a single-line link or a double-line link)</em>.
+Then, click [add a new link as specified] button.
+If necessary, one of the two selected persons will be automatically moved downwards so that the link connecting them will be (not slanted but) horizontal.
+</p>
+<p>
+By default, on each vertical edge of the rectangle that indicates each person, the 1/8, 2/8, 3/8, 4/8, 5/8, 6/8, and 7/8 points (from the top to the bottom) can be an end point of a horizontal link.
+With no details specified, the 4/8 point (i.e., the middle point of the vertical edge) will be automatically selected as an end point of a horizontal link.
+If the 4/8 point is already occupied, the 2/8 point will be selected.
+If the 2/8 point is also already occupied, then the 6/8 point will be selected.
+As such, the position of the end point will be selected in accordance with the descending priority of 4/8, 2/8, 6/8, 1/8, 7/8, 3/8, and 5/8.
+The above-mentioned selection will be done automatically.
+</p>
+<p>
+By <a href="#edit_1">manually editing the SVG file of the pedigree chart</a>, you can modify a solid line of a horizontal link (either single-line link or double-line link) to a dashed line.
+</p>
+
+<h3 class="man" id="menu_2_2">(2-2) [Add a horizontal link with details specified] submenu</h3>
+<p>
+Use this submenu when you want to <em>specify the end points of a horizontal link</em>.
+This submenu is convenient for a case where there is a person to be connected with many persons (such as an emperor having many concubines).
+</p>
+<p>
+Select
+(1) the person on the left-hand side of a horizontal link, 
+(2) the position on the right vertical edge of his/her rectangle, i.e., the position that should be the end point of the horizontal link,
+(3) the person on the right-hand side of the horizontal link,
+(4) the position on the left vertical edge of his/her rectangle, i.e., the position that should be the end point of the horizontal link,
+and
+(5) the type of the horizontal link.
+Then, click [add the new link as specified above] button.
+If necessary, one of the two selected persons will be automatically moved downwards so that the link connecting them will be (not slanted but) horizontal.
+</p>
+
+<h3 class="man" id="menu_2_3">(2-3) [Increase the allowable number of horizontally connectable partners] submenu</h3>
+<p>
+By default, each person is set to be connectable with other seven persons on his/her right-hand side and with yet other seven persons on his/her left-hand side.
+Even this default setting, however, might be insufficient for a certain person who should be connected with many persons (e.g., <em>an emperor having many concubines</em>).
+In such a case, use this submenu.
+</p>
+
+<p>
+Select the target person, select the left or right vertical edge of the rectangle of him/her, and click [increase the allowable number of partners] button.
+Then, the number of horizontal links that are allowed to be connected to the selected edge of the rectangle of the target person will be increased.
+</p>
+
+<p>
+<em>The number of horizontal links that are allowed to be connected to a vertical edge is 2<sup>n</sup> &minus; 1 (n &ge; 3)</em>.
+In other words, the number is 7, 15, 31, 63, &hellip;.
+</p>
+
+<p>
+It is rare that the pedigree chart includes a person to be connected with fifteen (15) or thirty one (31) persons on his/her one side (either right-hand side or left-hand side).
+This submenu is helpful not only in such a rare case but also in more frequent cases to improve the appearance of the chart.
+</p>
+
+<p>
+For example, assume that you want to connect five (5) persons to a target person on his/her right-hand side.
+In this case, which is not so extraordinary, this submenu will be helpful as explained below.
+</p>
+<p>
+First, use this submenu to increase the number of horizontal links allowed to be connected to the target person on his/her right-hand side so that the number will be fifteen (15).
+Next, connect the five persons to the target person so that the five horizontal link are connected to the 2/16, 5/16, 8/16, 11/16, and 14/16 points (from the top to the bottom) on the right vertical edge of the rectangle of the target person.
+These steps make the intervals between the five horizontal links wider than the intervals of the case where this submenu were not be used and the links were connected to the positions at 2/8, 3/8, 4/8, 5/8, 6/8 on the right vertical edge (i.e., 3/16 of the length of the edge is longer than 1/8 of that).
+Dispersing the horizontal links from the top to the bottom of a vertical edge in a balanced manner (and thereby making the intervals between them wider) can help to improve the appearance and visibility of the chart.
+</p>
+
+<h3 class="man" id="menu_2_4">(2-4) [Remove a horizontal link] submenu</h3>
+<p>
+Select a horizontal link to remove, and then remove it.
+</p>
+
+<h2 class="man" id="menu_3">(3) [Vertical links] menu</h3>
+<p>
+Use [Vertical links] menu in order to <em>connect persons by a vertical line (vertical link) to indicate parent-and-child relation or the like</em>.
+In many cases, <a href="#menu_3_1">[Add a vertical link] submenu</a> will suffice.
+</p>
+
+<h3 class="man" id="menu_3_1">(3-1) [Add a vertical link] submenu</h3>
+<p>
+You can add <em>a vertical link from a parent to a child</em> (either a solid line or a dashed line).
+You can also add <em>a vertical link from parents who are connected by a horizontal link, to a child</em> (either a solid line or a dashed line).
+</p>
+
+<p>
+You can choose either a solid line or a dashed line as you like.
+For example, a solid line may be used for the relation between a parent and his/her biological child, whereas a dashed line may be used for the relation between a parent and his/her adopted child.
+As another example, a dashed line may be used for connecting an ancestor and his/her descendant, with some persons in between on the lineage omitted.
+</p>
+
+<p>
+When a new vertical link is connected to the upper or lower horizontal edge of the rectangle of a person, the position to which the vertical link should be connected is decided as below.
+If no vertical link is connected on the edge, then the new vertical link will be connected to the middle point of the edge.
+If the line type (which is either a solid line or a dashed line) of the new vertical link is the same as that of a link already connected to the middle point of the edge, then the new vertical link will be connected to the middle point of the edge.
+In other cases, the new vertical link will be connected to the 1/4 position from the left or right on the edge.
+</p>
+
+<h3 class="man" id="menu_3_2">(3-2) [On a horizontal link, adjust the position from which vertical links are to run down] submenu</h3>
+<p>
+By default, a vertical link to a child from parents who are connected by a horizontal link runs down from the middle point of the horizontal link.
+This submenu is provided for adjusting the position on the horizontal link from which the vertical link runs down.
+This submenu will be convenient, for example, when the pedigree chart is very large and complicated.
+</p>
+
+
+<h3 class="man" id="menu_3_3">(3-3) [Remove a vertical link] submenu</h3>
+<p>
+Select a vertical link to remove, and then remove it.
+</p>
+
+<h2 class="man" id="menu_4">(4) [Moving persons] menu</h3>
+<p>
+Submenus for several ways of moving persons are provided.
+</p>
+<p>
+Please note that <em>the undo feature is not provided</em>.
+When you try moving one or more persons and the result is undesirable, <em>(1) save your data of the previous step by <a href="#menu_6_3">[Download the SVG file of any preferable step] menu</a>, (2) read the saved SVG file from <a href="#menu_7_1">[Read an SVG file created and saved before] menu</a>, and (3) restart your work</em>.
+Steps (1) and (2) will undo the undesired operation.
+</p>
+<p>
+Sometimes, the motion of the one or more persons can be cancelled out by simply carrying out the opposite motion, but such cancellation does not always work well.
+In general, when multiple persons are moved at once, there may be no motion that can cancel out the previously performed motion.
+Thus, the above steps (1), (2) and (3) will be needed.
+</p>
+
+<h3 class="man" id="menu_4_1">(4-1) [Move a person] submenu</h3>
+<p>
+Select a person to be moved and the moving direction.
+Specify how much the selected person should be moved.
+</p>
+
+<p>
+Note: When the names of persons are written vertically, the alignment of the rectangles in the horizontal direction will be kept tidy if you move persons horizontally in units of 84 pixels.
+</p>
+
+<h3 class="man" id="menu_4_2">(4-2) [Align a person with another] submenu</h3>
+<p>
+Select a target person to be moved, a reference person whose position should be used as the reference point, and the type of alignment.
+</p>
+
+<h3 class="man" id="menu_4_3">(4-3) [Move a person with reference to his/her parent(s) or child(ren)] submenu</h3>
+<p>
+You can move a selected person horizontally so that the vertical link from his/her parent(s) will be straight.
+You can also move a selected person horizontally so that he/she will be positioned at the center, in the horizontal direction, of the position(s) of his/her child(ren) connected to the lower horizontal edge of his/her rectangle.
+</p>
+
+<h3 class="man" id="menu_4_4">(4-4) [Move down a person and his/her descendants] submenu</h3>
+<p>
+A selected person and his/her descendants will be moved down together.
+In addition, any person connected by a horizontal link with any of thus moved persons (and the descendants of such a connected person) will also be moved down cascadingly.
+You can specify how much they should be moved down.
+</p>
+
+<h3 class="man" id="menu_4_5">(4-5) [Move persons cascadingly to the right] submenu</h3>
+<p>
+A selected person and all the persons reachable from him/her by following any links downwards or rightwards will be moved together to the right.
+You can specify how much they should be moved.
+</p>
+
+<h3 class="man" id="menu_4_6">(4-6) [Move persons cascadingly to the left] submenu</h3>
+<p>
+A selected person and all the persons reachable from him/her by following any links downwards or leftwards will be moved together to the left.
+You can specify how much they should be moved.
+</p>
+
+<h2 class="man" id="menu_5">(5) [Whole chart] menu</h3>
+<p>
+Submenus relating to the whole chart (not relating to an individual part of the chart) are provided.
+</p>
+
+<h3 class="man" id="menu_5_1">(5-1) [Shift the whole chart] submenu</h3>
+<p>
+When you want to adjust a margin (the top, bottom, left, or right margin) of the pedigree chart, use this submenu and shift the whole chart upwards, downwards, to the left, or to the right.
+When the chart has been shifted unexpectedly, shift the chart again in the opposite direction to cancel the unexpected shifting.
+</p>
+
+<h3 class="man" id="menu_5_2">(5-2) [Modify the height of the whole chart] submenu</h3>
+<p>
+Use this submenu when you want to increase the height of the whole pedigree chart or you want to reduce the bottom margin (by decreasing the height of the whole pedigree chart).
+If you want to reduce the top margin, shift the whole chart upwards by <a href="#menu_5_1">[Shift the whole chart] submenu</a>.
+</p>
+
+<h3 class="man" id="menu_5_3">(5-3) [Modify the width of the whole chart] submenu</h3>
+<p>
+Use this submenu when you want to increase the width of the whole pedigree chart or you want to reduce the right margin (by decreasing the width of the whole pedigree chart).
+If you want to reduce the left margin, shift the whole chart leftwards by <a href="#menu_5_1">[Shift the whole chart] submenu</a>.
+</p>
+
+<h3 class="man" id="menu_5_4">(5-4) [Modify the title of the chart] submenu</h3>
+<p>
+It would be useful to embed a title into the SVG file of the created pedigree chart.
+When the chart is opened by a Web browser, the title will be displayed as tooltip text.
+The title may also be read out by a screen reader.
+</p>
+<p>
+This submenu is provided to enter the title.
+The initial value of the title is the empty string.
+</p>
+
+<h3 class="man" id="menu_5_5">(5-5) [Modify the description of the chart] submenu</h3>
+<p>
+This submenu is provided to enter a description of the pedigree chart.
+The description will be embedded into the SVG file of the created pedigree chart.
+The embedded description may be read out by a screen reader (while the description is invisible).
+The initial value of the description is the empty string.
+Depending on your purpose of the pedigree chart, please consider embedding a description to improve the accessibility.
+</p>
+
+<h2 class="man" id="menu_6">(6) [Output] menu</h3>
+<p>
+In many cases, <a href="#menu_6_2">[Download the SVG file of the current state]</a> submenu will suffice.
+Because no undo feature is implemented, <a href="#menu_6_3">[Download the SVG file of any preferable step] submenu</a> is provided instead.
+<a href="#menu_6_5">[Download a pedigree chart viewer] submenu</a> allows you to download a set of files constituting a simple viewer for the created pedigree chart.
+A few other output features are also provided.
+</p>
+
+<h3 class="man" id="menu_6_1">(6-1) [See the SVG code] submenu</h3>
+<p>
+This submenu seems to be unnecessary in most cases because this is provided chiefly for debugging.
+</p>
+
+<h3 class="man" id="menu_6_2">(6-2) [Download the SVG file of the current state] submenu</h3>
+<p>
+<em>You can download the data of the current pedigree chart as an SVG file</em>.
+You can specify the prefix of the file name as you like.
+</p>
+
+<p>
+You can also specify whether to let the custom data attributes remain or to delete them.
+<em>Let the custom data attributes remain if you intend to open the downloaded file later by <a href="pedigree-en.html">this tool</a> to further edit the pedigree chart</em>.
+Delete the custom data attributes only when you finish editing the pedigree chart and you don't intend to open the chart by <a href="pedigree-en.html">this tool</a> any more.
+In such a case, if you want to reduce the size of the SVG file before using the file in another app, deletion of the custom data attributes will be useful.
+</p>
+
+<p>
+Web browsers can be used to browse the downloaded SVG file.
+So as to browse it in the same style (e.g., in the same color, of the same line width, etc.) as the one applied during editing, put the downloaded SVG file and <a href="pedigree_svg.css">the CSS file for it</a> on the same folder on your computer.
+</p>
+
+<h3 class="man" id="menu_6_3">(6-3) [Download the SVG file of any preferable step] submenu</h3>
+<p>
+<a href="#menu_4">As mentioned above</a>, <em>no undo feature is provided</em>.
+Instead, <em>you can download the data of each step as an SVG file</em>.
+</p>
+
+<p>
+The character string entered in the input field for the prefix of the file name in <a href="#menu_6_2">[Download the SVG file of the current state]</a> submenu will be used as the prefix of the name of the SVG file downloaded from this submenu.
+</p>
+
+<p>
+Web browsers can be used to browse the downloaded SVG file.
+So as to browse it in the same style (e.g., in the same color, of the same line width, etc.) as the one applied during editing, put the downloaded SVG file and <a href="pedigree_svg.css">the CSS file for it</a> on the same folder on your computer.
+</p>
+
+<h3 class="man" id="menu_6_4">(6-4) [Output the list of names] submenu</h3>
+<p>
+You can download, as a text file, the list of the names of the persons included in the pedigree chart.
+You can choose whether to additionally output, to the text file, the annotations (i.e., notes) that have been added by using <a href="#menu_1_5">[Annotate a person]</a> submenu.
+</p>
+
+<h3 class="man" id="menu_6_5">(6-5) [Download a pedigree chart viewer] submenu</h3>
+<p>
+The first three files of the following list will be automatically downloaded.
+Put the following six files on the same directory on your computer and open the HTML file by a Web browser.
+It will work as a simple viewer for the pedigree chart.
+</p>
+
+<ul>
+<li>The SVG file of the pedigree chart will be downloaded with the file name such as <code>pedigree_viewer_<i>yyyy-mm-dd_hhmmss.sss</i>.svg</code>.</li>
+<li>The HTML file for the body of the viewer will be downloaded with the file name such as <code>pedigree_viewer_<i>yyyy-mm-dd_hhmmss.sss</i>.html</code>.</li>
+<li>The JavaScript file including data definitions that will be necessary for the viewer to work will be downloaded with the file name such as <code>pedigree_viewer_<i>yyyy-mm-dd_hhmmss.sss</i>.js</code>.</li>
+<li>Manually download the common CSS file (<a href="pedigree_svg.css"><code>pedigree_svg.css</code></a>) for the SVG file of the pedigree chart.</li>
+<li>Manually download the common CSS file (<a href="pedigree_viewer.css"><code>pedigree_viewer.css</code></a>) for the HTML file for the body of the viewer.</li>
+<li>Manually download the common JavaScript file (<a href="pedigree_viewer.js"><code>pedigree_viewer.css</code></a>) that will be necessary for the viewer to work.</li>
+</ul>
+
+<p>
+For simply browsing the pedigree chart, the viewer will be useful enough as it is.
+There is, however, room for improvement in convenience of the viewer.
+The viewer will be made more convenient by <a href="#edit_2">editing the HTML file for the body of the viewer</a> to add information about the persons, horizontal links, and vertical links in the pedigree chart.
+</p>
+
+<p>
+The viewer is designed so that when invoked with a query string such as <code>?pid=p123</code>, the viewer will display the detailed information about the specified person (in this example, the person whose ID is <code>p123</code>) and display him/her at the center.
+If no query string is specified, the person having the lowest ID, which is <code>p0</code> in most cases, will be regarded as the specified person.
+When linking from any other HTML file to the viewer, it will be useful to specify the linked location (i.e., the value of the <code>href</code> attribute) as <code>pedigree_viewer_<i>yyyy-mm-dd_hhmmss.sss</i>.html<i>?pid=p123</i></code>, for example.
+</p>
+
+<h2 class="man" id="menu_7">(7) [Read-in] menu</h3>
+<p>
+This menu is for reading data that has been created.
+</p>
+
+<h3 class="man" id="menu_7_1">(7-1) [Read an SVG file created and saved before] submenu</h3>
+<p>
+By using this submenu, an SVG file that has been saved by <a href="#menu_6_2">[Download the SVG file of the current state]</a> submenu, <a href="#menu_6_3">[Download the SVG file of any preferable step]</a> submenu, or <a href="#menu_6_5">[Download a pedigree chart viewer]</a> submenu can be read into <a href="pedigree-en.html">the tool</a>.
+After the SVG file has been read, you can edit the pedigree chart as you like.
+When you finish editing, save an SVG file again as you need.
+</p>
+
+<h3 class="man" id="menu_7_2">(7-2) [Read automatically saved SVG data] submenu</h3>
+<p>
+The data of the pedigree chart may accidentally disappear while you are editing the pedigree chart.
+For example, while you are editing the pedigree chart, you might accidentally go to another page (for example by tapping the browser's [Back] button), reload <a href="pedigree-en.html">this tool's page</a>, or close the tab of <a href="pedigree-en.html">this tool's page</a>.
+In some cases, the data may remain fortunately; but in other cases, the data may disappear.
+It may perhaps depends on your browser's settings.
+</p>
+
+<p>
+This submenu may serve as measures against such disappearance of data.
+However, it is not recommended to rely on this submenu too much because your browser's settings may decide whether the data will be successfully restored in response to a click on [read it and display the chart as read] button.
+</p>
+
+<h2 class="man" id="edit">(8) Editing saved data manually</h2>
+<p>
+You can change the appearance of the pedigree chart as you like, simply by editing one or more files using a text editor.
+You can also make the pedigree chart viewer more convenient by adding descriptions.
+</p>
+
+<h3 class="man" id="edit_1">(8-1) Editing the SVG file of the pedigree chart</h3>
+<p>
+<em>If you want to modify the style applied to the pedigree chart, or if you want to remove a badge or an annotation that you have added mistakenly</em>, edit the SVG file manually.
+SVG files are, in fact, plain text files; so you can edit them easily by using a text editor.
+</p>
+
+<p>
+You can modify the style by editing the <code>style</code> element, which is written as shown below and can be found near the beginning of the SVG file of the pedigree chart.
+</p>
+
+<code class="multiline">&lt;style&gt; @import url(pedigree_svg.css); &lt;/style&gt;
+</code>
+
+<p>
+For example, a new style for emperors may be defined as below.
+In this case, specify the value <code>emperor</code> (instead of the value <code>neutral</code>, <code>feminine</code>, or <code>masculine</code>) for the <code>class</code> attribute of <em>the <code>rect</code> elements that correspond to the persons to whom you want to apply this new style</em>.
+</p>
+
+<code class="multiline">&lt;style&gt;
+  @import url(pedigree_svg.css);
+  <em>rect.emperor {
+    stroke: hsl(255, 100%, 50%); 
+    fill: hsla(255, 100%, 70%, 0.5);
+  }</em>
+&lt;/style&gt;
+</code>
+
+<p>
+In another case, your new style definition such as the above one may be added to <a href="pedigree_svg.css"><code>pedigree_svg.css</code></a> instead of the <code>style</code> element within the SVG file.
+In such a case, editing the SVG file will solely mean editing the <code>class</code> attribute of the <code>rect</code> elements.
+</p>
+
+<p>
+In yet another case, your new style may be defined in a new CSS file.
+Let the name of the new CSS file be <code>user_defined.css</code>, for example.
+In this case, edit the <code>style</code> element of the SVG file as shown below (and of course, also edit the <code>class</code> attribute of the <code>rect</code> elements as appropriate).
+</p>
+
+<code class="multiline">&lt;style&gt;
+  @import url(pedigree_svg.css);
+  <em>@import url(user_defined.css);</em>
+&lt;/style&gt;
+</code>
+
+<p>
+<em>If you have added an incorrect annotation mistakenly</em>, delete the <code>text</code> element corresponding to it.
+An illustrative <code>text</code> element of an annotation is shown below.
+A <code>text</code> element of an annotation has the <code>id</code> attribute whose value has the form of &ldquo;<code>p</code> + number + <code>n</code> + number&rdquo; (e.g., <code>p22n0</code> as below).
+</p>
+
+<code class="multiline">  &lt;text writing-mode=&quot;tb&quot; id=&quot;p22n0&quot; x=&quot;10332&quot; y=&quot;1512&quot; textLength=&quot;48&quot; lengthAdjust=&quot;spacing&quot; dx=&quot;8&quot; dy=&quot;0&quot; class=&quot;note blue&quot;&gt;梁武帝&lt;/text&gt;
+</code>
+
+<p>
+<em>If you have added an incorrect badge mistakenly</em>, delete the <code>circle</code> element and the <code>text</code> element that correspond to the badge.
+An illustrative pair of a <code>circle</code> element and a <code>text</code> element corresponding to a badge is shown below.
+The <code>circle</code> element for a badge has the <code>id</code> attribute whose value has the form of &ldquo;<code>p</code> + number + <code>b_</code> + position&rdquo; (e.g., <code>p2b_upper_right</code> as below), and the <code>text</code> element for the badge has the <code>id</code> attribute whose value has the form of &ldquo;<code>p</code> + number + <code>bn_</code> + position&rdquo; (e.g., <code>p2bn_upper_right</code> as below).
+</p>
+
+<code class="multiline">  &lt;circle id=&quot;p2b_upper_right&quot; cx=&quot;1722&quot; cy=&quot;282&quot; r=&quot;17&quot; fill=&quot;darkblue&quot;&gt;&lt;/circle&gt;
+  &lt;text id=&quot;p2bn_upper_right&quot; x=&quot;1710&quot; y=&quot;290&quot; textLength=&quot;8&quot; dx=&quot;8&quot; dy=&quot;0&quot; class=&quot;num_badge&quot;&gt;1&lt;/text&gt;
+</code>
+
+<p>
+<em>You can modify the color of a badge</em> by changing the value of the <code>fill</code> attribute of the <code>circle</code> element.
+See <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/color_value">the &lt;color&gt; CSS data type</a> for details of how to specify the color.
+</p>
+
+<p>
+<a href="pedigree-en.html">The tool</a> provides no choice of a dashed line for drawing a horizontal link, but you can modify any horizontal link to be drawn by a dashed line.
+Specifically, <em>in the <code>class</code> attribute of the <code>path</code> element for drawing a horizontal link</em>, add the value <code>dashed</code> so that the result will be <em><code>class=&quot;double dashed&quot;</code></em> or <em><code>class=&quot;single dashed&quot;</code></em>.
+</p>
+
+<h3 class="man" id="edit_2">(8-2) Editing the HTML file of the viewer</h3>
+<p>
+<a href="#menu_6_5">The viewer for the pedigree chart</a> includes an HTML file.
+By editing the HTML file, you can make the viewer more convenient so that the chart and some descriptions about persons in the chart can be seen at once.
+The recommended way of editing the HTML file is explained below.
+</p>
+
+<p>
+Modify the paragraph shown below (i.e., modify the contents of this <code>p</code> element).
+It may be useful to write a general explanation about the pedigree chart in this paragraph.
+</p>
+
+<code class="multiline">&lt;div id=&quot;info_all&quot;&gt;
+&lt;p&gt;<em>Edit this paragraph as you like.</em>&lt;/p&gt;
+</code>
+
+<p>
+Below this <code>p</code> element, a <code>dl</code> element exists, which includes pairs of <code>dt</code> element and <code>dd</code> element.
+Each pair corresponds to a person, a horizontal link (indicating marriage etc.), or a vertical link (indicating parent-and-child relation etc.).
+It will be helpful to write a description about the person or the link in the <code>dd</code> element.
+Any note and/or any link may be embedded in the <code>dd</code> element as shown below (see the italicized portion).
+</p>
+
+<code class="multiline">&lt;dt id=&quot;p162_t&quot;&gt;Sima Yi&lt;/dt&gt;
+&lt;dd id=&quot;p162_d&quot;&gt;
+  &lt;button type=&quot;button&quot; onclick=&quot;look_at('p162')&quot;&gt;Look at Sima Yi&lt;/button&gt;
+  &lt;button type=&quot;button&quot; onclick=&quot;reselect('p162')&quot;&gt;Select Sima Yi&lt;/button&gt;
+<em>  Sima Yi (司馬懿).  179 - 251. His courtesy name is Zhongda (仲達).
+  [&lt;a href=&quot;https://en.wikipedia.org/wiki/Sima_Yi&quot;&gt;Wikipedia&lt;/a&gt; |
+  &lt;a href=&quot;https://zh.wikisource.org/wiki/%E6%99%89%E6%9B%B8/%E5%8D%B7001&quot;&gt;Book of Jin&lt;/a&gt;]</em>
+&lt;/dd&gt;
+</code>
+
+<h3 class="man" id="edit_3">(8-3) Editing the CSS file for the SVG file</h3>
+<p>
+The CSS file (named <a href="pedigree_svg.css"><code>pedigree_svg.css</code></a>) for the SVG file can be edited.
+For example, edit the <code>fill</code> properties (for the background color of rectangles, and the text color), and the <code>stroke</code> properties (for the color of the outlines of rectangles, and the color of horizontal and vertical links), as you like.
+See <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/color_value">the &lt;color&gt; CSS data type</a> for details of how to specify the color.
+</p>
+
+<p>
+You can also modify the <code>font-family</code> property as you like.
+</p>
+
+<p>
+A dashed line can be changed to a dot-and-dash line or a dotted line.
+Such change can be done by editing the value of the <code>stroke-dasharray</code> attribute set for a dashed line.
+See <a href="https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/stroke-dasharray">the <code>stroke-dasharray</code> attribute</a> for details.
+</p>
+
+<p>
+A new class can be defined, of course.
+For example, a class for emperors defined as to <code>rect</code> elements may be useful, and a class for a particular lineage defined as to <code>path</code> elements may also be useful.
+</p>
+
+<h3 class="man" id="edit_4">(8-4) Editing the CSS file for the HTML file</h3>
+<p>
+<a href="#menu_6_5">The viewer for the pedigree chart</a> includes the CSS file (named <a href="pedigree_viewer.css"><code>pedigree_viewer.css</code></a>) for the HTML file.
+You can change the appearance of the viewer by editing this CSS file.
+Edit some properties such as <code>color</code>, <code>background</code>, <code>border-color</code>, <code>font-family</code>, etc. as you like.
+See <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/color_value">the &lt;color&gt; CSS data type</a> for details of how to specify the color.
+</p>
+
+
+</div>
+</body>
+</html>
