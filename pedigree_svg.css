@@ -15,7 +15,7 @@ rect.masculine {
 }
 text {
   font-size: 24px;
-  font-family: 'ヒラギノ明朝 ProN', serif;
+  font-family: Times, 'ヒラギノ明朝 ProN', '花園明朝A', HanaMinA, '花園明朝B', HanaMinB, serif;
 }
 text.note, text.note.blue {
   font-size: 16px;
