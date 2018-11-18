@@ -2807,7 +2807,7 @@ function center_person_wrt_upper_link() {
   move_person_horizontally(pid, new_center_x - cur_center_x);
   const n = name_str(pid),
         b = {ja: '親からの縦線がまっすぐになるように' + n + 'を移動',
-             en: 'moving ' + n + 'so that the link from the parent(s) will be straight'};
+             en: 'moving ' + n + ' so that the link from the parent(s) will be straight'};
   backup_svg(b[LANG]);
 }
 
