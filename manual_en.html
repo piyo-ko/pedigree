@@ -676,6 +676,20 @@ See <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/color_value">the &
 </p>
 
 <p>
+As an example, an alternative CSS file (<a href="monochrome_svg.css"><code>monochrome_svg.css</code></a>) is provided.
+This CSS is designed so that the main body of a pedigree chart (i.e., all the parts except for annotations and badges) will be displayed in black and white.
+Download <a href="monochrome_svg.css"><code>monochrome_svg.css</code></a>, rename it <code>pedigree_svg.css</code>, put it and the SVG file of a pedigree chart in the same folder on your computer.
+Then, the pedigree chart will be displayed in black and white.
+If you want to eliminate the outlines of the rectangles, modify the value of the <code>stroke</code> property to  <code>none</code> as shown below.
+</p>
+
+<code class="multiline">rect.neutral, rect.feminine, rect.masculine {
+  stroke: none;
+  fill: white;
+}
+</code>
+
+<p>
 You can also modify the <code>font-family</code> property as you like.
 </p>
 

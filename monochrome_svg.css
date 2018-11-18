@@ -1,0 +1,47 @@
+rect {
+  stroke-width: 2;
+}
+rect.neutral, rect.feminine, rect.masculine {
+  stroke: black; /* none */
+  fill: white;
+}
+text {
+  font-size: 24px;
+  font-family: Times, 'ヒラギノ明朝 ProN', '花園明朝A', HanaMinA, '花園明朝B', HanaMinB, serif;
+}
+text.note, text.note.blue {
+  font-size: 16px;
+  fill: hsl(240, 90%, 50%);
+}
+text.note.sage_green {
+  fill: hsl(190, 55%, 40%);
+}
+text.note.green {
+  fill: hsl(100, 90%, 30%);
+}
+text.note.orange {
+  fill: hsl(25, 80%, 50%);
+}
+text.note.red {
+  fill: hsl(350, 90%, 50%);
+}
+text.note.purple {
+  fill: hsl(310, 60%, 45%);
+}
+text.num_badge {
+  font-size: 16px;
+  font-family: 'Courier New', 'Ricty Discord', Ricty, Helvetica, Monaco, Courier, Arial, monospace;
+  fill: white;
+}
+path {
+  fill: none;
+  stroke-width: 2;
+  stroke: black;
+}
+path.dashed {
+  stroke-dasharray: 4,4;
+}
+path.exceptional {
+  stroke: hsl(330, 100%, 50%);
+}
+

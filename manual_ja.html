@@ -580,6 +580,18 @@ SVG 用の CSS ファイル (<a href="pedigree_svg.css"><code>pedigree_svg.css</
 </p>
 
 <p>
+例として、注釈・バッジ以外の本体部分を白黒にするための CSS ファイル (<a href="monochrome_svg.css"><code>monochrome_svg.css</code></a>) を用意しました。
+これをダウンロードして <code>pedigree_svg.css</code> と名前を付け替え、系図の SVG ファイルと同じフォルダにおけば、系図を白黒で表示できます。
+さらに、以下のように <code>stroke</code> プロパティの値を <code>none</code> に書き換えることで、人物の矩形の枠線をなくすことも可能です。
+</p>
+
+<code class="multiline">rect.neutral, rect.feminine, rect.masculine {
+  stroke: none;
+  fill: white;
+}
+</code>
+
+<p>
 お好みのフォントを使うように <code>font-family</code> プロパティを書き換えるのも良いかもしれません。
 </p>
 
