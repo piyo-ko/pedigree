@@ -15,6 +15,7 @@ A pedigree chart in SVG format is good in that:
 Two simple example charts are shown below (precisely speaking, they are Portable Network Graphics (PNG) images converted from original images in SVG format).  Links to other examples are [listed on another page](https://piyo-ko.github.io/fun/pedigree_examples_index.html).  Although Chinese/Japanese characters (not Latin characters) are used in these charts, you will still see that how complex chart can be created by using [this drawing tool](https://piyo-ko.github.io/pedigree/pedigree-en.html). 
 
 Please do not hesitate to contact me on GitHub (`@piyo-ko`) or on Twitter (`@pi__yo__ko`).
+Any commnents on [the tool](https://piyo-ko.github.io/pedigree/pedigree-en.html) or [the manual page](https://piyo-ko.github.io/pedigree/manual_en.html) are welcome.
 
 ## 簡単な紹介
 系図がほしい状況は色々あるはずだが、自分で作ろうとなると、まずどのソフトウェアで作れば良いのかに悩む。しかも、作図している途中では全体像が見えにくいこともあるので、途中で「全体的に各要素を縮小したい (そうしないと所定の範囲に系図を収められない)」となるかもしれないが、ソフトウェアによっては、その作業が煩雑を極める可能性もある。
@@ -22,6 +23,7 @@ Please do not hesitate to contact me on GitHub (`@piyo-ko`) or on Twitter (`@pi_
 そこで、「SVG ならスケーラブルだし、後でテキストエディタで微調整も好きにできるし、再利用性も良さそうだし、系図作りに良いのでは?」と思いついて、その単なる思いつきのままに、行き当たりばったりで系図作成アプリ的なものを作ってみた。
 
 * [実際に系図を作るページ](https://piyo-ko.github.io/pedigree/pedigree.html)
+* [マニュアル](https://piyo-ko.github.io/pedigree/manual_ja.html) (多分読まなくても使えるし、多くの場合はせいぜい概要を読めば十分なはず)
 * 作った SVG ファイルと同じフォルダに置くべき[スタイルファイル](https://piyo-ko.github.io/pedigree/pedigree_svg.css)
 * [技術的なメモ](https://piyo-ko.github.io/pedigree/attributes.html)
 
@@ -44,6 +46,5 @@ Please do not hesitate to contact me on GitHub (`@piyo-ko`) or on Twitter (`@pi_
 * 源氏物語や日本の古代・中世のような複雑な系図を作ろうとすると対処しきれない場合がある問題 (今は対処しきれない問題が発生すると、「どう再描画すれば良いか分からない」線の色を赤くするだけで放置している)。
 * 誰かを基準にして位置合わせをする整列機能は作ってみたが、等間隔に並べるといった別種の整列機能が更にあると嬉しいかも。
 * プログラムが全体的に行き当たりばったりなので、もう少し小綺麗にしたい。
-* ヘルプページ (英語版)
 
 以上。
