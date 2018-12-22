@@ -111,18 +111,15 @@ p {
   color: hsl(210, 20%, 70%);
 }
 dt {
-  float: left;
-  clear: left;
   padding-right: 0;
   margin-right: 0;
   font-family: sans-serif;
   color: hsl(240, 100%, 80%);
 }
 dd {
-  margin-left: 0;
-  padding-left: 0;
-  text-indent: 1em;
+  margin-left: 1em;
 }
+
 em {
   color: hsl(210, 100%, 70%);
   font-style: normal;
