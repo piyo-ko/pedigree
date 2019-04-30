@@ -61,13 +61,18 @@ function show_list() {
 }
 
 window.top.onload = function() {
-  const pid_param = (new URL(document.location)).searchParams.get('pid'),
+  const loc = new URL(document.location),
+    pid_param = loc.searchParams.get('pid'),
     pid = ((/^p\d+$/).test(pid_param)) ? pid_param : pedigree_data[0][0],
     sel = document.viewer.list_of_persons, L = sel.options.length;
   for (let i = 0; i < L; i++) {
     if (sel.options[i].value === pid) {
-      sel.selectedIndex = i;  see_in_detail();  return;
+      sel.selectedIndex = i;  see_in_detail();  break;
     }
+  }
+  const page_style = loc.searchParams.get('page_style');
+  if (page_style == 'list') {
+    document.getElementById('info_all').style.zIndex = 2;
   }
 };
 
