@@ -3306,6 +3306,17 @@ function backup_svg(description_str, auto_save_on_sessionStorage = true) {
         document.getElementById('tree_canvas_div').innerHTML);
     }
   }
+
+  // この関数が呼ばれるのは系図の内容に変化が生じたときなので、ビューワの
+  // ダウンロード用のリンクがもし有効な状態だったら無効にすべきである。
+  // 特に条件判定はせずに一律に無効化する。
+  const ids = ['viewer_html_link', 'viewer_svg_link', 'viewer_js_link'];
+  ids.forEach(id => {
+    const viewer_a = document.getElementById(id);
+    viewer_a.className = 'disabled';
+    viewer_a.href = '';
+    viewer_a.download = '';
+  });
 }
 /* 作業の各段階での SVG ファイルのダウンロード用リンク (作成済みのもの) の 
 download 属性の値を、入力された接頭辞に置換する。
@@ -3369,19 +3380,14 @@ function download_pedigree_viewer() {
     html_filename = name_prefix + timestamp + '.html',
     data_js_filemane = name_prefix + timestamp + '.js',
     svg_filename = name_prefix + timestamp + '.svg';
-  // ダウンロード用に一時的に a 要素を追加して、ダウンロード後に削除するのだが、
-  // その追加先の親要素。
-  const body_elt = document.getElementsByTagName('body')[0];
   
-  // まず最初に SVG ファイルをダウンロードする。
+  // まず最初に SVG ファイルをダウンロードするためのリンクを作って有効化する。
   const svg_str = document.getElementById('tree_canvas_div').innerHTML,
         svg_b = new Blob([svg_str], {type :'image/svg+xml'}),
-        svg_a = document.createElement('a');
-  body_elt.appendChild(svg_a);
+        svg_a = document.getElementById('viewer_svg_link');
   svg_a.download = svg_filename;
   svg_a.href = URL.createObjectURL(svg_b);
-  svg_a.click();
-  body_elt.removeChild(svg_a);
+  svg_a.className = '';
 
   // 次に、データを定義するための JavaScript ファイルの中身を生成する。
   // pedigree_data なる配列を定義するステートメントの文字列を作る
@@ -3432,14 +3438,12 @@ function download_pedigree_viewer() {
 
   const js_dat_str = 
     'const pedigree_data = ' + JSON.stringify(pedigree_data) + ';\n';
-  // JavaScript ファイルをダウンロードする。
+  // JavaScript ファイルをダウンロードするためのリンクを作って有効化する。
   const js_b = new Blob([js_dat_str], {type: 'text/javascript'}),
-        js_a = document.createElement('a');
-  body_elt.appendChild(js_a);
+        js_a = document.getElementById('viewer_js_link');
   js_a.download = data_js_filemane;
   js_a.href = URL.createObjectURL(js_b);
-  js_a.click();
-  body_elt.removeChild(js_a);
+  js_a.className = '';
 
   // 次は HTML ファイルの中身を生成する。
   const title_str = {en: 'Pedigree Chart', ja: '系図'},
@@ -3552,14 +3556,12 @@ function download_pedigree_viewer() {
   dl_str += '</dl>\n</div>\n';
   html_str += dl_str + '</section></body>\n</html>\n';
 
-  // HTML ファイルをダウンロードする。
-  const html_b = new Blob([html_str], {type: 'text/html'});
-  const html_a = document.createElement('a');
-  body_elt.appendChild(html_a);
+  // HTML ファイルをダウンロードするためのリンクを作って有効化する。
+  const html_b = new Blob([html_str], {type: 'text/html'}),
+        html_a = document.getElementById('viewer_html_link');
   html_a.download = html_filename;
   html_a.href = URL.createObjectURL(html_b);
-  html_a.click();
-  body_elt.removeChild(html_a);
+  html_a.className = '';
 }
 
 /* カスタムデータ属性を全削除することによって SVG ソースコードの量を減らす。

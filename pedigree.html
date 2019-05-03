@@ -546,7 +546,13 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 <tr class="menu_output">
 <th>系図ビューワを<wbr>ダウンロードする</th>
 <td>作成した個々の系図に専用のビューワ (HTML ファイル、SVG ファイル、JavaScript ファイルを含む) をダウンロードできます。
-<input type="button" value="系図ビューワをダウンロードする" onclick="download_pedigree_viewer()">
+<input type="button" value="系図ビューワのダウンロード用の三つのリンクを作る" onclick="download_pedigree_viewer()">
+<span id="viewer_donload_links">
+<a class="disabled" id="viewer_html_link">HTML ファイル</a>&nbsp;
+<a class="disabled" id="viewer_svg_link">SVG ファイル</a>&nbsp;
+<a class="disabled" id="viewer_js_link">JavaScript ファイル</a>
+</span>
+
 <br>
 [使い方] ダウンロードした HTML ファイルの dd 要素を適宜編集してお使いください。
 なお、ダウンロードしたファイルと同じフォルダに、<a href="pedigree_svg.css" download="pedigree_svg.css">SVG 用のスタイルシートファイル</a>と、<a href="pedigree_viewer.css" download="pedigree_viewer.css">HTML 用のスタイルシートファイル</a>と、<a href="pedigree_viewer.js" download="pedigree_viewer.js">JavaScript ファイル</a>を置いてください (これらは個々の系図によらない共通ファイルです)。

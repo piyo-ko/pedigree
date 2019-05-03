@@ -694,7 +694,12 @@ if notes should also be output</label>.
 <th>Download a pedigree chart viewer</th>
 <td>A pedigree chart viewer fully customized to the chart you have created is downloadable.
 The viewer includes three customized files: an HTML file, an SVG file, and a JavaScript file.
-<input type="button" value="Download the files for the viewer" onclick="download_pedigree_viewer()">
+<input type="button" value="Enable the three links to download the files constituting the viewer" onclick="download_pedigree_viewer()">
+<span id="viewer_donload_links">
+<a class="disabled" id="viewer_html_link">HTML file</a>&nbsp;
+<a class="disabled" id="viewer_svg_link">SVG file</a>&nbsp;
+<a class="disabled" id="viewer_js_link">JavaScript file</a>
+</span>
 <br>
 Note: The dd elements in the downloaded HTML file are editable.  Please also download three common files (<a href="pedigree_svg.css" download="pedigree_svg.css">a cascading style sheet (CSS) file for the SVG code</a>, <a href="pedigree_viewer.css" download="pedigree_viewer.css">a CSS file for the HTML code</a>, and <a href="pedigree_viewer.js" download="pedigree_viewer.js">a JavaScript file</a>), and put these common files and the three customized files on the same folder (i.e., the same directory) on your computer.
 </td>

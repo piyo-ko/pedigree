@@ -231,3 +231,16 @@ label {
 label.wrappable {
   white-space: normal;
 }
+
+#viewer_donload_links {
+  margin-left: 1em;
+  margin-right: 1em;
+  border: solid 1px violet;
+  background: lavenderblush;
+  padding: 2pt;
+}
+a.disabled {
+  pointer-events: none;
+  text-decoration: none;
+  color: gray;
+}
