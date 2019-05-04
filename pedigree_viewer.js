@@ -38,9 +38,9 @@ function see_in_detail() {
   const dl_rel = document.getElementById('related_info');
   while (dl_rel.firstChild) { dl_rel.removeChild(dl_rel.firstChild); }
   const info = pedigree_data.find(arr => { return(arr[0] === sel_pid); });
-  info[1].rel_pids.map(rel_pid => { add_new_dt_dd(dl_rel, rel_pid); });
-  info[1].hids.map(hid => { add_new_dt_dd(dl_rel, hid); });
-  info[1].vids.map(vid => { add_new_dt_dd(dl_rel, vid); });
+  info[1].rel_pids.forEach(rel_pid => { add_new_dt_dd(dl_rel, rel_pid); });
+  info[1].hids.forEach(hid => { add_new_dt_dd(dl_rel, hid); });
+  info[1].vids.forEach(vid => { add_new_dt_dd(dl_rel, vid); });
   look_at(sel_pid);
 }
 
