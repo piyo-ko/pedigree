@@ -29,13 +29,13 @@ the name of <span id="info_name" class="info"></span>.
 The range of his/her rectangle's X coordinate is <span class="info">[<span id="info_x_start"></span>, <span id="info_x_end"></span>]</span>, 
 of which center is <span id="info_x_mid" class="info">&nbsp;</span>, and
 the range of his/her rectangle's Y coordinate is <span class="info">[<span id="info_y_start"></span>, <span id="info_y_end"></span>]</span>.
-<input type="button" value="Details of links connected to him/her" onclick="show_detailed_info_about_links()">
+<button type="button" onclick="show_detailed_info_about_links()">Details of links connected to him/her</button>
 </p>
 
 <div id="detailed_info_about_links"></div>
 
 <form name="menu">
-<p class="btn" role="menu">
+<div class="btn" role="menu">
 <button class="menu" type="button" onclick="show_menu('menu_person')">Individuals</button>
 <button class="menu" type="button" onclick="show_menu('menu_hlink')">Horizontal links</button>
 <button class="menu" type="button" onclick="show_menu('menu_vlink')">Vertical links</button>
@@ -43,7 +43,7 @@ the range of his/her rectangle's Y coordinate is <span class="info">[<span id="i
 <button class="menu" type="button" onclick="show_menu('menu_whole')">Whole chart</button>
 <button class="menu" type="button" onclick="show_menu('menu_output')">Output</button>
 <button class="menu" type="button" onclick="show_menu('menu_read')">Read-in</button>
-</p>
+</div>
 
 <table id="menu_table">
 
@@ -115,7 +115,7 @@ at the lower right of</label>
 <select id="position_ref" name="position_ref"></select>
 as a reference point</label>.
 </li>
-<li><input type="button" value="Add this person as specified above" onclick="add_person()"></li>
+<li><button type="button" onclick="add_person()">Add this person as specified above</button></li>
 </ul>
 </td>
 </tr>
@@ -126,7 +126,7 @@ as a reference point</label>.
 Specify the new name of
 <select id="person_to_rename" name="person_to_rename"></select> as
 <input type="text" name="renamed_as" size="10"> and
-<input type="button" value="rename the person so" onclick="rename_person()">.
+<button type="button" onclick="rename_person()">rename the person so</button>.
 <br>
 (Note: <label for="shrink_rect_if_name_shortened" class="wrappable">Check the box 
 <input type="checkbox" id="shrink_rect_if_name_shortened" name="shrink_rect_if_name_shortened"> beforehand,
@@ -140,7 +140,7 @@ in the case where you want to shrink the rectangle of this person as his/her nam
 Select the person
 <select id="person_to_be_extended" name="person_to_be_extended"></select>
 and
-<input type="button" value="increase the height of his/her rectangle" onclick="extend_rect()">.
+<button type="button" onclick="extend_rect()">increase the height of his/her rectangle</button>.
 </td>
 </tr>
 
@@ -173,7 +173,7 @@ and
 <span class="note_color purple">■</span>)
 </li>
 <li>
-<input type="button" value="Add the note as specified above" onclick="annotate()">
+<button type="button" onclick="annotate()">Add the note as specified above</button>
 </li>
 </td>
 </tr>
@@ -222,7 +222,7 @@ the lower right corner</label>
 Enter the integer number (from 0 to 999 inclusive) which should be written within the badge: <input type="text" name="badge_num" id="badge_num" size="3">
 </li>
 <li>
-<input type="button" value="Add the badge as specified above" onclick="add_num_badge()">
+<button type="button" onclick="add_num_badge()">Add the badge as specified above</button>
 </li>
 </ul>
 </td>
@@ -233,7 +233,7 @@ Enter the integer number (from 0 to 999 inclusive) which should be written withi
 <td>
 <label for="person_to_look_at">Select the person to look at:</label>
 <select id="person_to_look_at" name="person_to_look_at"></select>,
-and <input type="button" value="look at him/her" onclick="look_at_person()">.
+and <button type="button" onclick="look_at_person()">look at him/her</button>.
 </td>
 </tr>
 
@@ -243,7 +243,7 @@ and <input type="button" value="look at him/her" onclick="look_at_person()">.
 Select the person to be removed
 <select id="person_to_remove" name="person_to_remove"></select>
 and
-<input type="button" value="remove him/her from the chart" onclick="remove_person()">.
+<button type="button" onclick="remove_person()">remove him/her from the chart</button>.
 </td>
 </tr>
 
@@ -262,7 +262,7 @@ or
 <input type="radio" name="horizontal_link_type" value="double" checked id="horizontal_link_type_double">
 double-line link</label>),
 and then,
-<input type="button" value="add a new link as specified" onclick="add_h_link()">.
+<button type="button" onclick="add_h_link()">add a new link as specified</button>.
 </td>
 </tr>
 
@@ -305,7 +305,7 @@ single-line link</label>
 <input type="radio" name="horizontal_link_type2" value="double" checked id="horizontal_link_type2_double">
 double-line link</label>
 </li>
-<li><input type="button" value="Add the new link as specified above" onclick="add_h_link_2()"></li>
+<li><button type="button" onclick="add_h_link_2()">Add the new link as specified above</button></li>
 </ul>
 </td>
 </tr>
@@ -324,7 +324,7 @@ or
 <input type="radio" name="target_side" value="rhs" id="target_side_rhs">
 right edge</label>.
 Then,
-<input type="button" value="increase the allowable number of partners" onclick="increase_num_of_hlinks()"> connectable to the selected edge of the rectangle of the target person.
+<button type="button" onclick="increase_num_of_hlinks()">increase the allowable number of partners</button> connectable to the selected edge of the rectangle of the target person.
 <br>
 (Note: The number is 7 by default and can be increased to 15, 31, 63, &hellip;.)
 </li>
@@ -338,7 +338,7 @@ Then,
 Select the horizontal link to be removed 
 <select id="hlink_to_remove" name="hlink_to_remove"></select>
 and 
-<input type="button" value="remove it from the chart" onclick="remove_h_link()">.
+<button type="button" onclick="remove_h_link()">remove it from the chart</button>.
 </td>
 </tr>
 
@@ -358,7 +358,7 @@ or
 <input type="radio" name="vertical_link1_type" value="dashed" id="vertical_link1_type_dashed">
 a dashed line</label>,
 and
-<input type="button" value="add the vertical link as specified" onclick="add_v_link_1()">.
+<button type="button" onclick="add_v_link_1()">add the vertical link as specified</button>.
 </li>
 <li>
 ALTERNATIVELY, 
@@ -375,7 +375,7 @@ or
 <input type="radio" name="vertical_link2_type" value="dashed" id="vertical_link2_type_dashed">
 a dashed line</label>,
 and
-<input type="button" value="add the vertical link as specified" onclick="add_v_link_2()">.
+<button type="button" onclick="add_v_link_2()">add the vertical link as specified</button>.
 </li>
 </ul>
 </td>
@@ -393,7 +393,7 @@ and
 <input id="connect_pos_x_range" name="connect_pos_x_range" type="range" min="0" max="100" step="0.1" oninput="apply_connect_pos_x_input()" onchange="record_connect_pos_x_adjustment()">
 [near the right end]
 <br>
-Or <input type="button" value="reset the position to the middle point" onclick="reset_connect_pos_x()">.
+Or <button type="button" onclick="reset_connect_pos_x()">reset the position to the middle point</button>.
 </li>
 </ul>
 </td>
@@ -405,7 +405,7 @@ Or <input type="button" value="reset the position to the middle point" onclick="
 Select the vertical link to be removed
 <select id="vlink_to_remove" name="vlink_to_remove"></select>
 and
-<input type="button" value="remove it from the chart" onclick="remove_v_link()">.
+<button type="button" onclick="remove_v_link()">remove it from the chart</button>.
 </td>
 </tr>
 
@@ -440,7 +440,7 @@ Specify how much this person should be moved:
 <input type="text" name="how_much_moved" size="3"> px
 </li>
 <li>
-<input type="button" value="Move him/her as specified above" onclick="move_person()">.
+<button type="button" onclick="move_person()">Move him/her as specified above</button>.
 </li>
 </ul>
 </td>
@@ -470,7 +470,7 @@ Specify the type of alignment:
 </select>
 </li>
 <li>
-<input type="button" value="Align the target person with the reference person" onclick="align_person()">.
+<button type="button" onclick="align_person()">Align the target person with the reference person</button>.
 </li>
 </td>
 </tr>
@@ -485,11 +485,11 @@ Select a target person to be moved:
 <select id="person_to_center" name="person_to_center"></select>
 </li>
 <li>
-<input type="button" value="Move the target person" onclick="center_person_wrt_upper_link()"> so that the vertical link from his/her parent(s) will be straight, or
+<button type="button" onclick="center_person_wrt_upper_link()">Move the target person</button> so that the vertical link from his/her parent(s) will be straight, or
 </li>
 <li>
 ALTERNATIVELY,
-<input type="button" value="move the target person" onclick="center_person_wrt_lower_links()"> so that he/she will be positioned at the center, in the horizontal direction, of the position(s) of his/her child(ren) connected to him/her.
+<button type="button" onclick="center_person_wrt_lower_links()">move the target person</button> so that he/she will be positioned at the center, in the horizontal direction, of the position(s) of his/her child(ren) connected to him/her.
 </li>
 </ul>
 </td>
@@ -507,7 +507,7 @@ Select a target person to be moved down:
 Specify how much the target person and his/her descendants should be moved down: <input type="text" name="how_much_moved_down" size="3"> px
 </li>
 <li>
-<input type="button" value="Move down the target person and his/her descendants" onclick="move_down_person_and_descendants()">.
+<button type="button" onclick="move_down_person_and_descendants()">Move down the target person and his/her descendants</button>.
 </li>
 </ul>
 </td>
@@ -527,7 +527,7 @@ Specify how much the persons should be moved right:
 <input type="text" name="how_much_moved_right" size="3"> px
 </li>
 <li>
-<input type="button" value="Move them rightwards" onclick="move_right_collectively()">.
+<button type="button" onclick="move_right_collectively()">Move them rightwards</button>.
 </li>
 </ul>
 </td>
@@ -547,7 +547,7 @@ Specify how much the persons should be moved left:
 <input type="text" name="how_much_moved_left" size="3"> px
 </li>
 <li>
-<input type="button" value="Move them leftwards" onclick="move_left_collectively()">.
+<button type="button" onclick="move_left_collectively()">Move them leftwards</button>.
 </li>
 </ul>
 </td>
@@ -580,7 +580,7 @@ Specify how much the whole chart should be shifted:
 <input type="text" name="how_much_shifted" size="3"> px
 </li>
 <li>
-<input type="button" value="Shift the whole chart as specified above" onclick="shift_all()">
+<button type="button" onclick="shift_all()">Shift the whole chart as specified above</button>
 </li>
 </ul>
 </td>
@@ -592,7 +592,7 @@ Specify how much the whole chart should be shifted:
 The current height is <span id="current_height"></span> px.
 Enter the amount for increasing the height 
 (<input type="text" name="height_diff" size="3"> px), and 
-<input type="button" value="modify the height as specified" onclick="modify_height()">.
+<button type="button" onclick="modify_height()">modify the height as specified</button>.
 <br>
 Note: Enter a negative integer if you want to decrease the height.
 </td>
@@ -604,7 +604,7 @@ Note: Enter a negative integer if you want to decrease the height.
 The current width is <span id="current_width"></span> px.
 Enter the amount for increasing the width 
 (<input type="text" name="width_diff" size="3"> px), and
-<input type="button" value="modify the width as specified" onclick="modify_width()">.
+<button type="button" onclick="modify_width()">modify the width as specified</button>.
 <br>
 Note: Enter a negative integer if you want to decrease the width.
 </td>
@@ -622,7 +622,7 @@ The current title:<br>
 <textarea cols="40" rows="1" name="new_chart_title" id="new_chart_title"></textarea>
 </label>
 <br>
-<input type="button" value="Set this new title" onclick="modify_title()">
+<button type="button" onclick="modify_title()">Set this new title</button>
 </td>
 </tr>
 
@@ -638,14 +638,14 @@ The current description:<br>
 <textarea cols="40" rows="4" name="new_chart_desc" id="new_chart_desc"></textarea>
 </label>
 <br>
-<input type="button" value="Set this new description" onclick="modify_description()">
+<button type="button" onclick="modify_description()">Set this new description</button>
 </td>
 </tr>
 
 <tr class="menu_output">
 <th>See the SVG code</th>
 <td>
-<input type="button" value="Output the current SVG code in the box below" onclick="output_svg_src()">
+<button type="button" onclick="output_svg_src()">Output the current SVG code in the box below</button>
 <code id="svg_code"></code>
 </td>
 </tr>
@@ -664,7 +664,7 @@ Note: The file size will be considerably reduced by deleting the custom data att
 <li><label for="filename_prefix">Specify the prefix of the file name</label> as
 <input type="text" size="10" name="filename_prefix" id="filename_prefix" value="pedigree" onchange="set_prefix()"/>.
 </li>
-<li><input type="button" value="Download the SVG file" onclick="download_svg()"> of the current state.
+<li><button type="button" onclick="download_svg()">Download the SVG file</button> of the current state.
 </li>
 </ul>
 <br>
@@ -686,7 +686,7 @@ Note: In order to display the chart of the downloaded SVG file appropriately, do
 Check the box <input type="checkbox" name="output_notes" id="output_notes" checked>
 if notes should also be output</label>.
 
-<input type="button" value="Download" onclick="list_persons()"> a text file of the list of names in ascending order.
+<button type="button" onclick="list_persons()">Download</button> a text file of the list of names in ascending order.
 </td>
 </tr>
 
@@ -694,7 +694,7 @@ if notes should also be output</label>.
 <th>Download a pedigree chart viewer</th>
 <td>A pedigree chart viewer fully customized to the chart you have created is downloadable.
 The viewer includes three customized files: an HTML file, an SVG file, and a JavaScript file.
-<input type="button" value="Enable the three links to download the files constituting the viewer" onclick="download_pedigree_viewer()">
+<button type="button" onclick="download_pedigree_viewer()">Enable the three links to download the files constituting the viewer</button>
 <span id="viewer_donload_links">
 <a class="disabled" id="viewer_html_link">HTML file</a>&nbsp;
 <a class="disabled" id="viewer_svg_link">SVG file</a>&nbsp;
@@ -710,14 +710,14 @@ Note: The dd elements in the downloaded HTML file are editable.  Please also dow
 <td><label for="input_svg_file">Select your SVG file</label>
 (<input type="file" id="input_svg_file" name="input_svg_file" />)
 and
-<input type="button" value="display the chart of the file" onclick="read_in()">.
+<button type="button" onclick="read_in()">display the chart of the file</button>.
 </td>
 </tr>
 
 <tr class="menu_read">
 <th>Read automatically saved SVG data</th>
 <td>If there is automatically saved SVG data, 
-<input type="button" value="read it and display the chart as read" name="read_automatically_saved_data_button" onclick="read_automatically_saved_data()">.
+<button type="button" name="read_automatically_saved_data_button" onclick="read_automatically_saved_data()">read it and display the chart as read</button>.
 <br>
 Note: It depends on your browser settings whether SVG data can be automatically saved or not.  If not, the button above is disabled.
 The SVG data, if any, may be deleted when you close this tab or quit the browser, depending on your browser settings.

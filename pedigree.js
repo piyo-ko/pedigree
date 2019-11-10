@@ -433,6 +433,7 @@ window.top.onload = function () {
     // 両方使用不可なのでメニューを無効化する
     m.read_automatically_saved_data_button.disabled = true;
   }
+  show_menu('menu_person');
 };
 
 /* 現状の svg 要素の大きさを読み込んで、画面に表示し、かつ、
@@ -3979,8 +3980,8 @@ function show_detailed_info_about_links() {
                       en: '📝 Details about [' + pid + '] ' + p_name + '&nbsp;'},
         button_txt = {ja: 'しまう', en: 'Hide this area'};
   div_elt.innerHTML = header_txt[LANG] + 
-    '<input type="button" value="' + button_txt[LANG] + 
-    '" onclick="hide_detailed_info()">\n' + 
+    '<button type="button" onclick="hide_detailed_info()">' + button_txt[LANG] + 
+    '</button>\n' + 
     '\n<dl>\n' + 
     parent_info[LANG] + hlink_info[LANG] + child_info[LANG] +
     '</dl>\n';

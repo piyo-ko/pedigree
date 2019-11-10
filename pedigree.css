@@ -4,10 +4,6 @@ body {
   font-family: serif;
   padding: 0;
 }
-input[type="button"] {
-  padding-left: 1em;
-  padding-right: 1em;
-}
 
 select > option {
   padding-left: 1em;
@@ -66,6 +62,7 @@ svg {
 table {
   border-collapse: collapse;
   margin: 1em;
+  margin-top: 0;
 }
 
 td, th {
@@ -157,9 +154,14 @@ span.info {
   text-decoration: underline;
 }
 
-p.btn {
-  padding-left: 1em;
-  padding-right: 1em;
+div.btn {
+  margin-left: 1em;
+  margin-right: 1em;
+  margin-bottom: 0;
+}
+button, select > option {
+  font-size: medium;
+  border-radius: 8pt;
 }
 button.menu {
   color: navy;
@@ -167,10 +169,12 @@ button.menu {
   white-space: pre;
   border-top: deepskyblue solid 4pt;
   border-right: teal solid 4pt;
-  border-bottom: teal solid 4pt;
+  border-bottom: none;
   border-left: deepskyblue solid 4pt;
-  border-radius: 8pt;
-  margin-right: 1em;
+  border-top-left-radius: 12pt;
+  border-top-right-radius: 12pt;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
   background: powderblue;
 }
 button.menu:hover {
