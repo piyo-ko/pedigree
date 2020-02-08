@@ -181,6 +181,17 @@ button.menu:hover {
   background: navy;
   color: powderblue;
 }
+button.menu.selected {
+  background: wheat;
+  color: crimson;
+  border-top-color: peru;
+  border-left-color: peru;
+  border-right-color: brown;
+}
+button.menu.selected:hover {
+  background: crimson;
+  color: wheat;
+}
 [lang="ja"] button {
   font-family: "筑紫B丸ゴシック", sans-serif;
 }

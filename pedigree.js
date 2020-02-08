@@ -3997,4 +3997,11 @@ function show_menu(menu_group) {
   for (let i = 0; i < trs.length; i++) {
     trs[i].style.display = (trs[i].className === menu_group) ? 'table-row' : 'none';
   }
+  const button_ids = ['btn_menu_person', 'btn_menu_hlink', 
+    'btn_menu_vlink', 'btn_menu_move_person', 'btn_menu_whole', 
+    'btn_menu_output', 'btn_menu_read'];
+  button_ids.forEach(btn_id => {
+    document.getElementById(btn_id).className = 
+      (('btn_' + menu_group) == btn_id) ? 'menu selected' : 'menu';
+  });
 }
