@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<base target="_ref">
 <link rel="stylesheet" href="pedigree.css" type="text/css">
 <script type="text/javascript" src="mode_setting.js"></script>
 <script type="text/javascript" src="common.js"></script>
 <script type="text/javascript" src="pedigree.js"></script>
 <meta name="keywords" content="pedigree chart,family tree chart,pedigree diagram,family tree diagram,Scalable Vector Graphics,SVG,drawing tool">
-<base target="_top">
 <title>Draw a pedigree chart in SVG format</title>
 </head>
 <body>
@@ -23,6 +23,7 @@
 </div>
 
 <p class="info">
+<a class="help" href="manual_en.html#outline" aria-label="a brief description of this drawing tool and the region just below the chart">?</a>
 The person indicated by the pointer has
 the ID of <span id="info_pid" class="info"></span> and
 the name of <span id="info_name" class="info"></span>.
@@ -48,7 +49,8 @@ the range of his/her rectangle's Y coordinate is <span class="info">[<span id="i
 <table id="menu_table">
 
 <tr class="menu_person">
-<th>Mode for character spacing</th>
+<th>Mode for character spacing
+<a class="help" href="manual_en.html#menu_1_1" aria-label="What is [Mode for character spacing] feature?">?</a></th>
 <td>
 <label for="character_spacing_mode_wide_mode">
 <input type="radio" name="character_spacing_mode" id="character_spacing_mode_wide_mode" value="wide_mode">
@@ -60,7 +62,8 @@ narrow mode</label> (suitable for Latin characters)
 </tr>
 
 <tr class="menu_person">
-<th>Add a person</th>
+<th>Add a person
+<a class="help" href="manual_en.html#menu_1_2" aria-label="What is [Add a person] feature?">?</a></th>
 <td>
 <ul>
 <li><label for="new_personal_name">Enter the name of a person to be added:</label> <input type="text" name="new_personal_name" id="new_personal_name" size="10"></li>
@@ -121,7 +124,8 @@ as a reference point</label>.
 </tr>
 
 <tr class="menu_person">
-<th>Rename a person</th>
+<th>Rename a person
+<a class="help" href="manual_en.html#menu_1_3" aria-label="What is [Rename a person] feature?">?</a></th>
 <td>
 Specify the new name of
 <select id="person_to_rename" name="person_to_rename"></select> as
@@ -135,7 +139,8 @@ in the case where you want to shrink the rectangle of this person as his/her nam
 </tr>
 
 <tr class="menu_person">
-<th>Increase the height of a rectangle</th>
+<th>Increase the height of a rectangle
+<a class="help" href="manual_en.html#menu_1_4" aria-label="What is [Increase the height of a rectangle] feature?">?</a></th>
 <td>
 Select the person
 <select id="person_to_be_extended" name="person_to_be_extended"></select>
@@ -145,7 +150,8 @@ and
 </tr>
 
 <tr class="menu_person">
-<th>Annotate a person</th>
+<th>Annotate a person
+<a class="help" href="manual_en.html#menu_1_5" aria-label="What is [Annotate a person] feature?">?</a></th>
 <td>
 <ul>
 <li>Select the person to be annotated:
@@ -179,7 +185,8 @@ and
 </tr>
 
 <tr class="menu_person">
-<th>Add a circular badge (in which a number is written) to a person</th>
+<th>Add a circular badge (in which a number is written) to a person
+<a class="help" href="manual_en.html#menu_1_6" aria-label="What is [Add a circular badge (in which a number is written) to a person] feature?">?</a></th>
 <td>
 <ul>
 <li>Select the person:
@@ -229,7 +236,8 @@ Enter the integer number (from 0 to 999 inclusive) which should be written withi
 </tr>
 
 <tr class="menu_person">
-<th>Look at a selected person</th>
+<th>Look at a selected person
+<a class="help" href="manual_en.html#menu_1_7" aria-label="What is [Look at a selected person] feature?">?</a></th>
 <td>
 <label for="person_to_look_at">Select the person to look at:</label>
 <select id="person_to_look_at" name="person_to_look_at"></select>,
@@ -238,7 +246,8 @@ and <button type="button" onclick="look_at_person()">look at him/her</button>.
 </tr>
 
 <tr class="menu_person">
-<th>Remove a person</th>
+<th>Remove a person
+<a class="help" href="manual_en.html#menu_1_8" aria-label="What is [Remove a person] feature?">?</a></th>
 <td>
 Select the person to be removed
 <select id="person_to_remove" name="person_to_remove"></select>
@@ -248,7 +257,8 @@ and
 </tr>
 
 <tr class="menu_hlink">
-<th>Add a horizontal link</th>
+<th>Add a horizontal link
+<a class="help" href="manual_en.html#menu_2_1" aria-label="What is [Add a horizontal link] feature?">?</a></th>
 <td>
 Select two persons 
 (<select id="partner_1" name="partner_1"></select> and
@@ -267,7 +277,8 @@ and then,
 </tr>
 
 <tr class="menu_hlink">
-<th>Add a horizontal link with details specified</th>
+<th>Add a horizontal link with details specified
+<a class="help" href="manual_en.html#menu_2_2" aria-label="What is [Add a horizontal link with details specified] feature?">?</a></th>
 <td>
 <ul>
 <li>
@@ -311,7 +322,8 @@ double-line link</label>
 </tr>
 
 <tr class="menu_hlink">
-<th>Increase the allowable number of horizontally connectable partners</th>
+<th>Increase the allowable number of horizontally connectable partners
+<a class="help" href="manual_en.html#menu_2_3" aria-label="What is [Increase the allowable number of horizontally connectable partners] feature?">?</a></th>
 <td>
 Select the target person
 <select id="target_of_increase_of_hlinks" name="target_of_increase_of_hlinks"></select>,
@@ -333,7 +345,8 @@ Then,
 </tr>
 
 <tr class="menu_hlink">
-<th>Remove a horizontal link</th>
+<th>Remove a horizontal link
+<a class="help" href="manual_en.html#menu_2_4" aria-label="What is [Remove a horizontal link] feature?">?</a></th>
 <td>
 Select the horizontal link to be removed 
 <select id="hlink_to_remove" name="hlink_to_remove"></select>
@@ -343,7 +356,8 @@ and
 </tr>
 
 <tr class="menu_vlink">
-<th>Add a vertical link</th>
+<th>Add a vertical link
+<a class="help" href="manual_en.html#menu_3_1" aria-label="What is [Add a vertical link] feature?">?</a></th>
 <td>
 <ul>
 <li>
@@ -382,7 +396,8 @@ and
 </tr>
 
 <tr class="menu_vlink">
-<th>On a horizontal link, adjust the position from which vertical links are to run down</th>
+<th>On a horizontal link, adjust the position from which vertical links are to run down
+<a class="help" href="manual_en.html#menu_3_2" aria-label="What is [On a horizontal link, adjust the position from which vertical links are to run down] feature?">?</a></th>
 <td>
 <ul>
 <li>Select a target horizontal link: 
@@ -400,7 +415,8 @@ Or <button type="button" onclick="reset_connect_pos_x()">reset the position to t
 </tr>
 
 <tr class="menu_vlink">
-<th>Remove a vertical link</th>
+<th>Remove a vertical link
+<a class="help" href="manual_en.html#menu_3_3" aria-label="What is [Remove a vertical link] feature?">?</a></th>
 <td>
 Select the vertical link to be removed
 <select id="vlink_to_remove" name="vlink_to_remove"></select>
@@ -410,7 +426,8 @@ and
 </tr>
 
 <tr class="menu_move_person">
-<th>Move a person</th>
+<th>Move a person
+<a class="help" href="manual_en.html#menu_4_1" aria-label="What is [Move a person] feature?">?</a></th>
 <td>
 <ul>
 <li>
@@ -447,7 +464,8 @@ Specify how much this person should be moved:
 </tr>
 
 <tr class="menu_move_person">
-<th>Align a person with another</th>
+<th>Align a person with another
+<a class="help" href="manual_en.html#menu_4_2" aria-label="What is [Align a person with another] feature?">?</a></th>
 <td>
 <ul>
 <li>
@@ -477,7 +495,8 @@ Specify the type of alignment:
 
 
 <tr class="menu_move_person">
-<th>Move a person with reference to his/her parent(s) or child(ren)</th>
+<th>Move a person with reference to his/her parent(s) or child(ren)
+<a class="help" href="manual_en.html#menu_4_3" aria-label="What is [Move a person with reference to his/her parent(s) or child(ren)] feature?">?</a></th>
 <td>
 <ul>
 <li>
@@ -496,7 +515,8 @@ ALTERNATIVELY,
 </tr>
 
 <tr class="menu_move_person">
-<th>Move down a person and his/her descendants</th>
+<th>Move down a person and his/her descendants
+<a class="help" href="manual_en.html#menu_4_4" aria-label="What is [Move down a person and his/her descendants] feature?">?</a></th>
 <td>
 <ul>
 <li>
@@ -514,7 +534,8 @@ Specify how much the target person and his/her descendants should be moved down:
 </tr>
 
 <tr class="menu_move_person">
-<th>Move persons cascadingly to the right</th>
+<th>Move persons cascadingly to the right
+<a class="help" href="manual_en.html#menu_4_5" aria-label="What is [Move persons cascadingly to the right] feature?">?</a></th>
 <td>
 Note: This menu is for moving a target person and all the persons reachable from him/her by following any links downwards or rightwards.
 <ul>
@@ -534,7 +555,8 @@ Specify how much the persons should be moved right:
 </tr>
 
 <tr class="menu_move_person">
-<th>Move persons cascadingly to the left</th>
+<th>Move persons cascadingly to the left
+<a class="help" href="manual_en.html#menu_4_6" aria-label="What is [Move persons cascadingly to the left] feature?">?</a></th>
 <td>
 Note: This menu is for moving a target person and all the persons reachable from him/her by following any links downwards or leftwards.
 <ul>
@@ -554,7 +576,8 @@ Specify how much the persons should be moved left:
 </tr>
 
 <tr class="menu_whole">
-<th>Shift the whole chart</th>
+<th>Shift the whole chart
+<a class="help" href="manual_en.html#menu_5_1" aria-label="What is [Shift the whole chart] feature?">?</a></th>
 <td>
 <ul>
 <li>Select the shifting direction:
@@ -587,7 +610,8 @@ Specify how much the whole chart should be shifted:
 </tr>
 
 <tr class="menu_whole">
-<th>Modify the height of the whole chart</th>
+<th>Modify the height of the whole chart
+<a class="help" href="manual_en.html#menu_5_2" aria-label="What is [Modify the height of the whole chart] feature?">?</a></th>
 <td>
 The current height is <span id="current_height"></span> px.
 Enter the amount for increasing the height 
@@ -599,7 +623,8 @@ Note: Enter a negative integer if you want to decrease the height.
 </tr>
 
 <tr class="menu_whole">
-<th>Modify the width of the whole chart</th>
+<th>Modify the width of the whole chart
+<a class="help" href="manual_en.html#menu_5_3" aria-label="What is [Modify the width of the whole chart] feature?">?</a></th>
 <td>
 The current width is <span id="current_width"></span> px.
 Enter the amount for increasing the width 
@@ -611,7 +636,8 @@ Note: Enter a negative integer if you want to decrease the width.
 </tr>
 
 <tr class="menu_whole">
-<th>Modify the title of the chart</th>
+<th>Modify the title of the chart
+<a class="help" href="manual_en.html#menu_5_4" aria-label="What is [Modify the title of the chart] feature?">?</a></th>
 <td>
 The title of the chart may be (perhaps in many environments) displayed as tooltip text when the cursor hovers over the chart.
 <br>
@@ -627,7 +653,8 @@ The current title:<br>
 </tr>
 
 <tr class="menu_whole">
-<th>Modify the description of the chart</th>
+<th>Modify the description of the chart
+<a class="help" href="manual_en.html#menu_5_5" aria-label="What is [Modify the description of the chart] feature?">?</a></th>
 <td>
 The description of the chart is invisible, but will be used to enhance the accessibility of the chart.
 <br>
@@ -643,7 +670,8 @@ The current description:<br>
 </tr>
 
 <tr class="menu_output">
-<th>See the SVG code</th>
+<th>See the SVG code
+<a class="help" href="manual_en.html#menu_6_1" aria-label="What is [See the SVG code] feature?">?</a></th>
 <td>
 <button type="button" onclick="output_svg_src()">Output the current SVG code in the box below</button>
 <code id="svg_code"></code>
@@ -651,7 +679,8 @@ The current description:<br>
 </tr>
 
 <tr class="menu_output">
-<th>Download the SVG file of the current state</th>
+<th>Download the SVG file of the current state
+<a class="help" href="manual_en.html#menu_6_2" aria-label="What is [Download the SVG file of the current state] feature?">?</a></th>
 <td>
 <ul>
 <li>Decide whether 
@@ -673,14 +702,16 @@ Note: In order to display the chart of the downloaded SVG file appropriately, do
 </tr>
 
 <tr class="menu_output">
-<th>Download the SVG file of any preferable step</th>
+<th>Download the SVG file of any preferable step
+<a class="help" href="manual_en.html#menu_6_3" aria-label="What is [Download the SVG file of any preferable step] feature?">?</a></th>
 <td>The following is the list of download links for SVG files corresponding to all the steps so far.  The prefix of each downloaded file will be as specified in the above input field in the above menu.
 <br>
 <ul id="svg_backup"></ul></td>
 </tr>
 
 <tr class="menu_output">
-<th>Output the list of names</th>
+<th>Output the list of names
+<a class="help" href="manual_en.html#menu_6_4" aria-label="What is [Output the list of names] feature?">?</a></th>
 <td>
 <label for="output_notes" class="wrappable">
 Check the box <input type="checkbox" name="output_notes" id="output_notes" checked>
@@ -691,7 +722,8 @@ if notes should also be output</label>.
 </tr>
 
 <tr class="menu_output">
-<th>Download a pedigree chart viewer</th>
+<th>Download a pedigree chart viewer
+<a class="help" href="manual_en.html#menu_6_5" aria-label="What is [Download a pedigree chart viewer] feature?">?</a></th>
 <td>A pedigree chart viewer fully customized to the chart you have created is downloadable.
 The viewer includes three customized files: an HTML file, an SVG file, and a JavaScript file.
 <button type="button" onclick="download_pedigree_viewer()">Enable the three links to download the files constituting the viewer</button>
@@ -706,7 +738,8 @@ Note: The dd elements in the downloaded HTML file are editable.  Please also dow
 </tr>
 
 <tr class="menu_read">
-<th>Read an SVG file created and saved before</th>
+<th>Read an SVG file created and saved before
+<a class="help" href="manual_en.html#menu_7_1" aria-label="What is [Read an SVG file created and saved before] feature?">?</a></th>
 <td><label for="input_svg_file">Select your SVG file</label>
 (<input type="file" id="input_svg_file" name="input_svg_file" />)
 and
@@ -715,7 +748,8 @@ and
 </tr>
 
 <tr class="menu_read">
-<th>Read automatically saved SVG data</th>
+<th>Read automatically saved SVG data
+<a class="help" href="manual_en.html#menu_7_2" aria-label="What is [Read automatically saved SVG data] feature?">?</a></th>
 <td>If there is automatically saved SVG data, 
 <button type="button" name="read_automatically_saved_data_button" onclick="read_automatically_saved_data()">read it and display the chart as read</button>.
 <br>

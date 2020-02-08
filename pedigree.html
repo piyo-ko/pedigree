@@ -2,12 +2,12 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
+<base target="_ref">
 <link rel="stylesheet" href="pedigree.css" type="text/css">
 <script type="text/javascript" src="mode_setting.js"></script>
 <script type="text/javascript" src="common.js"></script>
 <script type="text/javascript" src="pedigree.js"></script>
 <meta name="keywords" content="系図,家系図,Scalable Vector Graphics,SVG,描画ツール">
-<base target="_top">
 <title>系図を描いて SVG データにしてみよう</title>
 </head>
 <body>
@@ -23,6 +23,7 @@
 </div>
 
 <p class="info">
+<a class="help" href="manual_ja.html#outline" aria-label="ツールの概要とこの領域についてのヘルプ">?</a>
 ポインタの位置にある人物は、
 ID が <span id="info_pid" class="info"></span> で、
 名前が <span id="info_name" class="info"></span> で、
@@ -48,7 +49,8 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 <table id="menu_table">
 
 <tr class="menu_person">
-<th>文字の幅</th>
+<th>文字の幅
+<a class="help" href="manual_ja.html#menu_1_1" aria-label="「文字の幅」メニューのヘルプ">?</a></th>
 <td>
 <label for="character_spacing_mode_wide_mode">
 <input type="radio" name="character_spacing_mode" id="character_spacing_mode_wide_mode" value="wide_mode" checked>
@@ -62,7 +64,8 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 </tr>
 
 <tr class="menu_person">
-<th>人を<wbr>追加する</th>
+<th>人を<wbr>追加する
+<a class="help" href="manual_ja.html#menu_1_2" aria-label="「人を追加する」メニューのヘルプ">?</a></th>
 <td>
 <label for="new_personal_name">名前 <input type="text" name="new_personal_name" id="new_personal_name" size="10"> を入力。</label>
 
@@ -118,7 +121,8 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 </tr>
 
 <tr class="menu_person">
-<th>名前を<wbr>修正する</th>
+<th>名前を<wbr>修正する
+<a class="help" href="manual_ja.html#menu_1_3" aria-label="「名前を修正する」メニューのヘルプ">?</a></th>
 <td>
 <select id="person_to_rename" name="person_to_rename"></select> の名前を
 <input type="text" name="renamed_as" size="10"> に
@@ -131,7 +135,8 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 </tr>
 
 <tr class="menu_person">
-<th>矩形の高さを<wbr>増やす</th>
+<th>矩形の高さを<wbr>増やす
+<a class="help" href="manual_ja.html#menu_1_4" aria-label="「矩形の高さを増やす」メニューのヘルプ">?</a></th>
 <td>
 <select id="person_to_be_extended" name="person_to_be_extended"></select>
 を表す矩形の高さを
@@ -140,7 +145,8 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 </tr>
 
 <tr class="menu_person">
-<th>注釈の行を<wbr>追加する</th>
+<th>注釈の行を<wbr>追加する
+<a class="help" href="manual_ja.html#menu_1_5" aria-label="「注釈の行を追加する」メニューのヘルプ">?</a></th>
 <td>
 <select id="annotation_target" name="annotation_target"></select>
 に対して、
@@ -171,7 +177,8 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 </tr>
 
 <tr class="menu_person">
-<th>番号の<wbr>バッジを<wbr>つける</th>
+<th>番号の<wbr>バッジを<wbr>つける
+<a class="help" href="manual_ja.html#menu_1_6" aria-label="「番号のバッジをつける」メニューのヘルプ">?</a></th>
 <td>
 <select id="person_to_add_badge" name="person_to_add_badge"></select>
 の
@@ -213,7 +220,8 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 </tr>
 
 <tr class="menu_person">
-<th>人を<wbr>見る</th>
+<th>人を<wbr>見る
+<a class="help" href="manual_ja.html#menu_1_7" aria-label="「人を見る」メニューのヘルプ">?</a></th>
 <td>
 <select id="person_to_look_at" name="person_to_look_at" aria-label="見たい人を選んでください。"></select>
 を<button type="button" onclick="look_at_person()">見る</button>。
@@ -221,7 +229,8 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 </tr>
 
 <tr class="menu_person">
-<th>人を<wbr>削除する</th>
+<th>人を<wbr>削除する
+<a class="help" href="manual_ja.html#menu_1_8" aria-label="「人を削除する」メニューのヘルプ">?</a></th>
 <td>
 <select id="person_to_remove" name="person_to_remove"></select>
 を<button type="button" onclick="remove_person()">削除する</button>。
@@ -229,7 +238,8 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 </tr>
 
 <tr class="menu_hlink">
-<th>横の関係を<wbr>追加する</th>
+<th>横の関係を<wbr>追加する
+<a class="help" href="manual_ja.html#menu_2_1" aria-label="「横の関係を追加する」メニューのヘルプ">?</a></th>
 <td>
 <select id="partner_1" name="partner_1"></select> と
 <select id="partner_2" name="partner_2"></select> の間を
@@ -247,7 +257,8 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 </tr>
 
 <tr class="menu_hlink">
-<th>詳細を指定して<wbr>横の関係を<wbr>追加する</th>
+<th>詳細を指定して<wbr>横の関係を<wbr>追加する
+<a class="help" href="manual_ja.html#menu_2_2" aria-label="「詳細を指定して横の関係を追加する」メニューのヘルプ">?</a></th>
 <td>
 <select id="lhs_person" name="lhs_person" onchange="lhs_set_choices()">
 <option value="dummy" selected>左側の人物</option>
@@ -272,7 +283,8 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 </tr>
 
 <tr class="menu_hlink">
-<th>横方向に<wbr>つなぐことの可能な<wbr>相手の数を<wbr>増やす</th>
+<th>横方向に<wbr>つなぐことの可能な<wbr>相手の数を<wbr>増やす
+<a class="help" href="manual_ja.html#menu_2_3" aria-label="「横方向につなぐことの可能な相手の数を増やす」メニューのヘルプ">?</a></th>
 <td>
 <select id="target_of_increase_of_hlinks" name="target_of_increase_of_hlinks"></select> の
 <label for="target_side_lhs">
@@ -287,7 +299,8 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 </tr>
 
 <tr class="menu_hlink">
-<th>横の関係を<wbr>削除する</th>
+<th>横の関係を<wbr>削除する
+<a class="help" href="manual_ja.html#menu_2_4" aria-label="「横の関係を削除する」メニューのヘルプ">?</a></th>
 <td>
 <select id="hlink_to_remove" name="hlink_to_remove"></select> の間の関係を
 <button type="button" onclick="remove_h_link()">削除する</button>。
@@ -295,7 +308,8 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 </tr>
 
 <tr class="menu_vlink">
-<th>縦の関係を<wbr>追加する</th>
+<th>縦の関係を<wbr>追加する
+<a class="help" href="manual_ja.html#menu_3_1" aria-label="「縦の関係を追加する」メニューのヘルプ">?</a></th>
 <td>
 <label for="parent_1">親 (祖先) <select id="parent_1" name="parent_1"></select></label> と
 <label for="child_1">子 (子孫) <select id="child_1" name="child_1"></select></label> を
@@ -328,7 +342,8 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 </tr>
 
 <tr class="menu_vlink">
-<th>横線の下に<wbr>縦線を<wbr>ぶら下げる<wbr>位置を<wbr>調整する</th>
+<th>横線の下に<wbr>縦線を<wbr>ぶら下げる<wbr>位置を<wbr>調整する
+<a class="help" href="manual_ja.html#menu_3_2" aria-label="「横線の下に縦線をぶら下げる位置を調整する」メニューのヘルプ">?</a></th>
 <td>
 <select id="hlink_to_ajdust_its_connect_pos_x" name="hlink_to_ajdust_its_connect_pos_x" onchange="set_current_connect_pos_x()"></select> を結ぶ横線から下に向かう縦線の開始位置を調整する:
 [左端付近]
@@ -339,7 +354,8 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 </tr>
 
 <tr class="menu_vlink">
-<th>縦の関係を<wbr>削除する</th>
+<th>縦の関係を<wbr>削除する
+<a class="help" href="manual_ja.html#menu_3_3" aria-label="「縦の関係を削除する」メニューのヘルプ">?</a></th>
 <td>
 <select id="vlink_to_remove" name="vlink_to_remove"></select> の縦の関係を
 <button type="button" onclick="remove_v_link()">削除する</button>。
@@ -347,7 +363,8 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 </tr>
 
 <tr class="menu_move_person">
-<th>人の位置を<wbr>動かす</th>
+<th>人の位置を<wbr>動かす
+<a class="help" href="manual_ja.html#menu_4_1" aria-label="「人の位置を動かす」メニューのヘルプ">?</a></th>
 <td>
 <select id="target_person" name="target_person"></select> を
 
@@ -373,7 +390,8 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 </tr>
 
 <tr class="menu_move_person">
-<th>人の位置を<wbr>揃える</th>
+<th>人の位置を<wbr>揃える
+<a class="help" href="manual_ja.html#menu_4_2" aria-label="「人の位置を揃える」メニューのヘルプ">?</a></th>
 <td>
 <select id="ref_person" name="ref_person"></select> を基準にして、
 <select id="alignment_type" name="alignment_type">
@@ -392,7 +410,8 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 
 
 <tr class="menu_move_person">
-<th>親または子を<wbr>基準にして<wbr>人を動かす</th>
+<th>親または子を<wbr>基準にして<wbr>人を動かす
+<a class="help" href="manual_ja.html#menu_4_3" aria-label="「親または子を基準にして人を動かす」メニューのヘルプ">?</a></th>
 <td>
 <select id="person_to_center" name="person_to_center"></select> を、
 親からの縦線がまっすぐになるように<button type="button" onclick="center_person_wrt_upper_link()">動かす</button>か、あるいは、
@@ -401,7 +420,8 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 </tr>
 
 <tr class="menu_move_person">
-<th>子孫も<wbr>まとめて<wbr>下に移動する</th>
+<th>子孫も<wbr>まとめて<wbr>下に移動する
+<a class="help" href="manual_ja.html#menu_4_4" aria-label="「子孫もまとめて下に移動する」メニューのヘルプ">?</a></th>
 <td>
 <select id="person_to_move_down" name="person_to_move_down"></select> を、その子孫も一緒にまとめて下に <input type="text" name="how_much_moved_down" size="3"> px だけ
 <button type="button" onclick="move_down_person_and_descendants()">動かす</button>。
@@ -409,7 +429,8 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 </tr>
 
 <tr class="menu_move_person">
-<th>まとめて右に<wbr>移動する</th>
+<th>まとめて右に<wbr>移動する
+<a class="help" href="manual_ja.html#menu_4_5" aria-label="「まとめて右に移動する」メニューのヘルプ">?</a></th>
 <td>
 <select id="person_to_move_right" name="person_to_move_right"></select>
 から始めて、右・下のつながりをたどってたどり着く人たちをまとめて右に
@@ -419,7 +440,8 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 </tr>
 
 <tr class="menu_move_person">
-<th>まとめて左に<wbr>移動する</th>
+<th>まとめて左に<wbr>移動する
+<a class="help" href="manual_ja.html#menu_4_6" aria-label="「まとめて左に移動する」メニューのヘルプ">?</a></th>
 <td>
 <select id="person_to_move_left" name="person_to_move_left"></select>
 から始めて、左・下のつながりをたどってたどり着く人たちをまとめて左に
@@ -429,7 +451,8 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 </tr>
 
 <tr class="menu_whole">
-<th>全体を<wbr>ずらす</th>
+<th>全体を<wbr>ずらす
+<a class="help" href="manual_ja.html#menu_5_1" aria-label="「全体をずらす」メニューのヘルプ">?</a></th>
 <td>
 全体を
 
@@ -455,7 +478,8 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 </tr>
 
 <tr class="menu_whole">
-<th>全体の<wbr>高さを<wbr>変える</th>
+<th>全体の<wbr>高さを<wbr>変える
+<a class="help" href="manual_ja.html#menu_5_2" aria-label="「全体の高さを変える」メニューのヘルプ">?</a></th>
 <td>
 現状の高さは <span id="current_height"></span> px。
 これを <input type="text" name="height_diff" size="3"> px 
@@ -465,7 +489,8 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 </tr>
 
 <tr class="menu_whole">
-<th>全体の幅を<wbr>変える</th>
+<th>全体の幅を<wbr>変える
+<a class="help" href="manual_ja.html#menu_5_3" aria-label="「全体の幅を変える」メニューのヘルプ">?</a></th>
 <td>
 現状の幅は <span id="current_width"></span> px。
 これを <input type="text" name="width_diff" size="3"> px 
@@ -475,7 +500,8 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 </tr>
 
 <tr class="menu_whole">
-<th>タイトルを変更する</th>
+<th>タイトルを変更する
+<a class="help" href="manual_ja.html#menu_5_4" aria-label="「タイトルを変更する」メニューのヘルプ">?</a></th>
 <td>
 タイトルは、(環境にもよりますが) マウスホバーに応じてツールチップとして表示されます。
 <br>
@@ -491,7 +517,8 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 </tr>
 
 <tr class="menu_whole">
-<th>説明文を変更する</th>
+<th>説明文を変更する
+<a class="help" href="manual_ja.html#menu_5_5" aria-label="「説明文を変更する」メニューのヘルプ">?</a></th>
 <td>
 説明文は、系図上には表示されませんが、アクセシビリティ向上のために使われます。
 <br>
@@ -507,7 +534,8 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 </tr>
 
 <tr class="menu_output">
-<th>SVG コードを<wbr>見る</th>
+<th>SVG コードを<wbr>見る
+<a class="help" href="manual_ja.html#menu_6_1" aria-label="「SVG コードを見る」メニューのヘルプ">?</a></th>
 <td>
 現状の図について<button type="button" onclick="output_svg_src()">以下の枠内に出力する</button><br>
 <code id="svg_code"></code>
@@ -515,7 +543,8 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 </tr>
 
 <tr class="menu_output">
-<th>現状の<wbr>ファイルを<wbr>ダウンロードする</th>
+<th>現状の<wbr>ファイルを<wbr>ダウンロードする
+<a class="help" href="manual_ja.html#menu_6_2" aria-label="「現状のファイルをダウンロードする」メニューのヘルプ">?</a></th>
 <td>
 カスタムデータ属性を
 <label for="delete_custom_data_attributes_yes"><input type="radio" name="delete_custom_data_attributes" value="yes" id="delete_custom_data_attributes_yes" aria-label="カスタムデータ属性を削除する (ファイルサイズを削減できますが当アプリでの再編集はできなくなります)">削除する (ファイルサイズを削減できますが当アプリでの再編集はできなくなります)</label>
@@ -531,12 +560,14 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 </tr>
 
 <tr class="menu_output">
-<th>作業の各段階の<wbr>ファイルを<wbr>ダウンロードする</th>
+<th>作業の各段階の<wbr>ファイルを<wbr>ダウンロードする
+<a class="help" href="manual_ja.html#menu_6_3" aria-label="「作業の各段階のファイルをダウンロードする」メニューのヘルプ">?</a></th>
 <td>作業の各段階での SVG ファイル (ファイル名の接頭辞は上の入力欄のものを使います): <ul id="svg_backup"></ul></td>
 </tr>
 
 <tr class="menu_output">
-<th>人物一覧を<wbr>出力する</th>
+<th>人物一覧を<wbr>出力する
+<a class="help" href="manual_ja.html#menu_6_4" aria-label="「人物一覧を出力する」メニューのヘルプ">?</a></th>
 <td>人物一覧を名前順で<button type="button" onclick="list_persons()">テキストファイルに出力する</button>
 (<label for="output_notes"><input type="checkbox" name="output_notes" id="output_notes" checked>
 注釈行の内容も出力する場合</label>はチェック)。<br>
@@ -544,7 +575,8 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 </tr>
 
 <tr class="menu_output">
-<th>系図ビューワを<wbr>ダウンロードする</th>
+<th>系図ビューワを<wbr>ダウンロードする
+<a class="help" href="manual_ja.html#menu_6_5" aria-label="「系図ビューワをダウンロードする」メニューのヘルプ">?</a></th>
 <td>作成した個々の系図に専用のビューワ (HTML ファイル、SVG ファイル、JavaScript ファイルを含む) をダウンロードできます。
 <button type="button" onclick="download_pedigree_viewer()">系図ビューワのダウンロード用の三つのリンクを作る</button>
 <span id="viewer_donload_links">
@@ -560,7 +592,8 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 </tr>
 
 <tr class="menu_read">
-<th>作成済みの<wbr>データを<wbr>読み込む</th>
+<th>作成済みの<wbr>データを<wbr>読み込む
+<a class="help" href="manual_ja.html#menu_7_1" aria-label="「作成済みのデータを読み込む」メニューのヘルプ">?</a></th>
 <td><label for="input_svg_file">SVG ファイルを選択して</label>
 (<input type="file" id="input_svg_file" name="input_svg_file" />)、
 その内容を上の枠内に
@@ -569,7 +602,8 @@ Y 座標の範囲が <span class="info">[<span id="info_y_start"></span>, <span 
 </tr>
 
 <tr class="menu_read">
-<th>自動保存した<wbr>データを<wbr>読み込む</th>
+<th>自動保存した<wbr>データを<wbr>読み込む
+<a class="help" href="manual_ja.html#menu_7_2" aria-label="「自動保存したデータを読み込む」メニューのヘルプ">?</a></th>
 <td>自動保存したデータがあれば、それを読み込んで
 <button type="button" name="read_automatically_saved_data_button" onclick="read_automatically_saved_data()">表示する</button>。
 <br>

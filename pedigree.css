@@ -248,3 +248,16 @@ a.disabled {
   text-decoration: none;
   color: gray;
 }
+a.help {
+  margin-left: 1ex;
+  border-radius: 1ex;
+  padding-left: 6pt;
+  padding-right: 6pt;
+  background: white;
+  text-decoration: none;
+  font-family: Monaco, sans-serif;
+}
+a.help:hover {
+  color: white;
+  background: crimson;
+}
