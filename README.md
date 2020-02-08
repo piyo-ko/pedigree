@@ -14,8 +14,12 @@ A pedigree chart in SVG format is good in that:
 
 Two simple example charts are shown below (precisely speaking, they are Portable Network Graphics (PNG) images converted from original images in SVG format).  Links to other examples are [listed on another page](https://piyo-ko.github.io/fun/pedigree_examples_index.html).  Although Chinese/Japanese characters (not Latin characters) are used in these charts, you will still see that how complex chart can be created by using [this drawing tool](https://piyo-ko.github.io/pedigree/pedigree-en.html). 
 
-Please do not hesitate to contact me on GitHub (`@piyo-ko`) or on Twitter (`@pi__yo__ko`).
+Please do not hesitate to contact me on GitHub (`@piyo-ko`) or on Twitter ([`@pi__yo__ko`](https://twitter.com/pi__yo__ko)).
 Any commnents on [the tool](https://piyo-ko.github.io/pedigree/pedigree-en.html) or [the manual page](https://piyo-ko.github.io/pedigree/manual_en.html) are welcome.
+
+**All you need is your Web browser.**
+No data of your chart will be sent to the server (because only a client-side script is used).
+Enjoy!
 
 ## 簡単な紹介
 系図がほしい状況は色々あるはずだが、自分で作ろうとなると、まずどのソフトウェアで作れば良いのかに悩む。しかも、作図している途中では全体像が見えにくいこともあるので、途中で「全体的に各要素を縮小したい (そうしないと所定の範囲に系図を収められない)」となるかもしれないが、ソフトウェアによっては、その作業が煩雑を極める可能性もある。
@@ -27,7 +31,12 @@ Any commnents on [the tool](https://piyo-ko.github.io/pedigree/pedigree-en.html)
 * 作った SVG ファイルと同じフォルダに置くべき[スタイルファイル](https://piyo-ko.github.io/pedigree/pedigree_svg.css)
 * [技術的なメモ](https://piyo-ko.github.io/pedigree/attributes.html)
 
-御感想などは Twitter で `@pi__yo__ko` までどうぞ。
+御感想などは Twitter で [`@pi__yo__ko`](https://twitter.com/pi__yo__ko) までどうぞ。
+
+**系図を作るのに必要なものは、ウェブブラウザだけです。**
+また、[本ツール](https://piyo-ko.github.io/pedigree/pedigree.html)は、クライアントサイドのスクリプトのみで動作しますので、系図のデータがサーバに送られることはありません。
+お気軽にお試しください。
+
 
 ## 例
 [PNG への変換ページ](https://piyo-ko.github.io/tools/svg2png.html) で変換した画像 (背景色として白を指定したもの) を二つ、例として載せておく。
