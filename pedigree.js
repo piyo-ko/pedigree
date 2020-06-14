@@ -3211,6 +3211,52 @@ function modify_width_0(w_diff) {
   document.getElementById('current_width').textContent = P_GRAPH.svg_width;
 }
 
+/* 「余白を設定する」メニュー。 */
+function set_margins() {
+  const svg_elt = document.getElementById('pedigree');
+  let min_x = Infinity, min_y = Infinity, max_x = -Infinity, max_y = -Infinity;
+  function get_num_val(elt, attr) {
+    return(parseInt(elt.getAttribute(attr)));
+  }
+  function update_min_max(left, right, top, bottom) {
+    if (left < min_x) { min_x = left; }
+    if (max_x < right) { max_x = right; }
+    if (top < min_y) { min_y = top; }
+    if (max_y < bottom) { max_y = bottom; }
+  }
+
+  for (const r of svg_elt.getElementsByTagNameNS(SVG_NS, 'rect')) {
+    const left = get_num_val(r, 'x'), top = get_num_val(r, 'y'),
+      w = get_num_val(r, 'width'), h = get_num_val(r, 'height');
+    update_min_max(left, left + w, top, top + h);
+  }
+
+  for (const n of svg_elt.getElementsByClassName('note')) {
+    const left = get_num_val(n, 'x'), y = get_num_val(n, 'y'),
+      writing_mode = n.getAttribute('writing-mode'),
+      len = get_num_val(n, 'textLength'),
+      w = (writing_mode == 'tb') ? CONFIG.note_font_size : len,
+      h = (writing_mode == 'tb') ? len : CONFIG.note_font_size,
+      top = (writing_mode == 'tb') ? y : y - h;
+    update_min_max(left, left + w, top, top + h);
+  }
+
+  for (const c of svg_elt.getElementsByTagNameNS(SVG_NS, 'circle')) {
+    const cx = get_num_val(c, 'cx'), cy = get_num_val(c, 'cy'), 
+      r = get_num_val(c, 'r');
+    update_min_max(cx - r, cx + r, cy - r, cy + r);
+  }
+
+  const new_margin = parseInt(document.menu.new_margin.value),
+    dx = -min_x + new_margin, dy = -min_y + new_margin;
+  shift_all_0(dx, dy);
+  modify_width_0(max_x + dx + new_margin - P_GRAPH.svg_width);
+  modify_height_0(max_y + dy + new_margin - P_GRAPH.svg_height);
+
+  const b = {ja: '余白を設定する', en: 'set the margins'};
+  backup_svg(b[LANG]);
+}
+
 /* 「タイトルを変更する」メニュー。 */
 function modify_title() {
   const svg_title_elt = document.getElementById(CONFIG.title_id),
