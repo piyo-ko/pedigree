@@ -1386,7 +1386,6 @@ function add_num_badge() {
                en: 'Enter an integer from 0 to 999 inclusive.'};
     alert(a[LANG]); return;
   }
-  document.menu.badge_num.value = ''; // 値を読み終わったらクリアしておく
   const badge_pos = selected_radio_choice(document.menu.badge_pos);
   const badge_color = selected_choice(document.menu.badge_color);
   const pid = selected_choice(document.menu.person_to_add_badge);

@@ -226,7 +226,7 @@ the lower right corner</label>
 <span class="badge_color darkgreen">■</span>)
 </li>
 <li>
-Enter the integer number (from 0 to 999 inclusive) which should be written within the badge: <input type="text" name="badge_num" id="badge_num" size="3">
+Enter the integer number (from 0 to 999 inclusive) which should be written within the badge: <input type="number" min="0" max="999" step="1" value="1" size="3" name="badge_num" id="badge_num">
 </li>
 <li>
 <button type="button" onclick="add_num_badge()">Add the badge as specified above</button>
@@ -454,7 +454,7 @@ right</label>
 </li>
 <li>
 Specify how much this person should be moved: 
-<input type="text" name="how_much_moved" size="3"> px
+<input type="number" min="1" step="1" value="84" size="4" name="how_much_moved"> px
 </li>
 <li>
 <button type="button" onclick="move_person()">Move him/her as specified above</button>.
@@ -524,7 +524,7 @@ Select a target person to be moved down:
 <select id="person_to_move_down" name="person_to_move_down"></select>
 </li>
 <li>
-Specify how much the target person and his/her descendants should be moved down: <input type="text" name="how_much_moved_down" size="3"> px
+Specify how much the target person and his/her descendants should be moved down: <input type="number" min="1" step="1" value="24" size="4" name="how_much_moved_down"> px
 </li>
 <li>
 <button type="button" onclick="move_down_person_and_descendants()">Move down the target person and his/her descendants</button>.
@@ -545,7 +545,7 @@ Select the target person:
 </li>
 <li>
 Specify how much the persons should be moved right:
-<input type="text" name="how_much_moved_right" size="3"> px
+<input type="number" min="1" step="1" value="84" size="4" name="how_much_moved_right"> px
 </li>
 <li>
 <button type="button" onclick="move_right_collectively()">Move them rightwards</button>.
@@ -566,7 +566,7 @@ Select the target person to be moved left:
 </li>
 <li>
 Specify how much the persons should be moved left:
-<input type="text" name="how_much_moved_left" size="3"> px
+<input type="number" min="1" step="1" value="84" size="4" name="how_much_moved_left"> px
 </li>
 <li>
 <button type="button" onclick="move_left_collectively()">Move them leftwards</button>.
@@ -600,7 +600,7 @@ right</label>
 </li>
 <li>
 Specify how much the whole chart should be shifted:
-<input type="text" name="how_much_shifted" size="3"> px
+<input type="number" min="1" step="1" value="100" size="4" name="how_much_shifted"> px
 </li>
 <li>
 <button type="button" onclick="shift_all()">Shift the whole chart as specified above</button>
@@ -615,7 +615,7 @@ Specify how much the whole chart should be shifted:
 <td>
 The current height is <span id="current_height"></span> px.
 Enter the amount for increasing the height 
-(<input type="text" name="height_diff" size="3"> px), and 
+(<input type="number" step="1" value="0" size="4" name="height_diff"> px), and 
 <button type="button" onclick="modify_height()">modify the height as specified</button>.
 <br>
 Note: Enter a negative integer if you want to decrease the height.
@@ -628,7 +628,7 @@ Note: Enter a negative integer if you want to decrease the height.
 <td>
 The current width is <span id="current_width"></span> px.
 Enter the amount for increasing the width 
-(<input type="text" name="width_diff" size="3"> px), and
+(<input type="number" step="1" value="0" size="4" name="width_diff"> px), and
 <button type="button" onclick="modify_width()">modify the width as specified</button>.
 <br>
 Note: Enter a negative integer if you want to decrease the width.
@@ -642,7 +642,7 @@ Note: Enter a negative integer if you want to decrease the width.
 <td>
 <ul>
 <li><label for="new_margin">Specify the top, bottom, left, and right margins to be set:</label>
-<input id="new_margin" name="new_margin" type="number" min="0" max="32" step="4" value="0" size="2" /> px</li>
+<input type="number" min="0" max="32" step="4" value="0" size="2" name="new_margin" id="new_margin"> px</li>
 <li><button type="button" onclick="set_margins()">Set the margins</button></li>
 </ul>
 </td>
